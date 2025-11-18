@@ -1,0 +1,37 @@
+/* Style de base pour la case à cocher */
+input[type="checkbox"] {
+  width: 20px; /* Taille personnalisée */
+  height: 20px;
+  margin: 8px;
+  cursor: pointer;
+  accent-color: #4CAF50; /* Couleur de la coche et du fond quand cochée (fonctionne sur les navigateurs modernes) */
+  border: 2px solid #ccc;
+  border-radius: 4px; /* Coins légèrement arrondis */
+  appearance: none; /* Supprime le style par défaut */
+  -webkit-appearance: none;
+  background-color: white;
+  position: relative;
+}
+
+/* Style quand la case est cochée */
+input[type="checkbox"]:checked {
+  background-color: #4CAF50;
+  border-color: #4CAF50;
+}
+
+/* Ajouter une coche personnalisée */
+input[type="checkbox"]:checked::after {
+  content: "✓";
+  position: absolute;
+  color: white;
+  font-size: 14px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Effet au survol */
+input[type="checkbox"]:hover {
+  border-color: #888;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+}

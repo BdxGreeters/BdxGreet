@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load i18n %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h2 class="h4 mb-0">
+                {% trans "Création Destination" %} - Étape {{ wizard.steps.step1 }} / {{ wizard.steps.count }}
+            </h2>
+        </div>
+        
+        <div class="card-body">
+
+            {# IMPORTANT : enctype="{{ wizard.enctype }}" est requis pour l'upload du logo #}
+            <form action="" method="post" enctype="{{ wizard.enctype }}">
+                {% csrf_token %}
+                
+                {{ wizard.management_form }}
+                
+                {# Rendu du formulaire de l'étape courante avec Crispy #}
+                {% crispy wizard.form %}
+                
+                <hr class="my-4">
+                
+                <div class="d-flex justify-content-between">
+                    {# Bouton Précédent #}
+                    {% if wizard.steps.prev %}
+                        <button name="wizard_goto_step" type="submit" value="{{ wizard.steps.prev }}" class="btn btn-outline-secondary">
+                            {% trans "Précédent" %}
+                        </button>
+                    {% else %}
+                        <div></div>
+                    {% endif %}
+                    
+                    {# Bouton Suivant / Terminer #}
+                    <button type="submit" class="btn btn-success">
+                        {% if wizard.steps.next %}
+                            {% trans "Suivant" %}
+                        {% else %}
+                            {% trans "Terminer et Sauvegarder" %}
+                        {% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+    {{ wizard.form.media.js }}
+{% endblock %}

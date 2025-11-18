@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block title %}l
+{% trans "Gestion des raisons de non réalisation d'une expérience" %} 
+{% endblock %}
+
+{% block content %}
+    <h2>{% trans "Liste des raisons de non réalisation d'une expérience" %} </h2>
+    <p><a href="{% url 'create_no_show' %}">{% trans "Ajouter une raison de non réalisation d'une expérience" %}</a></p>
+    <table>
+        <thead>
+            <tr>
+                <th>{% trans "Raison de non réalisation d'une expérience" %}</th> 
+            </tr>
+        </thead>
+        <tbody>
+            {% for no_show in no_shows %}
+            <tr>
+                <td>{{ no_show.raison_noshow }}</td>
+                <td><a href="{% url 'no_show_update' no_show.pk %}">{% trans "Modifier" %} </a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

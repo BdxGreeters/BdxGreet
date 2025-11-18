@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block title %}
+{% trans "Gestion des langues prise en charge par Deepl" %} 
+{% endblock %}
+
+{% block content %}
+    <h2>{% trans "Liste des langues prises en charge par Deepl" %} </h2>
+    <p><a href="{% url 'create_langue_deepl' %}">{% trans "Ajouter une langue prise en charge par Deepl" %}</a></p>
+    <table>
+        <thead>
+            <tr>
+                <th>{% trans "Code ISO" %}</th>
+                <th>{% trans "Langue" %}</th>     
+            </tr>
+        </thead>
+        <tbody>
+            {% for lang_deepl in langs_deepl %}
+            <tr>
+                <td>{{ lang_deepl.code_iso }}</td>
+                <td>{{ lang_deepl.lang_deepl}</td>
+               <td><a href="{% url 'langue_deepl_update' lang_deepl.pk %}">{% trans "Modifier" %} </a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
