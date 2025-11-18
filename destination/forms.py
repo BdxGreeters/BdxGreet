@@ -68,11 +68,30 @@ class DestinationForm(HelpTextTooltipMixin, CommaSeparatedFieldMixin,forms.Model
             'adress_dest': forms.Textarea(attrs={'rows': 2}),
             'disability_libelle_dest': forms.Textarea(attrs={'rows': 3}),
         }
+        
     # gestion des css et js
     class Media:
-        js = ('static/script_tooltit.js','static/tag_input.js','static/js/new_user.js','static:js:insert_users_destinations.js')
-        
+        # 1. Les fichiers CSS
+        css = {
+            'all': (
+                'css/comma_field..css',
+                'css/popup_sweetAlert.css',
+                'css/checkbox.css',
+            )
+        }
 
+        # 2. Les fichiers JS (Ordre important !)
+        # Note : On ne met PAS 'javascript-catalog' ni la variable window ici.
+        js = (
+            # Le CDN SweetAlert
+            'https://cdn.jsdelivr.net/npm/sweetalert2@11',
+            
+            # Vos scripts locaux (chemins relatifs à votre dossier STATIC_ROOT)
+            'js/tag_input.js',
+            'js/script_tooltit.js', # Attention à la typo "tooltit" si elle est dans votre fichier
+            'js/new_user.js',
+            'js/insert_users_destinations.js',
+        )
     comma_fields_config = {
         'list_places_dest': {'min':2, 'max':10},
         }
