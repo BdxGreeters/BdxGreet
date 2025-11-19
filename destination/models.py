@@ -28,7 +28,7 @@ class Destination(models.Model):
     adress_dest=models.CharField(max_length=250, default=" ", verbose_name=_("Adresse"),help_text=_("Saisir l'adresse de la destination"))
     region_dest=models.CharField(max_length=50, default=" ",blank=True,null= True, verbose_name=_("Région"),help_text=_("Saisir la région de la destination"))
     country_dest=models.ForeignKey(Pays, on_delete=models.PROTECT, verbose_name=_("Pays"),help_text=_("Sélectionner le pays de la destination"))
-    logo_dest=models.ImageField(upload_to='logos/',default='logos/default.jpg',verbose_name=_('Logo'), help_text=_("Taille : 250 px *250 px"))
+    logo_dest=models.ImageField(upload_to='logos/',default='logos/default.jpg',verbose_name=_('Logo'),blank=True, null=True,help_text=_("Taille : 250 px *250 px"))
     libelle_email_dest=models.CharField(max_length=50, default=" ", verbose_name=_("Libellé courriel émetteur "),help_text=_("Saisir le libellé des courriels émetteurs de la destination"))
     statut_dest=models.CharField(max_length=15, choices=choices, default="Drafts",help_text=_("Saisir le statut dela destination"),verbose_name=_("Statut"))
     manager_dest=models.ForeignKey(User,on_delete=models.SET_NULL,related_name="manager_name_dest", blank=True, null=True,verbose_name=_("Nom du manager"),help_text=_("Saisir le nom du manager de la destination"))

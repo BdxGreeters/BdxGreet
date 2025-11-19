@@ -1,7 +1,32 @@
 document.addEventListener("DOMContentLoaded", function () {
+    // SÉLECTION INITIALE (Elle peut rester simple)
     const tagFields = document.querySelectorAll(".comma-input-field");
     let tagEditorCounter = 0;
+    
     tagFields.forEach(originalInput => {
+        
+        // 🛑 VÉRIFICATIONS ANTI-DOUBLONNES ET ANTI-ENVELOPPEMENT 🛑
+        
+        // 1. Vérifier si l'élément a déjà été marqué (première vérification rapide)
+        if (originalInput.hasAttribute("data-tag-processed")) {
+            return;
+        }
+        
+        // 2. Vérifier si son parent est déjà le conteneur du widget (empêche l'imbrication)
+        // C'est la ligne la plus importante pour résoudre le problème du Wizard
+        if (originalInput.parentNode && originalInput.parentNode.classList.contains("tag-input-wrapper")) {
+            // Si l'input est déjà dans un wrapper, cela signifie que la première exécution a eu lieu.
+            // On peut marquer l'input pour les futures vérifications et sortir.
+            originalInput.setAttribute('data-tag-processed', 'true'); 
+            return;
+        }
+
+        // -----------------------------------------------------------------------
+        // Si le code arrive ici, l'input est valide et n'a pas été traité.
+        // -----------------------------------------------------------------------
+        
+        // Marquer l'élément comme traité IMMÉDIATEMENT (avant la création du wrapper)
+        originalInput.setAttribute('data-tag-processed', 'true');
         // Vérifie si le champ est désactivé
         const isDisabled = originalInput.hasAttribute("disabled") || originalInput.dataset.disabled === "true";
 

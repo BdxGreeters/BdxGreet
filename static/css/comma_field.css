@@ -1,3 +1,7 @@
+.comma-input-field {
+    display: none !important; 
+}
+
 .tag-input-wrapper {
     min-height: 40px;
     padding: 5px;

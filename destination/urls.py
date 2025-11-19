@@ -8,5 +8,4 @@ urlpatterns = [
     #path('cluster/<int:pk>/', cluster_views.ClusterDetailView.as_view(), name='cluster_detail'),
     #path('cluster/<int:pk>/update/', cluster_views.ClusterUpdateView.as_view(), name='cluster_update'),
     path('ajax/filter-users/', destination_views.AjaxFilterUsersView.as_view(), name='ajax_filter_users'),
-    path('destination/wizard/', destination_views.DestinationCreationWizard.as_view(), name='destination_wizard'),
 ]
