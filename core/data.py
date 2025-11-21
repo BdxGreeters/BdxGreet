@@ -1,1 +1,0 @@
-MAX_VISITOR=6
