@@ -1,21 +1,23 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.views import View
-from django.contrib import messages
-from django.contrib.sites.shortcuts import get_current_site
-from users.forms import UserCreationForm, UserUpdateForm, GreeterCreationForm
-from users.models import CustomUser,Greeter
-from core.models import Email_Mailjet
-from users.tasks import reset_password
-from django.contrib.auth import authenticate, login,get_user_model
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import Group
-from django.contrib.auth.forms import PasswordResetForm
-from django.db.models.signals import post_save
-from django.db import transaction
-from PIL import Image
 import os
+
 from django.conf import settings
+from django.contrib import messages
+from django.contrib.auth import authenticate, get_user_model, login
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import PasswordResetForm
+from django.contrib.auth.models import Group
+from django.contrib.sites.shortcuts import get_current_site
+from django.db import transaction
+from django.db.models.signals import post_save
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext_lazy as _
+from django.views import View
+from PIL import Image
+
+from core.models import Email_Mailjet
+from users.forms import GreeterCreationForm, UserCreationForm, UserUpdateForm
+from users.models import CustomUser, Greeter
+from users.tasks import reset_password
 
 
 class UserCreateView(View):

@@ -1,7 +1,11 @@
 from django import forms
 from django.contrib.auth.models import Group
-from core.models import Email_Mailjet, LangueDeepL, InterestCenter,No_show, Beneficiaire, Periode, TrancheAge, Types_handicap
 from django.utils.translation import gettext_lazy as _
+
+from core.models import (Beneficiaire, Email_Mailjet, InterestCenter,
+                         LangueDeepL, No_show, Periode, TrancheAge,
+                         Types_handicap)
+
 
 # Form Création d'un email_Mailjet
 class   Email_MailjetCreationForm (forms.ModelForm):

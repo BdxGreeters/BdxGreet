@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.urls import path
+
 from cluster import views as cluster_views
 
 urlpatterns = [

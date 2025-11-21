@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h2 class="mb-0">{{ destination.code_dest }} - {{ destination.name_dest }}</h2>
+        </div>
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    {% if destination.logo_dest %}
+                        <img src="{{ destination.logo_dest.url }}" alt="Logo" class="img-fluid rounded" style="max-height: 200px;">
+                    {% else %}
+                        <p>Aucun logo disponible</p>
+                    {% endif %}
+                </div>
+                <div class="col-md-8">
+                    <h4>Informations générales</h4>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Statut:</strong> {{ destination.get_statut_dest_display }}</li>
+                        <li class="list-group-item"><strong>Code IGA:</strong> {{ destination.code_IGA_dest }}</li>
+                        <li class="list-group-item"><strong>Adresse:</strong> {{ destination.adress_dest }}</li>
+                        <li class="list-group-item"><strong>Région:</strong> {{ destination.region_dest }}</li>
+                        <li class="list-group-item"><strong>Pays:</strong> {{ destination.country_dest }}</li>
+                        <li class="list-group-item"><strong>Email de notification:</strong> {{ destination.mail_notification_dest }}</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <h4>Description</h4>
+                    <p>{{ destination.desc_dest }}</p>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <h4>Responsables</h4>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Manager:</strong> {{ destination.manager_dest|default:"Non défini" }}</li>
+                        <li class="list-group-item"><strong>Référent:</strong> {{ destination.referent_dest|default:"Non défini" }}</li>
+                        <li class="list-group-item"><strong>Gestionnaire:</strong> {{ destination.matcher_dest|default:"Non défini" }}</li>
+                        <li class="list-group-item"><strong>Gestionnaire alternatif:</strong> {{ destination.matcher_alt_dest|default:"Non défini" }}</li>
+                        <li class="list-group-item"><strong>Gestionnaire financier:</strong> {{ destination.finance_dest|default:"Non défini" }}</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h4>Paramètres de la destination</h4>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Lieux ou thèmes:</strong> {{ destination.list_places_dest }}</li>
+                        <li class="list-group-item"><strong>Max lieux/thèmes:</strong> {{ destination.max_lp_dest }}</li>
+                        <li class="list-group-item"><strong>Min lieux/thèmes:</strong> {{ destination.mini_lp_dest }}</li>
+                        <li class="list-group-item"><strong>Max centres d'intérêt:</strong> {{ destination.max_interest_center_dest }}</li>
+                        <li class="list-group-item"><strong>Min centres d'intérêt:</strong> {{ destination.mini_interest_center_dest }}</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <h4>Données fonctionnelles</h4>
+                    {% with data=destination.destination_data %}
+                        {% if data %}
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item"><strong>Bénéficiaire des dons:</strong> {{ data.beneficiaire_don_dest }}</li>
+                                <li class="list-group-item"><strong>Proposition de don:</strong> {{ data.donation_proposal_dest }} €</li>
+                                <li class="list-group-item"><strong>PayPal:</strong> <a href="{{ data.paypal_dest }}" target="_blank">{{ data.paypal_dest }}</a></li>
+                                <li class="list-group-item"><strong>TripAdvisor:</strong> <a href="{{ data.tripadvisor_dest }}" target="_blank">{{ data.tripadvisor_dest }}</a></li>
+                                <li class="list-group-item"><strong>Google My Business:</strong> <a href="{{ data.googlemybusiness_dest }}" target="_blank">{{ data.googlemybusiness_dest }}</a></li>
+                            </ul>
+                        {% else %}
+                            <p>Aucune donnée fonctionnelle disponible.</p>
+                        {% endif %}
+                    {% endwith %}
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <a href="{% url 'destinations_list' %}" class="btn btn-secondary">Retour à la liste</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

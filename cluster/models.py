@@ -1,12 +1,13 @@
-from django.db import models
-from django.contrib.auth import get_user_model
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
-from core.models import Language_communication, Pays
-from modeltranslation.translator import translator,register,TranslationOptions
+from django.db import models
 from django.utils.translation import gettext_lazy as _
-from core import data
+from modeltranslation.translator import (TranslationOptions, register,
+                                         translator)
 
+from core import data
+from core.models import Language_communication, Pays
 
 # Modele Cluster
 

@@ -1,8 +1,9 @@
 
-from deepl.exceptions import TooManyRequestsException
 import time
-from django.conf import settings
+
 import deepl
+from deepl.exceptions import TooManyRequestsException
+from django.conf import settings
 
 print(settings.DEEPL_API_KEY)
 translator = deepl.DeepLClient(settings.DEEPL_API_KEY)

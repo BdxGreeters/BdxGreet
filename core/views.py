@@ -1,13 +1,28 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.views import View
-from django.contrib import messages
-from core.forms import Email_MailjetCreationForm, LangueDeepLCreationForm, InterestCenterCreationForm, No_showCreationForm, BeneficiaireCreationForm, PeriodeCreationForm
-from core.forms import TrancheAgeCreationForm, Types_handicapCreationForm
-from core.models import Email_Mailjet, LangueDeepL, InterestCenter, No_show, Beneficiaire, Periode, TrancheAge, Types_handicap
-from core.tasks import translation_content
+import json
+
 from django.conf import settings
-from core.translator import translate
+from django.contrib import messages
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
+from django.core.exceptions import ValidationError
+from django.db.models import Q
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
+from django.views import View
+from django.views.decorators.csrf import csrf_exempt
+
+from core.forms import (BeneficiaireCreationForm, Email_MailjetCreationForm,
+                        InterestCenterCreationForm, LangueDeepLCreationForm,
+                        No_showCreationForm, PeriodeCreationForm,
+                        TrancheAgeCreationForm, Types_handicapCreationForm)
+from core.models import (Beneficiaire, Email_Mailjet, InterestCenter,
+                         Language_communication, LangueDeepL, No_show, Periode,
+                         TrancheAge, Types_handicap)
+from core.tasks import envoyer_email_creation_utilisateur, translation_content
+from core.translator import translate
+
 
 # Vue création d'un email_mAILJET
 class Email_MailjetCreateView(View):
@@ -361,18 +376,7 @@ class Types_handicapUpdateView(View):
 ###################################################################################################                                                                                     
                                                                         
 
-# Vue Création d'un utilisateur 
-
-from django.views import View
-from django.http import JsonResponse
-from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth import get_user_model
-import json
-from django.core.exceptions import ValidationError
-from core.tasks import envoyer_email_creation_utilisateur
-from core.models import Language_communication
-from django.contrib.auth.models import Group
+# Vue Création d'un utilisateur
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -421,19 +425,12 @@ class CreateUserView(View):
 ###################################################################################################
  # Vue Récupérér les langues de communication
 
-from django.http import JsonResponse
-from core.models import Language_communication
-
 def get_languages(request):
     languages = Language_communication.objects.all().values('code', 'name')
     return JsonResponse(list(languages), safe=False)
 
 ###################################################################################################
  #Vue pour récuperer les utilisateurs existants pour les champs FK dans le formulaire de destination
-
-from django.http import JsonResponse
-from django.contrib.auth import get_user_model
-from django.db.models import Q
 
 User = get_user_model()
 

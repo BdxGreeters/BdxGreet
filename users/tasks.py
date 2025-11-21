@@ -1,12 +1,14 @@
-from users.models import CustomUser
-from core.models import Email_Mailjet
-from django.urls import reverse
-from django.utils.http import urlsafe_base64_encode
-from django.utils.encoding import force_bytes
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.shortcuts import get_current_site
-from core.tasks import send_email_mailjet
+from django.urls import reverse
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import gettext_lazy as _
+
+from core.models import Email_Mailjet
+from core.tasks import send_email_mailjet
+from users.models import CustomUser
+
 
 ###################################################################################################
 # Fonction permettant d'initialiser ou réinitialiser le mot de passe

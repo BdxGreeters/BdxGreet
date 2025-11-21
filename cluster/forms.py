@@ -1,16 +1,19 @@
+from crispy_forms.bootstrap import (InlineCheckboxes, InlineRadios, Tab,
+                                    TabHolder)
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import (HTML, Column, Div, Field, Fieldset, Hidden,
+                                 Layout, Row, Submit)
 from django import forms
 from django.contrib.auth import get_user_model
-from django.db.models import Q
 from django.contrib.auth.models import Group
-from django.utils.translation import gettext_lazy as _
 from django.contrib.contenttypes.models import ContentType
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
-from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Submit, Row, Column, Div,Field, Fieldset, HTML, Hidden
-from crispy_forms.bootstrap import InlineCheckboxes, InlineRadios,Tab, TabHolder
-from core.mixins import HelpTextTooltipMixin, CommaSeparatedFieldMixin
-from core.models import FieldPermission, Language_communication, Pays
+from django.utils.translation import gettext_lazy as _
+
 from cluster.models import Cluster
+from core.mixins import CommaSeparatedFieldMixin, HelpTextTooltipMixin
+from core.models import FieldPermission, Language_communication, Pays
 
 User = get_user_model()
 

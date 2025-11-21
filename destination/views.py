@@ -1,21 +1,21 @@
+from django.contrib import messages
+from django.contrib.auth import get_user_model
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.models import Group
+from django.contrib.contenttypes.models import ContentType
+from django.shortcuts import redirect, render
+from django.urls import reverse_lazy
+from django.utils.translation import gettext_lazy as _
+from django.views import View
+from django.views.generic import DetailView
 from django.views.generic.edit import CreateView, UpdateView
 from django.views.generic import DetailView
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.urls import reverse_lazy
-from django.contrib import messages
-from django.contrib.contenttypes.models import ContentType
-from django.contrib.auth.models import Group
-from destination.models import Destination
-from core.models import FieldPermission
-from destination.forms import DestinationForm
-from django.shortcuts import render, redirect
-from django.contrib.auth import get_user_model
-from django.views import View
-from core.translation import DestinationTranslationOptions
-from django.contrib import messages
 from core.mixins import FieldPermissionMixin
-from core.tasks import translation_content_items, translation_content
-from django.utils.translation import gettext_lazy as _
+from core.models import FieldPermission
+from core.tasks import translation_content, translation_content_items
+from core.translation import DestinationTranslationOptions
+from destination.forms import DestinationForm
+from destination.models import Destination
 
 User=get_user_model()
 
@@ -102,11 +102,21 @@ class DestinationListView(LoginRequiredMixin, View):
     
 ###################################################################################################
 
+# Vue Détail d'une destination 
+
+class DestinationDetailView(DetailView):
+    model = Destination
+    template_name = 'destination/destination_detail.html'
+    context_object_name = 'destination'
+    
+
+
+###################################################################################################
+
 #Vue Ajax pour ren,voyer les informations d'une destination sélectionnée
 
 # views.py
 from django.http import JsonResponse
-
 
 User = get_user_model()
 

@@ -1,7 +1,9 @@
 import csv
-from django.core.management.base import BaseCommand
-from core.models import LangueParlee
+
 from django.conf import settings
+from django.core.management.base import BaseCommand
+
+from core.models import LangueParlee
 from core.tasks import translation_content
 
 

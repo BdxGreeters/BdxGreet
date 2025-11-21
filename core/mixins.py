@@ -1,6 +1,5 @@
-from django.utils.safestring import mark_safe
 from django import forms
-
+from django.utils.safestring import mark_safe
 
 # Affichage des Help_text
 
@@ -59,10 +58,12 @@ class CommaSeparatedFieldMixin:
 
 #Champs éditables selon les groupes d'utilisateurs
 
+from django.contrib.auth.models import Group
 from django.contrib.contenttypes.models import ContentType
 from django.shortcuts import get_object_or_404
-from django.contrib.auth.models import Group
+
 from core.models import FieldPermission
+
 
 class FieldPermissionMixin:
     """

@@ -1,7 +1,7 @@
 from django.contrib import admin
-from cluster.models import Cluster
-
 from modeltranslation.admin import TranslationAdmin
+
+from cluster.models import Cluster
 
 admin.site.register(Cluster)
 

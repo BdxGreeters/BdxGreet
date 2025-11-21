@@ -1,15 +1,16 @@
-from django.db.models.signals import post_save, pre_save
-from django.dispatch import receiver
-from users.models import  Greeter
-from core.models import Email_Mailjet, InterestCenter
+import deepl
+from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.serializers.json import DjangoJSONEncoder
-from users.tasks import reset_password, send_email_mailjet
-from django.conf import settings
-from django.contrib.auth import get_user_model
+from django.db.models.signals import post_save, pre_save
+from django.dispatch import receiver
 from django.utils.translation import gettext_lazy as _
-import deepl
+
+from core.models import Email_Mailjet, InterestCenter
+from users.models import Greeter
+from users.tasks import reset_password, send_email_mailjet
 
 ###################################################################################################
 #Signal permettant d'envoyer le courrier de création du mot de passe

@@ -1,9 +1,9 @@
-from core.translator import translate
-from django.conf import settings
 from celery import shared_task
 from django.apps import apps
+from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 
+from core.translator import translate
 
 # Traduction d'un champ
 
@@ -77,7 +77,6 @@ def translation_content_items(app_label,model_name, objet_id, nom_champ):
 from mailjet_rest import Client
 
 
-
 @shared_task
 def send_email_mailjet (recipient_email,recipient_name, template_mailjet_id, vars):
     template_id = template_mailjet_id
@@ -104,9 +103,11 @@ def send_email_mailjet (recipient_email,recipient_name, template_mailjet_id, var
  # Fonctio d'envoi de creation d'un utilisateur
 
 from django.contrib.sites.shortcuts import get_current_site
-from django.dispatch import receiver
 from django.db.models.signals import post_save
+from django.dispatch import receiver
+
 from users.models import CustomUser
+
 
 def envoyer_email_creation_utilisateur(user, request):
     current_site = get_current_site(request)
@@ -127,15 +128,16 @@ def envoyer_email_creation_utilisateur(user, request):
 ###################################################################################################
 # Fonction permettant d'initialiser ou réinitialiser le mot de passe
 
-from users.models import CustomUser
-from core.models import Email_Mailjet
-from django.urls import reverse
-from django.utils.http import urlsafe_base64_encode
-from django.utils.encoding import force_bytes
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.shortcuts import get_current_site
-from core.tasks import send_email_mailjet
+from django.urls import reverse
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import gettext_lazy as _
+
+from core.models import Email_Mailjet
+from core.tasks import send_email_mailjet
+from users.models import CustomUser
 
 
 def reset_password (user_id, domain, template_mailjet_id):

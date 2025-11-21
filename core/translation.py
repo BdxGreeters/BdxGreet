@@ -1,8 +1,13 @@
-from modeltranslation.translator import translator,register,TranslationOptions
-from core.models import LangueDeepL,InterestCenter, LangueParlee, Pays, No_show, Periode, TrancheAge, Types_handicap, Language_communication, Beneficiaire
+from django.utils.translation import gettext_lazy as _
+from modeltranslation.translator import (TranslationOptions, register,
+                                         translator)
+
 from cluster.models import Cluster
+from core.models import (Beneficiaire, InterestCenter, Language_communication,
+                         LangueDeepL, LangueParlee, No_show, Pays, Periode,
+                         TrancheAge, Types_handicap)
 from destination.models import Destination, Destination_data
-from django.utils.translation import gettext_lazy as _  
+
 
 class LangueDeepLTranslationOptions(TranslationOptions):
     fields = ('lang_deepl',)

@@ -1,10 +1,10 @@
 import os
-from django.core.management.base import BaseCommand, CommandError
-from core.translator import translate
-from django.conf import settings
-import os
 
 from django.conf import settings
+from django.core.management.base import BaseCommand, CommandError
+
+from core.translator import translate
+
 
 class Command(BaseCommand):
     help = "Met à jour les fichiers .po avec des traductions DeepL"

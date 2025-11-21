@@ -1,8 +1,11 @@
 import csv
+
 from django.core.management.base import BaseCommand
+from django.shortcuts import get_object_or_404
+
 from core.models import Pays
 from core.tasks import translation_content
-from django.shortcuts import get_object_or_404
+
 
 class Command(BaseCommand):
     help = "Importe les pays depuis un fichier CSV"

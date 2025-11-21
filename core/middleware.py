@@ -1,9 +1,11 @@
 # Dans le fichier de votre middleware
-from django.utils.deprecation import MiddlewareMixin
-from django.utils import translation
+import re
+
 from django.conf import settings
 from django.http import HttpResponseRedirect
-import re
+from django.utils import translation
+from django.utils.deprecation import MiddlewareMixin
+
 
 class UserLanguageRedirectMiddleware(MiddlewareMixin):
     """

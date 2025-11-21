@@ -1,7 +1,9 @@
-from django.core.management.base import BaseCommand, CommandError
+import time
+
 from django.contrib import messages
 from django.core.management import call_command
-import time
+from django.core.management.base import BaseCommand, CommandError
+
 
 class Command(BaseCommand):
     help = "Mise à jour complète des traductions"

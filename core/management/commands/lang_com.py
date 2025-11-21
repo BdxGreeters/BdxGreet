@@ -1,8 +1,10 @@
-from django.core.management.base import BaseCommand
-from core.models import Language_communication as Language
 from django.conf import settings
-from core.translation import Language_communicationTranslationOptions
+from django.core.management.base import BaseCommand
+
+from core.models import Language_communication as Language
 from core.tasks import translation_content_items
+from core.translation import Language_communicationTranslationOptions
+
 
 # Command
 class Command(BaseCommand):

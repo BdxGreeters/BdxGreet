@@ -1,22 +1,22 @@
-from django.views.generic.edit import CreateView, UpdateView
-from django.views.generic import DetailView
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.urls import reverse_lazy
 from django.contrib import messages
-from django.contrib.contenttypes.models import ContentType
-from django.contrib.auth.models import Group
-from cluster.models import Cluster
-from destination.models import Destination  
-from core.models import FieldPermission
-from cluster.forms import ClusterForm
-from django.shortcuts import render, redirect
 from django.contrib.auth import get_user_model
-from django.views import View
-from core.translation import ClusterTranslationOptions
-from django.contrib import messages
-from core.mixins import FieldPermissionMixin
-from core.tasks import translation_content_items
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.models import Group
+from django.contrib.contenttypes.models import ContentType
+from django.shortcuts import redirect, render
+from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
+from django.views import View
+from django.views.generic import DetailView
+from django.views.generic.edit import CreateView, UpdateView
+
+from cluster.forms import ClusterForm
+from cluster.models import Cluster
+from core.mixins import FieldPermissionMixin
+from core.models import FieldPermission
+from core.tasks import translation_content_items
+from core.translation import ClusterTranslationOptions
+from destination.models import Destination
 
 User=get_user_model()
 
@@ -145,15 +145,18 @@ class ClusterDetailView(LoginRequiredMixin, SuperAdminOrAdminRequiredMixin, Deta
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.models import Group
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
-from django.contrib.auth.models import Group
-from core.translation import ClusterTranslationOptions
+
 from core.mixins import FieldPermissionMixin
 from core.tasks import translation_content_items
+from core.translation import ClusterTranslationOptions
+
 from .forms import ClusterForm
 from .models import Cluster
+
 
 class SuperAdminRequiredMixin(UserPassesTestMixin):
     def test_func(self):

@@ -1,6 +1,7 @@
 from django import forms
-from .models import CustomUser, Greeter
 from django.utils.translation import gettext_lazy as _
+
+from .models import CustomUser, Greeter
 
 
 class UserCreationForm(forms.ModelForm):
