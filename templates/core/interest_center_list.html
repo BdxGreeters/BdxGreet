@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block title %}
+{% trans "Gestion des centres d'intérêt" %} 
+{% endblock %}
+
+{% block content %}
+    <h2>{% trans "Liste des centres d'intérêt" %} </h2>
+    <p><a href="{% url 'create_interest_center' %}">{% trans "Ajouter un centre d'intérêt" %}</a></p>
+    <table>
+        <thead>
+            <tr>
+                <th>{% trans "Centre d'intérêt" %}</th>
+                    
+            </tr>
+        </thead>
+        <tbody>
+            {% for  interest_center in interest_centers %}
+            <tr>
+                <td>{{ interest_center.interest_center }}</td>
+               <td><a href="{% url 'interest_center_update' interest_center.pk %}">{% trans "Modifier" %} </a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

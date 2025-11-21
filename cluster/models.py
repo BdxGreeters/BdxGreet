@@ -1,0 +1,61 @@
+from django.db import models
+from django.contrib.auth import get_user_model
+from django.conf import settings
+from django.core.exceptions import ValidationError
+from core.models import Language_communication, Pays
+from modeltranslation.translator import translator,register,TranslationOptions
+from django.utils.translation import gettext_lazy as _
+from core import data
+
+
+# Modele Cluster
+
+User = get_user_model()
+
+class Cluster(models.Model):
+    choices = (
+        ('Drafts', _("Brouillon")),
+        ('Active', _("Actif")),
+        ('Inactive', _("Inactif")),
+        ('Désactivated', _("Désactivé"))       
+    )
+
+    code_cluster=models.CharField(max_length=5, default=" ",unique=True, verbose_name=_("Code"))     
+    name_cluster=models.CharField(max_length=30,default=" ", verbose_name=_("Nom"))
+    statut_cluster=models.CharField(max_length=15, choices=choices, default="Drafts",help_text=_("Saisir le statut du cluster"),verbose_name=_("Statut"))
+    adress_cluster=models.CharField(max_length=100,default=" ", verbose_name=_("Adresse"))
+    desc_cluster=models.TextField(max_length=500,default=" ", help_text=_("Décrire les zones géographiques du cluster"), verbose_name=_("Description"))
+    paypal_cluster= models.URLField(default=" ",help_text=_("URL du compte Paypal du cluster"), verbose_name=_("Paypal du cluster"))
+    admin_cluster=models.ForeignKey(User,on_delete=models.SET_NULL,related_name="admin_cluster", null=True, blank=True, verbose_name=_("Nom"),help_text=_("Saisir l'administrateur parmi les utilisateurs ou en créer un"))
+    country_admin_cluster=models.ForeignKey(Pays,on_delete=models.SET_NULL,related_name=  "country_admin_cluster",null=True, blank=True,default=" ", verbose_name=_("Pays"),help_text=_("Saisir le pays de l'administrateur"))
+    admin_alt_cluster = models.ForeignKey(User,on_delete=models.SET_NULL,related_name="admin_alt_cluster", null=True, blank=True, verbose_name=_("Nom"),help_text=_("Saisir l'administrateur alternatif parmi les utilisateurs ou en créer un"))
+    country_admin_alt_cluster= models.ForeignKey(Pays,on_delete=models.SET_NULL,related_name="country_admin_alt_cluster",null=True, default=" ",blank=True, verbose_name=_("Pays"), help_text=_("Saisir le pays de l'admnistrateur alternatif"))
+    param_nbr_part_cluster= models.IntegerField(default= data.MAX_VISITOR,  help_text=_("Nombre maximun de visiteurs pour le cluster"), verbose_name=_("Nombre maximun de participants"))
+    langs_com = models.ManyToManyField(Language_communication, related_name="langs_com",verbose_name=_("Langues de communication"),help_text=_("Sélectionner les langues de communication du cluster"))
+    backup_mails_cluster=models.EmailField(default=" ",help_text=_("Adresse de sauvegarde des courriels générés sur l'ensemnble du cluster"), verbose_name=_("Adresse  de sauvegarde des courriels"))
+    url_biblio_cluster=models.URLField(default=" ",blank=True, help_text=(_("Saisir l'URL de la bibliothèque pour les destinations")) ,verbose_name=_("URL de la bibliothèque Cluster des destinations"))
+    url_biblio_Greeter_cluster=models.URLField(default=" ",blank=True,help_text=(_("Saisir l'URL de la bibliothèque pour les Greeter")), verbose_name=_("URL de la bibliothèque Cluster des Greeter"))
+    list_experience_cluster=models.CharField(max_length=500,default=" ",help_text=_("Saisir les expériences des Greeter") ,verbose_name=_("Expériences des Greeters"))
+    profil_interet_cluster=models.CharField(max_length=500,default=" ",help_text=_("Saisir les centres d'intérêts des visiteurs et Greeter"), verbose_name=_("Centres d'intérêt"))
+    reason_no_reply_greeter_cluster=models.CharField(max_length=500,default=" ", help_text=_("Saisir les raisons de non réponse du Greeter"), verbose_name=_("Raisons de non réponse du Greeter"))
+    reason_no_reply_visitor_cluster=models.CharField(max_length=500,default=" ", help_text=_("Saisir les raisons de non réponse du visiteur"), verbose_name=_("Raisons de non réponse du visiteur"))
+    list_notoriety_cluster=models.CharField(max_length=500,default=" ", help_text=_("Saisir les raisons d'un visiteur de connaître  l'existence des Greeters"), verbose_name=_("Liste des notoriétés"))
+    
+
+
+    def clean(self):
+        super().clean()
+        
+        # Nombre maximum de participants
+        
+        max_value =data.MAX_VISITOR
+        if self.param_nbr_part_cluster > max_value:
+            raise ValidationError(_("Le nombre maximum de participants est de {}.").format(max_value))
+    
+    def save (self, *args, **kwargs):
+        self.code_cluster=self.code_cluster.upper()
+        super().save(*args, **kwargs)
+      
+    def __str__(self):
+        return f"{self.code_cluster}"
+###################################################################################################

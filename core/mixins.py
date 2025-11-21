@@ -1,0 +1,140 @@
+from django.utils.safestring import mark_safe
+from django import forms
+
+
+# Affichage des Help_text
+
+class HelpTextTooltipMixin:
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        for field_name, field in self.fields.items():
+            help_text = field.help_text
+            if help_text:
+                field.help_text = None
+                # Ajouter une icône Bootstrap avec tooltip dans le label
+                tooltip_html = f'''
+                    <span data-bs-toggle="tooltip" title="{help_text}" style="cursor: help;">
+                        <i class="bi bi-info-circle" style="margin-left: 10px;"></i>
+                    </span>
+                '''
+                field.label = mark_safe(f"{field.label}{tooltip_html}")
+
+###################################################################################################
+
+# Ajout à une liste dans un champ Texte
+
+class CommaSeparatedFieldMixin:
+    comma_fields_config = {}  # Exemple : {'list_experience_cluster': {'min': 1, 'max': 5}}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name in self.comma_fields_config:
+            if field_name in self.fields:
+                self.fields[field_name].widget.attrs.update({
+                    'class': 'comma-input-field',
+                    'data-field-name': field_name,
+                    'data-min-items': self.comma_fields_config[field_name].get('min', 0),
+                    'data-max-items': self.comma_fields_config[field_name].get('max', 10),
+                })
+
+
+
+    def clean(self):
+        cleaned_data = super().clean()
+        for field_name, config in self.comma_fields_config.items():
+            value = cleaned_data.get(field_name, "")
+            items = [item.strip() for item in value.split(",") if item.strip()]
+            min_items = config.get('min', 0)
+            max_items = config.get('max', 10)
+            if len(items) < min_items:
+                self.add_error(field_name, f"Minimum {min_items} éléments requis.")
+            elif len(items) > max_items:
+                self.add_error(field_name, f"Maximum {max_items} éléments autorisés.")
+            else:
+                cleaned_data[field_name] = ",".join(items)
+        return cleaned_data
+
+###################################################################################################
+
+#Champs éditables selon les groupes d'utilisateurs
+
+from django.contrib.contenttypes.models import ContentType
+from django.shortcuts import get_object_or_404
+from django.contrib.auth.models import Group
+from core.models import FieldPermission
+
+class FieldPermissionMixin:
+    """
+    Mixin pour gérer les permissions de champs pour un objet donné,
+    avec support pour une liste de groupes et une relation ManyToManyField.
+    """
+    permission_groups = []  # Liste des groupes autorisés à définir les permissions
+    target_group_name = None  # Groupe cible qui reçoit les permissions
+    app_name = None  # Nom de l'application
+
+    def user_has_any_permission_group(self, user):
+        """
+        Vérifie si l'utilisateur appartient à au moins un des groupes dans permission_groups.
+        """
+        if not self.permission_groups:
+            raise ValueError("La liste des groupes de permission est vide.")
+
+        user_groups = user.groups.values_list('name', flat=True)
+        return any(group in user_groups for group in self.permission_groups)
+
+    def get_field_permissions(self, obj):
+        """
+        Récupère les permissions de champs pour un objet donné,
+        en filtrant par le groupe cible.
+        """
+        if not self.target_group_name:
+            raise ValueError("Le nom du groupe cible n'est pas défini.")
+
+        target_group = get_object_or_404(Group, name=self.target_group_name)
+        content_type = ContentType.objects.get_for_model(obj)
+        permissions = FieldPermission.objects.filter(
+            content_type=content_type,
+            object_id=obj.id,
+            app_name=self.app_name,
+            target_group=target_group  # Filtrer par le groupe cible
+        )
+        return {p.field_name: p.is_editable for p in permissions}
+
+    def update_field_permissions(self, obj, form):
+        """
+        Met à jour les permissions de champs pour un objet donné,
+        en gérant la relation ManyToManyField pour les groupes.
+        """
+        if not self.permission_groups or not self.target_group_name:
+            raise ValueError("Les groupes de permission ou le groupe cible ne sont pas définis.")
+
+        # Récupérer les groupes de permission et le groupe cible
+        permission_group_objs = [get_object_or_404(Group, name=group) for group in self.permission_groups]
+        target_group = get_object_or_404(Group, name=self.target_group_name)
+
+        content_type = ContentType.objects.get_for_model(obj)
+
+        for field_name in form.editable_fields:
+            is_editable = form.cleaned_data.get(f'can_edit_{field_name}', True)
+
+            # Mettre à jour ou créer la permission
+            field_permission, created = FieldPermission.objects.update_or_create(
+                field_name=field_name,
+                content_type=content_type,
+                object_id=obj.id,
+                app_name=self.app_name,
+                target_group=target_group,
+                defaults={'is_editable': is_editable}
+            )
+
+            # Gérer la relation ManyToManyField pour les groupes
+            if created:
+                field_permission.group.set(permission_group_objs)
+            else:
+                # Ajouter les groupes manquants
+                for group in permission_group_objs :
+                    if group not in field_permission.group.all():
+                        field_permission.group.add(group)
+
+###################################################################################################

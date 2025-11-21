@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block title %}l
+{% trans "Gestion des clusters" %} 
+{% endblock %}
+{% block styles %}
+<style>
+    /* Personnalisation supplémentaire si nécessaire */
+    .custom-table th, .custom-table td {
+      text-align: center;
+      vertical-align: middle;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+    <h2>{% trans "Liste des clusters" %} </h2>
+    <p><a href="{% url 'cluster_create' %}">{% trans "Ajouter un cluster" %}</a></p>
+    <div class="container mt-5">
+    <table class="table table-bordered custom-table">
+      <thead>
+        <tr>
+          <th class="col-1">{% trans "Code" %}</th>
+          <th class="col-2">{% trans "Nom du cluster" %}</th>
+          <th class="col-4">{% trans "Destination" %}</th>
+          <th class="col-1"></th>
+          <th class="col-1"></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for cluster in clusters %}
+        <tr>
+          <td>{{cluster.code_cluster}}</td>
+          <td>{{cluster.name_cluster}}</td>
+          <td></td>
+          <td><a href="{% url 'cluster_detail' cluster.pk %}">{% trans "Voir le détail" %} </a></td>
+          <td><a href="{% url 'cluster_update' cluster.pk %}">{% trans "Modifier" %} </a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+        </tbody>
+    </table>
+{% endblock %}

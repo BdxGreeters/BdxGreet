@@ -1,0 +1,76 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-10-29 09:33+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: static/js/new_user.js:38
+msgid "Créer un nouvel utilisateur"
+msgstr "Create a new user"
+
+#: static/js/new_user.js:42
+msgid "Email"
+msgstr "Email"
+
+#: static/js/new_user.js:46
+msgid "Prénom"
+msgstr "First name"
+
+#: static/js/new_user.js:50
+msgid "Nom"
+msgstr "Nom"
+
+#: static/js/new_user.js:54
+msgid "Téléphone"
+msgstr "Phone"
+
+#: static/js/new_user.js:58
+msgid "Langue"
+msgstr "Language"
+
+#: static/js/new_user.js:66
+msgid "Créer"
+msgstr "Create"
+
+#: static/js/new_user.js:67
+msgid "Annuler"
+msgstr "Cancel"
+
+#: static/js/new_user.js:77
+msgid "Veuillez remplir tous les champs requis"
+msgstr "Please fill in all required fields"
+
+#: static/js/new_user.js:116
+msgid "Succès"
+msgstr "Success"
+
+#: static/js/new_user.js:116
+msgid "Utilisateur créé avec succès!"
+msgstr "User successfully created!"
+
+#: static/js/tag_input.js:21 static/js/tag_input.js:101
+msgid "Ajouter un item"
+msgstr "Add an item"
+
+#: static/js/tag_input.js:39
+#, javascript-format
+msgid "Nombre minimum d'items %s non atteint !"
+msgstr "Minimum number of items %s not reached!"
+
+#: static/js/tag_input.js:100
+#, javascript-format
+msgid "Maximum %s éléments atteint!"
+msgstr "Maximum %s elements reached!"

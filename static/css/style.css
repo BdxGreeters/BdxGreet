@@ -1,0 +1,32 @@
+
+/* CSS Barres de navigation base */
+.navbar-custom {
+    background-color: #CBF075;
+}
+.sidebar {
+    background-color: #A9D346;
+    height: 100vh;
+    position: fixed;
+    width: 200px;
+}
+/* CSS Fieldset Layout */
+.fieldset-personnalise {
+    border: 1px solid #dee2e6 !important;
+    border-radius: 0.25rem;
+    padding: 1rem;
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+.fieldset-personnalise legend {
+    width: auto;
+    padding: 0 0.5rem;
+    font-size: 1rem;
+    background-color: white;
+    margin-left: 0.5rem;
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+    position: absolute;
+    top: -12px;
+    left: 10px;
+}

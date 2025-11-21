@@ -1,0 +1,70 @@
+from modeltranslation.translator import translator,register,TranslationOptions
+from core.models import LangueDeepL,InterestCenter, LangueParlee, Pays, No_show, Periode, TrancheAge, Types_handicap, Language_communication, Beneficiaire
+from cluster.models import Cluster
+from destination.models import Destination, Destination_data
+from django.utils.translation import gettext_lazy as _  
+
+class LangueDeepLTranslationOptions(TranslationOptions):
+    fields = ('lang_deepl',)
+
+translator.register(LangueDeepL, LangueDeepLTranslationOptions) 
+
+class InterestCenterTranslationOptions(TranslationOptions):
+    fields =('interest_center',)
+
+translator.register(InterestCenter,InterestCenterTranslationOptions)
+
+class LangueParleeTranslationOptions(TranslationOptions):
+    fields =('langue_parlee',)
+
+translator.register(LangueParlee, LangueParleeTranslationOptions)
+
+class PaysTranslationOptions(TranslationOptions):
+    fields =('nom_pays',)
+
+translator.register(Pays, PaysTranslationOptions)   
+
+class No_showTranslationOptions(TranslationOptions):
+    fields =('raison_noshow',)
+
+translator.register(No_show, No_showTranslationOptions)   
+
+class PeriodeTranslationOptions(TranslationOptions):
+    fields =('periode_journee',)
+
+translator.register(Periode, PeriodeTranslationOptions)
+
+class TrancheAgeTranslationOptions(TranslationOptions):
+    fields =('tranche_age',)
+
+translator.register(TrancheAge, TrancheAgeTranslationOptions)
+
+class Types_handicapTranslationOptions(TranslationOptions):
+    fields =('type_handicap',)
+
+translator.register(Types_handicap, Types_handicapTranslationOptions)
+
+class ClusterTranslationOptions(TranslationOptions):
+    fields =('list_experience_cluster','profil_interet_cluster','reason_no_reply_greeter_cluster', 'reason_no_reply_visitor_cluster', 'list_notoriety_cluster')
+    
+translator.register(Cluster, ClusterTranslationOptions)
+
+class Language_communicationTranslationOptions(TranslationOptions):
+    fields =('name',)
+
+translator.register(Language_communication, Language_communicationTranslationOptions)
+
+class DestinationTranslationOptions(TranslationOptions):
+    fields =('list_places_dest','disability_libelle_dest',)
+
+translator.register(Destination, DestinationTranslationOptions) 
+
+class BeneficiaireTranslationOptions(TranslationOptions):
+    fields =('nom_beneficiaire',)
+
+translator.register(Beneficiaire, BeneficiaireTranslationOptions)
+
+class Destination_dataTranslationOptions(TranslationOptions):
+    fields=('donation_text_dest','param_comment_visitor_dest','texte_avis_fermeture_dest','tagline_mail_dest','texte_avis_mail_dest')
+
+translator.register(Destination_data, Destination_dataTranslationOptions)

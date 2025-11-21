@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block title %}
+{% trans "Gestion des emails Mailjet" %} 
+{% endblock %}
+
+{% block content %}
+    <h2>{% trans "Liste des emails Mailjet" %} </h2>
+    <p><a href="{% url 'create_email_mailjet' %}">{% trans "Ajouter un email Mailjet" %}</a></p>
+    <table>
+        <thead>
+            <tr>
+                <th>{% trans "Code" %}</th>
+                <th>{% trans "Nom" %}</th>
+                <th>{% trans "Langue" %}</th>
+                <th>{% trans "Id Mailjet" %}</th>        
+            </tr>
+        </thead>
+        <tbody>
+            {% for email_Mailjet in emails_Mailjet %}
+            <tr>
+                <td>{{ email_Mailjet.code_email }}</td>
+                <td>{{ email_Mailjet.name_email }}</td>
+                <td>{{ email_Mailjet.lang_email }}</td>
+                <td>{{ email_Mailjet.id_mailjet_email}}</td>
+                
+               <td><a href="{% url 'email_mailjet_update' email_Mailjet.pk %}">{% trans "Modifier" %} </a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

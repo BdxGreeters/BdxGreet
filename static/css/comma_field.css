@@ -1,0 +1,37 @@
+.comma-input-field {
+    display: none !important; 
+}
+
+.tag-input-wrapper {
+    min-height: 40px;
+    padding: 5px;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    background-color: #fff;
+    cursor: text;
+}
+
+.tag-item {
+    padding: 5px 10px;
+    font-size: 0.9em;
+    display: inline-flex;
+    align-items: center;
+    border-radius: 20px;
+    background-color: #0d6efd;
+    color: white;
+}
+
+.tag-item.selected {
+    background-color: #dc3545 !important;
+}
+
+.tag-editor {
+    outline: none;
+    min-width: 120px;
+    border: none;
+    margin-top: 2px;
+}
+
+.min-items-alert {
+    height: 10px; /* Ajuste cette valeur selon la hauteur de ton champ input */
+}
