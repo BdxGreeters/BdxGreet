@@ -80,6 +80,8 @@ from mailjet_rest import Client
 @shared_task
 def send_email_mailjet (recipient_email,recipient_name, template_mailjet_id, vars):
     template_id = template_mailjet_id
+    print ("clef api mailjet {settings.MAILJET_API_KEY}")
+    print ("secret mailjet {settings.MAILJET_SECRET_KEY}")
     mailjet = Client (auth=(settings.MAILJET_API_KEY,settings.MAILJET_SECRET_KEY),version='v3.1')
     data = {
         'Messages':[

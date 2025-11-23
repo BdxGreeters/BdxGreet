@@ -16,6 +16,10 @@ from core.tasks import translation_content, translation_content_items
 from core.translation import DestinationTranslationOptions
 from destination.forms import DestinationForm
 from destination.models import Destination
+from PIL import Image
+import os
+from django.conf import settings
+
 
 User=get_user_model()
 
@@ -51,6 +55,7 @@ class DestinationCreateView(LoginRequiredMixin, SuperAdminRequiredMixin,CreateVi
 
             #Mettre à jour les groupes des utilisateurs liés à cette destination
             if destination.manager_dest:
+                print(destination.manager_dest)
                 manager_group, created = Group.objects.get_or_create(name='Manager')
                 destination.manager_dest.groups.add(manager_group)
         
@@ -69,6 +74,13 @@ class DestinationCreateView(LoginRequiredMixin, SuperAdminRequiredMixin,CreateVi
             if destination.finance_dest:
                 finance_group, created = Group.objects.get_or_create(name='Financier')
                 destination.finance_dest.groups.add(finance_group)
+
+            # Redimension du logo en 200*200px
+            img_path=os.path.join(settings.MEDIA_ROOT, str(destination.logo_dest.name))
+            img = Image.open(img_path)
+            img.thumbnail ((200,200))
+            img.save(img_path)
+
 
             destination.save()
             form.save_m2m()  # Sauvegarder les relations ManyToMany si nécessaire

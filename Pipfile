@@ -49,6 +49,7 @@ crispy-bootstrap5 = "*"
 django-extensions = "*"
 django-formtools = "*"
 isort = "*"
+django-environ = "*"
 
 [dev-packages]
 

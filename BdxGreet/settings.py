@@ -12,23 +12,30 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 import os
 from pathlib import Path
-
-from decouple import config
+import environ
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+env = environ.Env(
+    # Définir le type par défaut et la valeur par défaut pour DEBUG
+    DEBUG=(bool, False)
+)
+
+environ.Env.read_env(BASE_DIR / '.env')
+
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '$8(#*c_iv(rtd%p+em*(x&5c54at2(8uefnl63+&3eieht+gik'
+SECRET_KEY =env('SECRET_KEY')
+
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env('DEBUG')
 
 ALLOWED_HOSTS = []
 
@@ -95,10 +102,7 @@ WSGI_APPLICATION = 'BdxGreet.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default':env.db()
 }
 
 
@@ -152,7 +156,8 @@ LOCALE_PATHS = [
     os.path.join(BASE_DIR, 'locale'),
 ]
 
-DEEPL_API_KEY = '32d7acfb-fe4b-424e-845e-21e5a78a2635:fx'
+DEEPL_API_KEY = env('DEEPL_API_KEY')
+
 
 
 # Static files (CSS, JavaScript, Images)
@@ -174,10 +179,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Configuration MailjetAnymail
 EMAIL_BACKEND ='anymail.backends.mailjet.EmailBackend'
 MILJET_API_URL='https://api.mailjet.com/v3.1/'
-MAILJET_API_KEY = config('MAILJET_API_KEY')
-MAILJET_SECRET_KEY = config('MAILJET_SECRET_KEY')
-MAILJET_SENDER_NAME = config('MAILJET_SENDSER_NAME')
-MAILJET_SENDER_EMAIL = config('MAILJET_SENDER_EMAIL')
+MAILJET_API_KEY = env('MAILJET_API_KEY')
+MAILJET_SECRET_KEY = env('MAILJET_SECRET_KEY')
+MAILJET_SENDER_NAME = env('MAILJET_SENDER_NAME')
+MAILJET_SENDER_EMAIL = env('MAILJET_SENDER_EMAIL')
 
 
 
