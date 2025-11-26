@@ -202,6 +202,7 @@ class DestinationDataForm(HelpTextTooltipMixin, forms.ModelForm):
     class Meta:
         model = Destination_data
         fields = [
+            'code_dest_data',
             'beneficiaire_don_dest',
             'donation_proposal_dest',
             'paypal_dest',
@@ -284,3 +285,61 @@ class DestinationDataForm(HelpTextTooltipMixin, forms.ModelForm):
 
 ###################################################################################################
 
+#Form des flux de la destination
+
+class DestinationFluxForm(HelpTextTooltipMixin,forms.ModelForm):
+
+    class Meta:
+        model = Destination_flux
+        fields = [
+            'code_dest_flux',
+            'frequence_mail_precoce',
+            'confirmation_date_precoce_dest',
+            'flux_treatement_dest',
+            'flux_urgency_dest',
+            'flux_delai_organisation_dest',
+            'flux_delai_max_greeter_dest',
+            'flux_frequence_relance_greeter_dest',
+            'flux_delai_visiteur_max_dest',
+            'flux_frequence_relance_visiteur_dest',
+            'flux_delai_pre_balade_dest',
+            'flux_saisie_suivie_dest',
+            'flux_delai_compte_rendu_dest',
+            'flux_frequence_compte_rendu_dest',
+            'flux_delai_envoi_avis_dest',
+            'flux_frequence_envoi_avis_dest',
+            'flux_delai_avis_max_dest',
+            'flux_rgpd_dest',       
+        ]
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.form_method = 'post'
+        self.helper.layout = Layout(
+            TabHolder(
+                Tab(
+                    _("Flux avant la balade"),
+                    Row(
+                        Column('frequence_mail_precoce', css_class='col-md-3'),
+                        Column('confrmation_date_precoce_dest', css_class='col-md-3'),
+                        Column('flux_treatement_dest', css_class='col-md-3'),
+                    ),
+                    Row(
+                        Column('flux_urgency_dest', css_class='col-md-3'),
+                        Column('flux_delai_organisation_dest', css_class='col-md-3'),
+                        Column('flux_delai_max_greeter_dest', css_class='col-md-3'),
+                    ),
+                    Row(
+                        Column('flux_frequence_relance_greeter_dest', css_class='col-md-3'),
+                        Column('flux_delai_visiteur_max_dest', css_class='col-md-3'),
+                        Column('flux_frequence_relance_visiteur_dest', css_class='col-md-3'),
+                    ),
+                    Row(
+                        Column('flux_delai_pre_balade_dest', css_class='col-md-3'),
+                        Column('flus_saisie_suivie_dest', css_class='col-md-3'),
+                    ),
+                ),
+            ),
+            Submit('submit', _('Enregistrer')),
+        )

@@ -1,0 +1,8 @@
+{% load crispy_forms_tags %}
+
+<h3 class="mt-4">Flux</h3>
+<form method="post">
+    {% csrf_token %}
+    {{ flux_form|crispy }}
+    <button type="submit" name="save_flux" class="btn btn-primary mt-3">Enregistrer les données de  flux</button>
+</form>
