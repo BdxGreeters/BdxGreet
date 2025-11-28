@@ -1,18 +1,23 @@
 {% extends 'base.html' %}
+{% load crispy_forms_tags %}
 
 {% block content %}
 <div class="container mt-4">
     <div class="card shadow-sm">
         <div class="card-header bg-primary text-white">
-            <h2 class="mb-0">Ajouter les données fonctionnelles et les flux pour {{ destination }}</h2>
+            <h2 class="mb-0">Ajouter les données et flux pour {{ destination }}</h2>
         </div>
         <div class="card-body">
-            <!-- Inclure le template pour Destination_data -->
-            {% include 'destinations/destination_data_form_partial.html' %}
-
-            <!-- Inclure le template pour Destination_flux -->
-            {% include 'destinations/destination_flux_form_partial.html' %}
+            <form method="post">
+                {% csrf_token %}
+                <h3>Données fonctionnelles</h3>
+                {% crispy data_form %}
+                <h3 class="mt-4">Flux</h3>
+                {% crispy flux_form %}
+                <button type="submit" class="btn btn-primary mt-3">Enregistrer</button>
+            </form>
         </div>
     </div>
 </div>
 {% endblock %}
+

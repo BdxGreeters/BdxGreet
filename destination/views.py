@@ -90,54 +90,66 @@ class DestinationCreateView(LoginRequiredMixin, SuperAdminRequiredMixin,CreateVi
                 translation_content_items.delay('destination', 'Destination', destination.id, field)
             
             # Traduction des types de handicap
-            translation_content.delay("destination","Destination", destination.id, "disability_libelle_dest")
+            if destination.disability_libelle_dest:
+                translation_content.delay("destination","Destination", destination.id, "disability_libelle_dest")
             
             # Création automatique de Destination_data et Destination_flux
-            self.create_related_models(destination)
-
-            messages.success(request, _("La destination {} a été créée.").format(destination.name_dest))
-            return redirect('destinations_list')
+            return redirect('create_related_models', destination_id=destination.id)
 
         else:
             messages.error(request, _("Le formulaire n'est pas valide."))
             context = {'form': form, 'title': _("Créer une destination")}
             return render(request, self.template_name, context)
-
-    def create_related_data(request, destination_id):
-        destination = Destination.objects.get(pk=destination_id)
-
-    # Initialiser les formulaires avec l'id de la destination
-        data_form = DestinationDataForm(request.POST or None, initial={'code_dest_data': destination})
-        flux_form = DestinationFluxForm(request.POST or None, initial={'code_dest_flux': destination})
-
-        if request.method == 'POST':
-            if 'save_data' in request.POST:
-            # Soumission du formulaire Destination_data
-                if data_form.is_valid():
-                    destination_data = data_form.save(commit=False)
-                    destination_data.code_dest_data = destination
-                    destination_data.save()
-                    data_form.save_m2m()
-                return redirect('destinations:detail', pk=destination.pk)
-
-            elif 'save_flux' in request.POST:
-            # Soumission du formulaire Destination_flux
-                if flux_form.is_valid():
-                    destination_flux = flux_form.save(commit=False)
-                    destination_flux.code_dest_flux = destination
-                    destination_flux.save()
-                return redirect('destinations:detail', pk=destination.pk)
-
-        return render(request, 'destinations/create_related_data.html', {
-            'destination': destination,
-            'data_form': data_form,
-            'flux_form': flux_form,
-    })
-
-
         
 ###################################################################################################
 
+#Vue Création Destination_data et Destination_Flus
+
+class CreateRelatedModelsView(LoginRequiredMixin, SuperAdminRequiredMixin, View):
+    def get(self, request, destination_id):
+        destination = Destination.objects.get(pk=destination_id)
+        # Initialiser les formulaires avec l'instance de destination
+        data_form = DestinationDataForm(initial={'code_dest_data': destination})
+        flux_form = DestinationFluxForm(initial={'code_dest_flux': destination})
+
+        context = {
+            'destination': destination,
+            'data_form': data_form,
+            'flux_form': flux_form,
+        }
+        return render(request, 'destination/create_related_data.html', context)
+
+    def post(self, request, destination_id):
+        destination = Destination.objects.get(pk=destination_id)
+
+        # Récupérer les formulaires soumis
+        data_form = DestinationDataForm(request.POST)
+        flux_form = DestinationFluxForm(request.POST)
+
+        if data_form.is_valid() and flux_form.is_valid():
+            # Sauvegarder Destination_data
+            destination_data = data_form.save(commit=False)
+            destination_data.code_dest_data = destination
+            destination_data.save()
+            data_form.save_m2m()  # Sauvegarder les relations ManyToMany
+
+            # Sauvegarder Destination_flux
+            destination_flux = flux_form.save(commit=False)
+            destination_flux.code_dest_flux = destination
+            destination_flux.save()
+
+            messages.success(request, _("La destination {} a été créée.").format(destination.name_dest))
+            return redirect('destination:detail', pk=destination.id)
+
+        context = {
+            'destination': destination,
+            'data_form': data_form,
+            'flux_form': flux_form,
+        }
+        messages.error(request, _("Le formulaire n'est pas valide."))
+        return render(request, 'destination/create_related_data.html', context)
+
+###################################################################################################
 # Vue Liste des destinations
  
 class DestinationListView(LoginRequiredMixin, View):

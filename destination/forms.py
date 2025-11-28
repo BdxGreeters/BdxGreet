@@ -280,7 +280,6 @@ class DestinationDataForm(HelpTextTooltipMixin, forms.ModelForm):
                     ),
                 ),
             ),
-            Submit('submit', _('Enregistrer')),
         )
 
 ###################################################################################################
@@ -322,7 +321,7 @@ class DestinationFluxForm(HelpTextTooltipMixin,forms.ModelForm):
                     _("Flux avant la balade"),
                     Row(
                         Column('frequence_mail_precoce', css_class='col-md-3'),
-                        Column('confrmation_date_precoce_dest', css_class='col-md-3'),
+                        Column('confirmation_date_precoce_dest', css_class='col-md-3'),
                         Column('flux_treatement_dest', css_class='col-md-3'),
                     ),
                     Row(
@@ -337,9 +336,8 @@ class DestinationFluxForm(HelpTextTooltipMixin,forms.ModelForm):
                     ),
                     Row(
                         Column('flux_delai_pre_balade_dest', css_class='col-md-3'),
-                        Column('flus_saisie_suivie_dest', css_class='col-md-3'),
+                        Column('flux_saisie_suivie_dest', css_class='col-md-3'),
                     ),
                 ),
             ),
-            Submit('submit', _('Enregistrer')),
         )

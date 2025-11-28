@@ -1,8 +1,0 @@
-{% load crispy_forms_tags %}
-
-<h3>Données fonctionnelles</h3>
-<form method="post">
-    {% csrf_token %}
-    {{ data_form|crispy }}
-    <button type="submit" name="save_data" class="btn btn-primary mt-3">Enregistrer les données </button>
-</form>
