@@ -14,18 +14,18 @@
 <div class="container mt-4">
     <div class="card shadow-sm">
         <div class="card-header bg-primary text-white">
-            <h2 class="mb-0">Données fonctionnelles  pour {{ destination }}</h2>
+            <h2 class="mb-0">Données de flux pour {{ destination }}</h2>
         </div>
         <div class="card-body">
             <form method="post">
                 {% csrf_token %}
-                {% crispy data_form %}
+                {% crispy flux_form %}
              
             </form>
         </div>
     </div>
 </div>
-{% if data_form.errors %}
+{% if flux_form.errors %}
 <div class="alert alert-danger">
     <strong>Erreurs dans le formulaire des données :</strong>
     <ul>

@@ -212,7 +212,7 @@ class DestinationDataForm(HelpTextTooltipMixin, forms.ModelForm):
             'langs_com_dest',
             'lang_default_dest',
             'langs_parlee_dest',
-            'Flag_modalités_dest',
+            'flag_modalités_dest',
             'date_cg_mail_dest',
             'periode_mail_cg_dest',
             'flag_cg_T_dest',
@@ -260,6 +260,11 @@ class DestinationDataForm(HelpTextTooltipMixin, forms.ModelForm):
             'date_fin_avis_fermeture_dest': forms.DateInput(attrs={'type': 'date'}),
             'date_debut_avis_mail_dest': forms.DateInput(attrs={'type': 'date'}),
             'date_fin_avis_mail_dest': forms.DateInput(attrs={'type': 'date'}),
+            'param_comment_visitor_dest': forms.Textarea(attrs={'rows': 2}),
+            'flag_NoAnswer_visitor_dest': forms.RadioSelect(),
+            'avis_fermeture_dest': forms.Textarea(attrs={'rows': 2}),
+            'texte_avis_fermeture_dest': forms.Textarea(attrs={'rows': 2}),
+            'texte_avis_mail_dest': forms.Textarea(attrs={'rows': 2}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -269,17 +274,109 @@ class DestinationDataForm(HelpTextTooltipMixin, forms.ModelForm):
         self.helper.layout = Layout(
             TabHolder(
                 Tab(
-                    _("Dons et langues de communication"),
+                    _("Dons, langues de communication et réseaux sociaux"),
                     Row(
                         Column('beneficiaire_don_dest', css_class='col-md-3'),
-                        Column('donation_proposal_dest', css_class='col-md-3'),
+                        Column('donation_proposal_dest', css_class='col-md-2'),
                         Column('paypal_dest', css_class='col-md-3'),
+                        Column('donation_text_dest', css_class='col-md-4'),
                     ),                        
                     Row(
-                        Column('donation_text_dest', css_class='col-md-12'),
+                        Column('tripadvisor_dest', css_class='col-md-4'),
+                        Column('googlemybusiness_dest', css_class='col-md-4'),
+                    ),
+                    Row(
+                        Column('lang_default_dest', css_class='col-md-3'),
+                        Column('langs_com_dest', css_class='col-md-3'),
+                        Column('langs_parlee_dest', css_class='col-md-3'),
+                        ),
+                ),
+                Tab(
+                    _("Gestion des demandes"),
+                    Row(
+                        Column('flag_modalités_dest',css_class='col-md-3'),
+                        Column('date_cg_mail_dest',css_class='col-md-4'),
+                        Column('periode_mail_cg_dest',css_class='col-md-4'),
+                    ),
+                    Row(
+                        Column('flag_cg_T_dest',css_class='col-md-5'),
+                        Column('flag_cg_U_dest',css_class='col-md-5'),
+                    ),
+                    Row(
+                        Column('flag_comment_visitor_dest',css_class='col-md-5'),
+                        Column('param_comment_visitor_dest',css_class='col-md-5'),
+                    ),
+                   
+                    Row(
+                        Column('libelle_form_coche1_dest',css_class='col-md-5'),
+                        Column('lib_url_form_coche1_dest',css_class='col-md-5'),
+                    ),
+                    Row(
+                        Column('url_form_coche1_dest', css_class='col-md-5'),
+                        Column('flag_request_coche1_dest',css_class='col-md-5'),
+                    ),
+                    Row(
+                        Column('libelle_form_coche2_dest',css_class='col-md-5'),
+                        Column('lib_url_form_coche2_dest',css_class='col-md-5'),
+                    ),
+                    Row(
+                        Column('url_form_coche2_dest', css_class='col-md-5'),
+                        Column('flag_request_coche2_dest',css_class='col-md-5'),
+                    ),
+                    Row(
+                        Column('libelle_form_coche3_dest',css_class='col-md-5'),
+                        Column('lib_url_form_coche3_dest',css_class='col-md-5'),
+                    ),
+                    Row(
+                        Column('url_form_coche3_dest', css_class='col-md-5'),
+                        Column('flag_request_coche3_dest',css_class='col-md-5'),
+                    ),
+                    Row(
+                        Column('flag_NoAnswer_visitor_dest',css_class='col-md-5'),
+                        Column('flag_reason_NoAnswer_greeter_dest',css_class='col-md-5'),
                     ),
                 ),
+                
+                Tab(
+                    _('Signature des courriels'),
+                    Row(
+                        Column('name_sign_mail_dest',css_class='col-md-5'),
+                        Column('url_mail_signature_dest',css_class='col-md-5'),
+                    ),
+                    Row(
+                        Column('libelle_social1_mail_dest',css_class='col-md-5'),
+                        Column('url_social1_mail_dest',css_class='col-md-5'),
+                    ),
+                    Row(
+                        Column('libelle_social2_mail_dest',css_class='col-md-5'),
+                        Column('url_social2_mail_dest',css_class='col-md-5'),
+                    ),
+                    Row(
+                        Column('tagline_mail_dest',css_class='col-md-5'),
+                    ),
+                    Row(
+                        Column('titre_avis_mail_dest',css_class='col-md-5'),
+                        Column('texte_avis_mail_dest',css_class='col-md-5'),
+                    ),
+                    Row(
+                        Column('date_debut_avis_mail_dest',css_class='col-md-5'),
+                        Column('date_fin_avis_mail_dest',css_class='col-md-5'),
+                    ),
+                ),
+                Tab(
+                    _('Avis de fermetures exceptionnelles    '),
+                    Row(
+                        Column('avis_fermeture_dest',css_class='col-md-5'),
+                        Column('date_début_avis_fermeture_dest',css_class='col-md-3'),
+                        Column('date_fin_avis_fermeture_dest',css_class='col-md-3'),
+                    ),
+                    Row(
+                        Column('nbre_participants_fermeture_dest',css_class='col-md-5'),
+                        Column('texte_avis_fermeture_dest',css_class='col-md-5'),
+                    ),  
+                ),
             ),
+            Submit('submit', _("Enregistrer"), css_class='btn-primary'),        
         )
 
 ###################################################################################################
@@ -339,5 +436,24 @@ class DestinationFluxForm(HelpTextTooltipMixin,forms.ModelForm):
                         Column('flux_saisie_suivie_dest', css_class='col-md-3'),
                     ),
                 ),
+                Tab(
+                    _('Compte-rendu de la balade'),
+                    Row(
+                        Column('flux_delai_compte_rendu_dest',css_class='col-md_3'),
+                        Column('flux_frequence_compte_rendu_dest',css_class='col-md-3'),
+                    ),
+                    Row(
+                        Column('flux_delai_envoi_avis_dest',css_class='col-md-4'),
+                        Column('flux_frequence_envoi_avis_dest',css_class='col-md-4'),
+                        Column('flux_delai_avis_max_dest',css_class='col-md-4'),
+                    ),
+                ),
+                Tab(
+                    _('Gestion des données personnelles'),
+                    Row(
+                        Column('flux_rgpd_dest',css_class='col-md-3'),
+                    ),
+                ),
             ),
+            Submit('submit', _("Enregistrer"), css_class='btn-primary'), 
         )

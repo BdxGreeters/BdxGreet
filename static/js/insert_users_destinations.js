@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Création des paramètres de requête (Pure JS)
         const params = new URLSearchParams({
             cluster_code: clusterCode,
-            code_dest: codeDest
+            code_dest: codeDest.toUpperCase()
         });
 
         // Utilisation de l'API native fetch() (Pure JS)

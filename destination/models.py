@@ -73,16 +73,19 @@ class Destination(models.Model):
 # 
 class Destination_data(models.Model):
 
-    choices = (
+    type_gestion_choices = (
         ( 'C&G contrôlé',_('C&G contrôlé')),
         ('Greet & Greet direct',_('C&G direct')),
         ('Gest',_("Gestionnaire")),
     )
-
+    no_answer_visitor_choices={
+        ('demande',_('Annulation demande')),
+        ('proposition',_('Annulation proposition')),
+    }
 
     code_dest_data =models.OneToOneField(Destination,on_delete=models.PROTECT, related_name='destination_data')
     beneficiaire_don_dest=models.ForeignKey(Beneficiaire,on_delete=models.PROTECT, related_name='beneficiaire_des_dons',verbose_name=_("Bénéficiaire des dons"), help_text=_("Sélectionner le bénéficiaire des dons pour la destination"))
-    donation_proposal_dest=models.DecimalField(max_digits=10, decimal_places=2, default=0.00, verbose_name=_("Proposition de don"), help_text=_("Saisir la proposition de don pour la destination"))
+    donation_proposal_dest=models.DecimalField(max_digits=10, decimal_places=0, default=0, verbose_name=_("Proposition de don"), help_text=_("Saisir la proposition de don pour la destination"))
     paypal_dest=models.URLField(default=" ",help_text=_("Saisir l'URL du compte Paypal de la destination"), verbose_name=_("Paypal de la destination"))  
     donation_text_dest=models.TextField(max_length=500,default=" ", help_text=_("Saisir le texte pour la demande de don sur le courriel du visiteur"), verbose_name=_("Texte de la demande de don"))  
     tripadvisor_dest=models.URLField(default=" ",help_text=_("Saisir l'URL de la page TripAdvisor de la destination"), verbose_name=_("TripAdvisor de la destination"))
@@ -90,7 +93,7 @@ class Destination_data(models.Model):
     langs_com_dest = models.ManyToManyField(Language_communication, blank=True,verbose_name=_("Langues de communication"),help_text=_("Sélectionner les langues de communication de la destination"))   
     lang_default_dest=models.ForeignKey(Language_communication,on_delete=models.PROTECT, related_name='langue_defaut_dest',verbose_name=_("Langue de communication par défaut"), help_text=_("Sélectionner la langue de communication par défaut de la destination"))
     langs_parlee_dest = models.ManyToManyField(LangueParlee, blank=True,verbose_name=_("Langues parlées"),help_text=_("Sélectionner les langues parlées dans la destination"))
-    Flag_modalités_dest=models.CharField(max_length=20, choices=choices, default="C&G",help_text=_("Saisir le type de gestion de la destination"),verbose_name=_("Type de gestion"))  
+    flag_modalités_dest=models.CharField(max_length=20, choices=type_gestion_choices, default="C&G",help_text=_("Saisir le type de gestion de la destination"),verbose_name=_("Type de gestion"))  
     date_cg_mail_dest= models.DateField(default=None,blank=True,null=True,verbose_name=_("Date d'envoi du prochain courriel C&G"), help_text=_("Saisir la date pour l'envoi du prochain courriel de Greet & Greet"))
     periode_mail_cg_dest=models.IntegerField(default=7, verbose_name=_("Période d'envoi des courriels C&G (en jours)"), help_text=_("Saisir la période d'envoi des courriels de Greet & Greet en jours"))
     flag_cg_T_dest=models.BooleanField(default=False, verbose_name=_("Intégrer les demandes en mode  Traitement sur le mur C&G"), help_text=_("Saisir si les demandes en mode Traitement  doivent être intégrées au mur C&G"))
@@ -98,19 +101,19 @@ class Destination_data(models.Model):
     flag_comment_visitor_dest=models.BooleanField(default=False, verbose_name=_("Activer les commentaires du visiteur à l'inscription"), help_text=_("Saisir si les commentaires du visteur à l'inscription sont obligatoires"))
     param_comment_visitor_dest=models.TextField(max_length=1000,default=" ",verbose_name=_("Présentation des commentaires pour le visiteur"),help_text=_("Saisir la présentation des commentaires pour le visiteur à l'inscription"))
     libelle_form_coche1_dest=models.CharField(max_length=200, default=" ", verbose_name=_("Libellé de la première case à cocher "),help_text=_("Saisir le libellé de la première case à cocher sur le formulaire d'inscription"))
-    lib_url_form_coche1_dest=models.CharField(max_length=200, default=" ",help_text=_("Saisir le texte de l'URL liée à la première case à cocher sur le formulaire d'inscription"), verbose_name=_("texte de l'URL de la première case à cocher du formulaire d'inscription"))
-    url_form_coche1_dest=models.URLField(default=" ",help_text=_("Saisir l'URL liée à la première case à cocher sur le formulaire d'inscription"), verbose_name=_("URL de la première case à cocher du formulaire d'inscription"))
+    lib_url_form_coche1_dest=models.CharField(max_length=200, default=" ",help_text=_("Saisir le texte de l'URL liée à la première case à cocher sur le formulaire d'inscription"), verbose_name=_("texte de l'URL de la première case à cocher"))
+    url_form_coche1_dest=models.URLField(default=" ",help_text=_("Saisir l'URL liée à la première case à cocher sur le formulaire d'inscription"), verbose_name=_("URL de la première case à cocher"))
     libelle_form_coche2_dest=models.CharField(max_length=200, default=" ", verbose_name=_("Libellé de la deuxième case à cocher "),help_text=_("Saisir le libellé de la deuxième case à cocher sur le formulaire d'inscription"))
-    lib_url_form_coche2_dest=models.CharField(max_length=200, default=" ",help_text=_("Saisir le texte de l'URL liée à la deuxième case à cocher sur le formulaire d'inscription"), verbose_name=_("texte de l'URL de la deuxième case à cocher du formulaire d'inscription"))
-    url_form_coche2_dest=models.URLField(default=" ",help_text=_("Saisir l'URL liée à la deuxième case à cocher sur le formulaire d'inscription"), verbose_name=_("URL de la deuxième case à cocher du formulaire d'inscription"))
+    lib_url_form_coche2_dest=models.CharField(max_length=200, default=" ",help_text=_("Saisir le texte de l'URL liée à la deuxième case à cocher sur le formulaire d'inscription"), verbose_name=_("texte de l'URL de la deuxième case à cocher"))
+    url_form_coche2_dest=models.URLField(default=" ",help_text=_("Saisir l'URL liée à la deuxième case à cocher sur le formulaire d'inscription"), verbose_name=_("URL de la deuxième case à cocher"))
     libelle_form_coche3_dest=models.CharField(max_length=200, default=" ", verbose_name=_("Libellé de la troisième case à cocher "),help_text=_("Saisir le libellé de la troisième case à cocher sur le formulaire d'inscription"))
-    lib_url_form_coche3_dest=models.CharField(max_length=200, default=" ",help_text=_("Saisir le texte de l'URL liée à la troisième case à cocher sur le formulaire d'inscription"), verbose_name=_("texte de l'URL de la troisième case à cocher du formulaire d'inscription"))
-    url_form_coche3_dest=models.URLField(default=" ",help_text=_("Saisir l'URL liée à la troisième case à cocher sur le formulaire d'inscription"), verbose_name=_("URL de la troisième case à cocher du formulaire d'inscription"))
+    lib_url_form_coche3_dest=models.CharField(max_length=200, default=" ",help_text=_("Saisir le texte de l'URL liée à la troisième case à cocher sur le formulaire d'inscription"), verbose_name=_("texte de l'URL de la troisième case à cocher"))
+    url_form_coche3_dest=models.URLField(default=" ",help_text=_("Saisir l'URL liée à la troisième case à cocher sur le formulaire d'inscription"), verbose_name=_("URL de la troisième case à cocher"))
     flag_request_coche1_dest=models.BooleanField(default=False, verbose_name=_("Case à cocher obligatoire 1"), help_text=_("Saisir si la première case à cocher est obligatoire sur le formulaire d'inscription"))
     flag_request_coche2_dest=models.BooleanField(default=False, verbose_name=_("Case à cocher obligatoire 2"), help_text=_("Saisir si la deuxième case à cocher est obligatoire sur le formulaire d'inscription"))
     flag_request_coche3_dest=models.BooleanField(default=False, verbose_name=_("Case à cocher obligatoire 3"), help_text=_("Saisir si la troisième case à cocher est obligatoire sur le formulaire d'inscription")) 
-    flag_NoAnswer_visitor_dest=models.BooleanField(default=False, verbose_name=_("Action suite à la non-réponse du visiteur"), help_text=_("Cocher l'action à effectuer suite à la non-réponse du visiteur"))
-    flag_reason_NoAnswer_greeter_dest=models.BooleanField(default=False, verbose_name=_("Demander le motif la non-réponse du Greeter"), help_text=_("SCocher si le motif de la non propsoition du Greeter est obligatoire"))
+    flag_NoAnswer_visitor_dest=models.CharField(max_length=11, choices=no_answer_visitor_choices, default="demande", verbose_name=_("Action suite à la non-réponse du visiteur"), help_text=_("Cocher l'action à effectuer suite à la non-réponse du visiteur"))
+    flag_reason_NoAnswer_greeter_dest=models.BooleanField(default=False, verbose_name=_("Demander le motif de la non-réponse du Greeter"), help_text=_("Cocher si le motif de la non proposition du Greeter est obligatoire"))
     avis_fermeture_dest=models.BooleanField(default=False, verbose_name=_("Avis de fermeture au visiteur"), help_text=_("Cocher la case pour une fermeture de la destination "))
     date_début_avis_fermeture_dest=models.DateField(default=None,blank=True,null=True,verbose_name=_("Date de début de la fermeture"), help_text=_("Saisir la date de la fermeture de la destination"))
     date_fin_avis_fermeture_dest=models.DateField(default=None,blank=True,null=True,verbose_name=_("Date de fin de la fermeture"), help_text=_("Saisir la date de fin de la fermeture de la destination"))
