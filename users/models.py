@@ -59,6 +59,15 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['first_name', 'last_name','cellphone','lang_com']
 
+    def save(self, *args, **kwargs):
+        if self.code_cluster:
+            self.code_cluster = self.code_cluster.upper()
+        
+        if self.code_dest:
+            self.code_dest = self.code_dest.upper()
+        
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
 

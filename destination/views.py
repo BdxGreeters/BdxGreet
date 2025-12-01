@@ -85,7 +85,7 @@ class DestinationCreateView(LoginRequiredMixin, SuperAdminRequiredMixin,CreateVi
             destination.save()
             form.save_m2m()  # Sauvegarder les relations ManyToMany si nécessaire
 
-            # Traduction des ieux ou thèmes de la destination
+            # Traduction des lieux ou thèmes de la destination
             for field in DestinationTranslationOptions.fields:
                 translation_content_items.delay('destination', 'Destination', destination.id, field)
             
@@ -122,7 +122,8 @@ class CreateRelatedDataModelsView(LoginRequiredMixin, SuperAdminRequiredMixin, V
 
         # Récupérer les formulaires soumis
         data_form = DestinationDataForm(request.POST)
-       
+        print("Code dest data")
+        print(destination.code_dest)
 
         if data_form.is_valid(): 
             # Sauvegarder Destination_data
@@ -130,6 +131,30 @@ class CreateRelatedDataModelsView(LoginRequiredMixin, SuperAdminRequiredMixin, V
             destination_data.code_dest_data = destination
             destination_data.save()
             data_form.save_m2m()  # Sauvegarder les relations ManyToMany
+
+            # Traduction des champs 
+            if destination_data.donation_text_dest:
+                translation_content.delay("destination_data","Destination_data", destination_data.id, "donation_text_dest")
+            if destination_data.param_comment_visitor_dest:
+                translation_content.delay("destination_data","Destination_data", destination_data.id, "param_comment_visitor_dest")
+            if destination_data.libelle_form_coche1_dest:
+                translation_content.delay("destination_data","Destination_data", destination_data.id, "libelle_form_coche1_dest")
+            if destination_data.lib_url_form_coche1_dest:
+                translation_content.delay("destination_data","Destination_data", destination_data.id, "lib_url_form_coche1_dest")
+            if  destination_data.libelle_form_coche2_dest:
+                translation_content.delay("destination_data","Destination_data", destination_data.id, "libelle_form_coche2_dest")
+            if  destination_data.lib_url_form_coche2_dest:
+                translation_content.delay("destination_data","Destination_data", destination_data.id, "lib_url_form_coche2_dest")
+            if  destination_data.libelle_form_coche3_dest:
+                translation_content.delay("destination_data","Destination_data", destination_data.id, "libelle_form_coche3_dest")
+            if  destination_data.lib_url_form_coche3:
+                translation_content.delay("destination_data","Destination_data", destination_data.id, "lib_url_form_coche3_dest")
+            if  destination_data.texte_avis_fermeture_dest:
+                translation_content.delay("destination_data","Destination_data", destination_data.id, "texte_avis_fermeture_dest")
+            if destination_data.tagline_mail_dest:
+                translation_content.delay("destination_data","Destination_data", destination_data.id, "tagline_mail_dest")
+            if destination_data.titre_avis_mail_dest:
+                translation_content.delay("destination_data","Destination_data", destination_data.id, "titre_avis_mail_dest")
 
             return redirect('create_related_flux', pk=destination.id)
 

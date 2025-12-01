@@ -202,7 +202,6 @@ class DestinationDataForm(HelpTextTooltipMixin, forms.ModelForm):
     class Meta:
         model = Destination_data
         fields = [
-            'code_dest_data',
             'beneficiaire_don_dest',
             'donation_proposal_dest',
             'paypal_dest',
@@ -388,7 +387,6 @@ class DestinationFluxForm(HelpTextTooltipMixin,forms.ModelForm):
     class Meta:
         model = Destination_flux
         fields = [
-            'code_dest_flux',
             'frequence_mail_precoce',
             'confirmation_date_precoce_dest',
             'flux_treatement_dest',

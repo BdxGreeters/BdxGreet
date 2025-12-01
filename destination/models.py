@@ -85,17 +85,17 @@ class Destination_data(models.Model):
 
     code_dest_data =models.OneToOneField(Destination,on_delete=models.PROTECT, related_name='destination_data')
     beneficiaire_don_dest=models.ForeignKey(Beneficiaire,on_delete=models.PROTECT, related_name='beneficiaire_des_dons',verbose_name=_("Bénéficiaire des dons"), help_text=_("Sélectionner le bénéficiaire des dons pour la destination"))
-    donation_proposal_dest=models.DecimalField(max_digits=10, decimal_places=0, default=0, verbose_name=_("Proposition de don"), help_text=_("Saisir la proposition de don pour la destination"))
-    paypal_dest=models.URLField(default=" ",help_text=_("Saisir l'URL du compte Paypal de la destination"), verbose_name=_("Paypal de la destination"))  
-    donation_text_dest=models.TextField(max_length=500,default=" ", help_text=_("Saisir le texte pour la demande de don sur le courriel du visiteur"), verbose_name=_("Texte de la demande de don"))  
-    tripadvisor_dest=models.URLField(default=" ",help_text=_("Saisir l'URL de la page TripAdvisor de la destination"), verbose_name=_("TripAdvisor de la destination"))
-    googlemybusiness_dest=models.URLField(default=" ",help_text=_("Saisir l'URL de la page Google My Business de la destination"), verbose_name=_("Google My Business de la destination"))
+    donation_proposal_dest=models.DecimalField(max_digits=10, decimal_places=0, default=0,null=True,blank=True, verbose_name=_("Proposition de don"), help_text=_("Saisir la proposition de don pour la destination"))
+    paypal_dest=models.URLField(null=True,blank=True,help_text=_("Saisir l'URL du compte Paypal de la destination"), verbose_name=_("Paypal de la destination"))  
+    donation_text_dest=models.TextField(max_length=500,null=True,blank=True, help_text=_("Saisir le texte pour la demande de don sur le courriel du visiteur"), verbose_name=_("Texte de la demande de don"))  
+    tripadvisor_dest=models.URLField(null=True,blank=True,help_text=_("Saisir l'URL de la page TripAdvisor de la destination"), verbose_name=_("TripAdvisor de la destination"))
+    googlemybusiness_dest=models.URLField(null=True,blank=True,help_text=_("Saisir l'URL de la page Google My Business de la destination"), verbose_name=_("Google My Business de la destination"))
     langs_com_dest = models.ManyToManyField(Language_communication, blank=True,verbose_name=_("Langues de communication"),help_text=_("Sélectionner les langues de communication de la destination"))   
     lang_default_dest=models.ForeignKey(Language_communication,on_delete=models.PROTECT, related_name='langue_defaut_dest',verbose_name=_("Langue de communication par défaut"), help_text=_("Sélectionner la langue de communication par défaut de la destination"))
     langs_parlee_dest = models.ManyToManyField(LangueParlee, blank=True,verbose_name=_("Langues parlées"),help_text=_("Sélectionner les langues parlées dans la destination"))
     flag_modalités_dest=models.CharField(max_length=20, choices=type_gestion_choices, default="C&G",help_text=_("Saisir le type de gestion de la destination"),verbose_name=_("Type de gestion"))  
-    date_cg_mail_dest= models.DateField(default=None,blank=True,null=True,verbose_name=_("Date d'envoi du prochain courriel C&G"), help_text=_("Saisir la date pour l'envoi du prochain courriel de Greet & Greet"))
-    periode_mail_cg_dest=models.IntegerField(default=7, verbose_name=_("Période d'envoi des courriels C&G (en jours)"), help_text=_("Saisir la période d'envoi des courriels de Greet & Greet en jours"))
+    date_cg_mail_dest= models.DateField(blank=True,null=True,verbose_name=_("Date d'envoi du prochain courriel C&G"), help_text=_("Saisir la date pour l'envoi du prochain courriel de Greet & Greet"))
+    periode_mail_cg_dest=models.IntegerField(default=7,null=True,blank=True, verbose_name=_("Période d'envoi des courriels C&G (en jours)"), help_text=_("Saisir la période d'envoi des courriels de Greet & Greet en jours"))
     flag_cg_T_dest=models.BooleanField(default=False, verbose_name=_("Intégrer les demandes en mode  Traitement sur le mur C&G"), help_text=_("Saisir si les demandes en mode Traitement  doivent être intégrées au mur C&G"))
     flag_cg_U_dest=models.BooleanField(default=False, verbose_name=_("Intégrer les demandes en mode  Urgent sur le mur C&G"), help_text=_("Saisir si les demandes en mode Urgent  doivent être intégrées au mur C&G"))  
     flag_comment_visitor_dest=models.BooleanField(default=False, verbose_name=_("Activer les commentaires du visiteur à l'inscription"), help_text=_("Saisir si les commentaires du visteur à l'inscription sont obligatoires"))
@@ -117,22 +117,22 @@ class Destination_data(models.Model):
     avis_fermeture_dest=models.BooleanField(default=False, verbose_name=_("Avis de fermeture au visiteur"), help_text=_("Cocher la case pour une fermeture de la destination "))
     date_début_avis_fermeture_dest=models.DateField(default=None,blank=True,null=True,verbose_name=_("Date de début de la fermeture"), help_text=_("Saisir la date de la fermeture de la destination"))
     date_fin_avis_fermeture_dest=models.DateField(default=None,blank=True,null=True,verbose_name=_("Date de fin de la fermeture"), help_text=_("Saisir la date de fin de la fermeture de la destination"))
-    texte_avis_fermeture_dest=models.TextField(max_length=1000,default=" ",verbose_name=_("Texte de l'avis de fermeture"),help_text=_("Saisir le texte de l'avis de fermeture de la destination"))
-    nbre_participants_fermeture_dest=models.IntegerField(default=0, verbose_name=_("Nombre de participants en cours de fermeture"), help_text=_("Saisir le nombre de participants lors de la fermeture de la destination (0 fermeture totale)"))
+    texte_avis_fermeture_dest=models.TextField(max_length=1000,null=True,blank=True,verbose_name=_("Texte de l'avis de fermeture"),help_text=_("Saisir le texte de l'avis de fermeture de la destination"))
+    nbre_participants_fermeture_dest=models.IntegerField(default=0, null=True,blank=True, verbose_name=_("Nombre de participants en cours de fermeture"), help_text=_("Saisir le nombre de participants lors de la fermeture de la destination (0 fermeture totale)"))
     name_sign_mail_dest=models.CharField(max_length=100, default=" ", verbose_name=_("Nom pour la signature des courriels"),help_text=_("Saisir le nom pour la signature des courriels envoyés par la destination"))
     url_mail_signature_dest=models.URLField(default=" ",help_text=_("Saisir l'URL pour la signature des courriels"), verbose_name=_("URL pour la signature des courriels"))
-    libelle_social1_mail_dest=models.CharField(max_length=100, default=" ", verbose_name=_("Libellé du premier réseau social"),help_text=_("Saisir le libellé du premier réseau social pour la destination"))
-    url_social1_mail_dest=models.URLField(default=" ",help_text=_("Saisir l'URL du premier réseau social"), verbose_name=_("URL du premier réseau social"))
-    libelle_social2_mail_dest=models.CharField(max_length=100, default=" ", verbose_name=_("Libellé du deuxième réseau social"),help_text=_("Saisir le libellé du deuxième réseau social pour la destination"))
-    url_social2_mail_dest=models.URLField(default=" ",help_text=_("Saisir l'URL du deuxième réseau social"), verbose_name=_("URL du deuxième réseau social"))
-    tagline_mail_dest=models.CharField(max_length=150, default=" ", verbose_name=_("Tagline pour les courriels"),help_text=_("Saisir le tagline pour les courriels envoyés par la destination"))
-    titre_avis_mail_dest=models.CharField(max_length=100, default=" ", verbose_name=_("Titre de l'avis en pied des courriels"),help_text=_("Saisir le titre de l'avis en pied des courriels envoyés par la destination"))
-    texte_avis_mail_dest=models.TextField(max_length=1000,default=" ",verbose_name=_("Texte de l'avis en pied des courriels"),help_text=_("Saisir le texte de l'avis en pied des courriels envoyés par la destination"))
+    libelle_social1_mail_dest=models.CharField(max_length=100, null=True,blank=True, verbose_name=_("Libellé du premier réseau social"),help_text=_("Saisir le libellé du premier réseau social pour la destination"))
+    url_social1_mail_dest=models.URLField(null=True,blank=True,help_text=_("Saisir l'URL du premier réseau social"), verbose_name=_("URL du premier réseau social"))
+    libelle_social2_mail_dest=models.CharField(max_length=100,null=True,blank=True, verbose_name=_("Libellé du deuxième réseau social"),help_text=_("Saisir le libellé du deuxième réseau social pour la destination"))
+    url_social2_mail_dest=models.URLField(null=True,blank=True,help_text=_("Saisir l'URL du deuxième réseau social"), verbose_name=_("URL du deuxième réseau social"))
+    tagline_mail_dest=models.CharField(max_length=150, null=True,blank=True, verbose_name=_("Tagline pour les courriels"),help_text=_("Saisir le tagline pour les courriels envoyés par la destination"))
+    titre_avis_mail_dest=models.CharField(max_length=100, null=True,blank=True, verbose_name=_("Titre de l'avis en pied des courriels"),help_text=_("Saisir le titre de l'avis en pied des courriels envoyés par la destination"))
+    texte_avis_mail_dest=models.TextField(max_length=1000,null=True,blank=True,verbose_name=_("Texte de l'avis en pied des courriels"),help_text=_("Saisir le texte de l'avis en pied des courriels envoyés par la destination"))
     date_debut_avis_mail_dest=models.DateField(default=None,blank=True,null=True,verbose_name=_("Date de début de l'avis en pied des courriels"), help_text=_("Saisir la date de début de l'avis en pied des courriels"))
     date_fin_avis_mail_dest=models.DateField(default=None,blank=True,null=True,verbose_name=_("Date de fin de l'avis en pied des courriels"), help_text=_("Saisir la date de fin de l'avis en pied des courriels"))
 
     def __str__(self):
-        return  {self.code_dest_data}
+        return  f"DestinationData: {self.code_dest_data.name_dest}"
     
 ###################################################################################################
 
@@ -160,7 +160,7 @@ class Destination_flux(models.Model):
     flux_rgpd_dest=models.IntegerField(default=0, verbose_name=_("Nombre de jours avant l'anomysation des données"), help_text=_("Saisir le nombre de jours avant l'anomysation des données du visiteur"))
 
     def __str__(self):
-        return  {self.code_dest_flux}  
+        return  f"DestinationFlux: {self.code_dest_flux.name_dest}"  
         
 ###################################################################################################
 

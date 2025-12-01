@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- 3. Fonction AJAX (Pure JS) pour la mise à jour ---
     function updateUserSelects() {
         const clusterCode = clusterField.value;
-        const codeDest = destField.value;
+        const codeDest = destField.value.toUpperCase();
         
         // Assurez-vous d'avoir l'URL correcte ici.
         // Puisqu'on est en JS pur, vous ne pouvez pas utiliser {% url '...' %}
@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Création des paramètres de requête (Pure JS)
         const params = new URLSearchParams({
             cluster_code: clusterCode,
-            code_dest: codeDest.toUpperCase()
+            code_dest: codeDest
         });
 
         // Utilisation de l'API native fetch() (Pure JS)

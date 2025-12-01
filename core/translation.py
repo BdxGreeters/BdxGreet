@@ -70,6 +70,6 @@ class BeneficiaireTranslationOptions(TranslationOptions):
 translator.register(Beneficiaire, BeneficiaireTranslationOptions)
 
 class Destination_dataTranslationOptions(TranslationOptions):
-    fields=('donation_text_dest','param_comment_visitor_dest','texte_avis_fermeture_dest','tagline_mail_dest','texte_avis_mail_dest')
+    fields=('donation_text_dest','param_comment_visitor_dest','libelle_form_coche1_dest', 'lib_url_form_coche1_dest', 'libelle_form_coche2_dest', 'lib_url_form_coche2_dest', 'libelle_form_coche3_dest', 'lib_url_form_coche3_dest','texte_avis_fermeture_dest','tagline_mail_dest','texte_avis_mail_dest')
 
 translator.register(Destination_data, Destination_dataTranslationOptions)
