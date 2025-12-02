@@ -259,6 +259,7 @@ class DestinationDataForm(HelpTextTooltipMixin, forms.ModelForm):
             'date_fin_avis_fermeture_dest': forms.DateInput(attrs={'type': 'date'}),
             'date_debut_avis_mail_dest': forms.DateInput(attrs={'type': 'date'}),
             'date_fin_avis_mail_dest': forms.DateInput(attrs={'type': 'date'}),
+            'flag_comment_visitor_dest': forms.RadioSelect(),
             'param_comment_visitor_dest': forms.Textarea(attrs={'rows': 2}),
             'flag_NoAnswer_visitor_dest': forms.RadioSelect(),
             'avis_fermeture_dest': forms.Textarea(attrs={'rows': 2}),
@@ -266,6 +267,7 @@ class DestinationDataForm(HelpTextTooltipMixin, forms.ModelForm):
             'texte_avis_mail_dest': forms.Textarea(attrs={'rows': 2}),
         }
 
+    
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
@@ -377,7 +379,34 @@ class DestinationDataForm(HelpTextTooltipMixin, forms.ModelForm):
             ),
             Submit('submit', _("Enregistrer"), css_class='btn-primary'),        
         )
+    def clean(self):
+        cleaned_data = super().clean()
 
+        date_debut_avis_fermeture = cleaned_data.get("date_début_avis_fermeture_dest")
+        date_fin_avis_fermeture = cleaned_data.get("date_fin_avis_fermeture_dest")
+
+        date_debut_avis_mail = cleaned_data.get("date_debut_avis_mail_dest")
+        date_fin_avis_mail = cleaned_data.get("date_fin_avis_mail_dest")
+
+        # Vérification pour les dates de fermeture
+        if date_debut_avis_fermeture and date_fin_avis_fermeture:
+            if date_fin_avis_fermeture < date_debut_avis_fermeture:
+                self.add_error("date_fin_avis_fermeture_dest", "La date de fin doit être postérieure à la date de début.")
+
+        # Vérification pour les dates de mail
+        if date_debut_avis_mail and date_fin_avis_mail:
+            if date_fin_avis_mail < date_debut_avis_mail:
+                self.add_error("date_fin_avis_mail_dest", "La date de fin doit être postérieure à la date de début.")
+        
+        # Vérification pour param_comment_visitor_dest si flag_comment_visitor_dest est coché
+        flag_comment_visitor = cleaned_data.get("flag_comment_visitor_dest")
+        param_comment_visitor = cleaned_data.get("param_comment_visitor_dest")
+
+        if flag_comment_visitor and not param_comment_visitor:
+            self.add_error("param_comment_visitor_dest", "Ce champ est obligatoire si le flag est coché.")
+        
+        return cleaned_data
+    
 ###################################################################################################
 
 #Form des flux de la destination
@@ -406,6 +435,8 @@ class DestinationFluxForm(HelpTextTooltipMixin,forms.ModelForm):
             'flux_rgpd_dest',       
         ]
     
+
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()

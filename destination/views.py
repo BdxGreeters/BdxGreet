@@ -122,8 +122,6 @@ class CreateRelatedDataModelsView(LoginRequiredMixin, SuperAdminRequiredMixin, V
 
         # Récupérer les formulaires soumis
         data_form = DestinationDataForm(request.POST)
-        print("Code dest data")
-        print(destination.code_dest)
 
         if data_form.is_valid(): 
             # Sauvegarder Destination_data
@@ -134,29 +132,29 @@ class CreateRelatedDataModelsView(LoginRequiredMixin, SuperAdminRequiredMixin, V
 
             # Traduction des champs 
             if destination_data.donation_text_dest:
-                translation_content.delay("destination_data","Destination_data", destination_data.id, "donation_text_dest")
+                translation_content.delay("destination","Destination_data", destination_data.id, "donation_text_dest")
             if destination_data.param_comment_visitor_dest:
-                translation_content.delay("destination_data","Destination_data", destination_data.id, "param_comment_visitor_dest")
+                translation_content.delay("destination","Destination_data", destination_data.id, "param_comment_visitor_dest")
             if destination_data.libelle_form_coche1_dest:
-                translation_content.delay("destination_data","Destination_data", destination_data.id, "libelle_form_coche1_dest")
+                translation_content.delay("destination","Destination_data", destination_data.id, "libelle_form_coche1_dest")
             if destination_data.lib_url_form_coche1_dest:
-                translation_content.delay("destination_data","Destination_data", destination_data.id, "lib_url_form_coche1_dest")
+                translation_content.delay("destination","Destination_data", destination_data.id, "lib_url_form_coche1_dest")
             if  destination_data.libelle_form_coche2_dest:
-                translation_content.delay("destination_data","Destination_data", destination_data.id, "libelle_form_coche2_dest")
+                translation_content.delay("destination","Destination_data", destination_data.id, "libelle_form_coche2_dest")
             if  destination_data.lib_url_form_coche2_dest:
-                translation_content.delay("destination_data","Destination_data", destination_data.id, "lib_url_form_coche2_dest")
+                translation_content.delay("destination","Destination_data", destination_data.id, "lib_url_form_coche2_dest")
             if  destination_data.libelle_form_coche3_dest:
-                translation_content.delay("destination_data","Destination_data", destination_data.id, "libelle_form_coche3_dest")
-            if  destination_data.lib_url_form_coche3:
-                translation_content.delay("destination_data","Destination_data", destination_data.id, "lib_url_form_coche3_dest")
+                translation_content.delay("destination","Destination_data", destination_data.id, "libelle_form_coche3_dest")
+            if  destination_data.lib_url_form_coche3_dest:
+                translation_content.delay("destination","Destination_data", destination_data.id, "lib_url_form_coche3_dest")
             if  destination_data.texte_avis_fermeture_dest:
-                translation_content.delay("destination_data","Destination_data", destination_data.id, "texte_avis_fermeture_dest")
+                translation_content.delay("destination","Destination_data", destination_data.id, "texte_avis_fermeture_dest")
             if destination_data.tagline_mail_dest:
-                translation_content.delay("destination_data","Destination_data", destination_data.id, "tagline_mail_dest")
+                translation_content.delay("destination","Destination_data", destination_data.id, "tagline_mail_dest")
             if destination_data.titre_avis_mail_dest:
-                translation_content.delay("destination_data","Destination_data", destination_data.id, "titre_avis_mail_dest")
+                translation_content.delay("destination","Destination_data", destination_data.id, "titre_avis_mail_dest")
 
-            return redirect('create_related_flux', pk=destination.id)
+            return redirect('create_related_flux', destination_id=destination.id)
 
         context = {
             'destination': destination,
@@ -197,7 +195,7 @@ class CreateRelatedFluxModelsView(LoginRequiredMixin, SuperAdminRequiredMixin, V
             
 
             messages.success(request, _("La destination {} a été créée.").format(destination.name_dest))
-            return redirect('destination/<int:pk>/destination/', pk=destination.id)
+            return redirect('destination_detail', destination_id=destination.id)
 
         context = {
             'destination': destination,
