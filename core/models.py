@@ -59,6 +59,11 @@ class Pays(models.Model):
     code_iso=models.CharField(max_length=3, unique=True)
     nom_pays=models.CharField(max_length=100, verbose_name=_("Pays"))
 
+    class Meta:
+        ordering = ['nom_pays']  # Tri par ordre alphabétique du champ 'nom'
+        verbose_name_plural = "Pays"
+
+
     def __str__(self):
         return f"{self.nom_pays}"
 ###################################################################################################

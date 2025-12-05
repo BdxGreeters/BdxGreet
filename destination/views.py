@@ -119,9 +119,9 @@ class CreateRelatedDataModelsView(LoginRequiredMixin, SuperAdminRequiredMixin, V
 
     def post(self, request, destination_id):
         destination = Destination.objects.get(pk=destination_id)
-
+        cluster=destination.code_cluster_dest
         # Récupérer les formulaires soumis
-        data_form = DestinationDataForm(request.POST)
+        data_form = DestinationDataForm(request.POST, )
 
         if data_form.is_valid(): 
             # Sauvegarder Destination_data
@@ -195,7 +195,7 @@ class CreateRelatedFluxModelsView(LoginRequiredMixin, SuperAdminRequiredMixin, V
             
 
             messages.success(request, _("La destination {} a été créée.").format(destination.name_dest))
-            return redirect('destination_detail', destination_id=destination.id)
+            return redirect('destination_detail', pk=destination.id)
 
         context = {
             'destination': destination,
@@ -229,7 +229,7 @@ class DestinationDetailView(DetailView):
 
 ###################################################################################################
 
-#Vue Ajax pour ren,voyer les informations d'une destination sélectionnée
+#Vue Ajax pour renvoyer les informations d'une destination sélectionnée
 
 # views.py
 from django.http import JsonResponse

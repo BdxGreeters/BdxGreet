@@ -192,7 +192,87 @@ class DestinationForm(HelpTextTooltipMixin, CommaSeparatedFieldMixin, forms.Mode
                 ),
             ),
             Submit('submit', _('Enregistrer')),
-        )   
+        )
+
+    def clean(self):
+        cleaned_data = super().clean()  
+
+         #Vérification du nombre maximun de centres d'interêts sélectionnés
+
+        # 1. Récupérer le cluster sélectionné
+        cluster = cleaned_data.get('code_cluster')
+        
+        # 2. Récupérer la valeur de max_interest_center_dest
+        max_interest_center_dest = cleaned_data.get('max_interest_center_dest')
+
+        if cluster and max_interest_center_dest is not None:
+            # 3. Calculer le nombre d'items dans profil_interet_cluster du cluster
+            
+            # Récupère la chaîne de centres d'intérêt
+            interet_cluster_str = cluster.profil_interet_cluster
+            
+            # Sépare les items par la virgule et filtre les chaînes vides
+            # Ex: "sport,lecture,musique" -> ['sport', 'lecture', 'musique'] -> 3
+            # Ex: "sport,,lecture" -> ['sport', 'lecture'] -> 2
+            list_interets = [
+                item.strip() 
+                for item in interet_cluster_str.split(',') 
+                if item.strip()
+            ]
+            
+            total_interets = len(list_interets)
+
+            # 4. Effectuer la comparaison
+            if max_interest_center_dest > total_interets:
+                # Si la validation échoue, lever une ValidationError pour le champ
+                msg = _(
+                    "Le nombre maximum de centres d'intérêts (%(max_ci)s) ne peut pas être supérieur au nombre total de centres d'intérêts du cluster sélectionné (%(total_ci)s)."
+                ) % {
+                    'max_ci': max_interest_center_dest, 
+                    'total_ci': total_interets
+                }
+                
+                # Ajoute l'erreur au champ max_interest_center_dest
+                self.add_error('max_interest_center_dest', msg)
+
+        #Vérification du nombre maximun de lieux ou thèmes sélectionnés
+        max_lp_dest = cleaned_data.get('max_lp_dest')
+        list_places_dest = cleaned_data.get('list_places_dest')
+
+        if list_places_dest and max_lp_dest is not None:
+            # Sépare les lieux par la virgule et filtre les chaînes vides
+            list_lieux = [
+                item.strip() 
+                for item in list_places_dest.split(',') 
+                if item.strip()
+            ]
+            
+            total_lieux = len(list_lieux)
+
+            # Effectuer la comparaison
+            if max_lp_dest > total_lieux:
+                # Si la validation échoue, lever une ValidationError pour le champ
+                msg = _(
+                    "Le nombre maximum de lieux ou thèmes (%(max_lp)s) ne peut pas être supérieur au nombre total de lieux ou thèmes sélectionnés (%(total_lp)s)."
+                ) % {
+                    'max_lp': max_lp_dest, 
+                    'total_lp': total_lieux
+                }
+                
+                # Ajoute l'erreur au champ max_lp_dest
+                self.add_error('max_lp_dest', msg)  
+        
+        # Vérification que les max sont supérieurs ou égaux aux min
+        mini_interest_center_dest = cleaned_data.get('mini_interest_center_dest')
+        mini_lp_dest = cleaned_data.get('mini_lp_dest')
+        if (max_interest_center_dest is not None and mini_interest_center_dest is not None and max_interest_center_dest < mini_interest_center_dest):
+            self.add_error('max_interest_center_dest', _("Le maximum de centres d'intérêt ne peut pas être inférieur au minimum."))     
+        if (max_lp_dest is not None and mini_lp_dest is not None and max_lp_dest < mini_lp_dest):
+            self.add_error('max_lp_dest', _("Le maximum de lieux ou thèmes ne peut pas être inférieur au minimum."))
+                
+        return cleaned_data
+    
+
 ###################################################################################################
 
 # Form des datas de la destination
@@ -259,7 +339,6 @@ class DestinationDataForm(HelpTextTooltipMixin, forms.ModelForm):
             'date_fin_avis_fermeture_dest': forms.DateInput(attrs={'type': 'date'}),
             'date_debut_avis_mail_dest': forms.DateInput(attrs={'type': 'date'}),
             'date_fin_avis_mail_dest': forms.DateInput(attrs={'type': 'date'}),
-            'flag_comment_visitor_dest': forms.RadioSelect(),
             'param_comment_visitor_dest': forms.Textarea(attrs={'rows': 2}),
             'flag_NoAnswer_visitor_dest': forms.RadioSelect(),
             'avis_fermeture_dest': forms.Textarea(attrs={'rows': 2}),
@@ -269,7 +348,27 @@ class DestinationDataForm(HelpTextTooltipMixin, forms.ModelForm):
 
     
     def __init__(self, *args, **kwargs):
+        destination_instance = None
+        instance=kwargs.get('instance', None)
+        if instance and instance.code_cluster:
+            cluster=instance.code_cluster
+        else:
+            initial_data = kwargs.get('initial', {})
+            if initial_data and 'code_dest_data' in initial_data:
+                destination_instance = initial_data['code_dest_data']
+                cluster = destination_instance.code_cluster
+            else:
+                cluster = None
+        
         super().__init__(*args, **kwargs)
+        if cluster:
+            cluster_langs_ids=cluster.langs_com.values_list('code', flat=True)
+            self.fields['langs_com_dest'].queryset = Language_communication.objects.filter(code__in=cluster_langs_ids)
+            self.fields['lang_default_dest'].queryset = Language_communication.objects.filter(code__in=cluster_langs_ids)
+        else:
+            self.fields['langs_com_dest'].queryset = Language_communication.objects.none()
+            self.fields['lang_default_dest'].queryset = Language_communication.objects.none()        
+        
         self.helper = FormHelper()
         self.helper.form_method = 'post'
         self.helper.layout = Layout(
@@ -380,8 +479,10 @@ class DestinationDataForm(HelpTextTooltipMixin, forms.ModelForm):
             Submit('submit', _("Enregistrer"), css_class='btn-primary'),        
         )
     def clean(self):
+        
         cleaned_data = super().clean()
 
+        # Récupération des dates de fermeture et de mail
         date_debut_avis_fermeture = cleaned_data.get("date_début_avis_fermeture_dest")
         date_fin_avis_fermeture = cleaned_data.get("date_fin_avis_fermeture_dest")
 
@@ -405,6 +506,7 @@ class DestinationDataForm(HelpTextTooltipMixin, forms.ModelForm):
         if flag_comment_visitor and not param_comment_visitor:
             self.add_error("param_comment_visitor_dest", "Ce champ est obligatoire si le flag est coché.")
         
+       
         return cleaned_data
     
 ###################################################################################################

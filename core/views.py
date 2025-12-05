@@ -423,7 +423,7 @@ class CreateUserView(View):
             }, status=500)
 
 ###################################################################################################
- # Vue Récupérér les langues de communication
+ # Vue Récupérer les langues de communication
 
 def get_languages(request):
     languages = Language_communication.objects.all().values('code', 'name')
