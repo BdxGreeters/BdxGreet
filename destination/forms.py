@@ -25,6 +25,8 @@ class DestinationForm(HelpTextTooltipMixin, CommaSeparatedFieldMixin, forms.Mode
         # ⭐ LA CLÉ : utilise le champ 'code' du Cluster comme valeur dans le HTML
         to_field_name='code_cluster',
         required=True,)
+    
+    code_cluster_hidden = forms.CharField(widget=forms.HiddenInput(), required=False)   
 
     class Meta:
         model = Destination
@@ -75,9 +77,15 @@ class DestinationForm(HelpTextTooltipMixin, CommaSeparatedFieldMixin, forms.Mode
         'list_places_dest': {'min':2, 'max':10},
         }
 
-    def __init__(self, *args, **kwargs):
-        kwargs.pop('user', None)
+    def __init__(self, *args,code_cluster_user=None, **kwargs):
+        user=kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
+
+        # Si un code_cluster_user est fourni, filtrer les clusters disponibles
+        if code_cluster_user:
+            self.fields['code_cluster'].queryset = Cluster.objects.filter(code_cluster=code_cluster_user)
+            self.fields['code_cluster'].initial = get_object_or_404(Cluster, code_cluster=code_cluster_user)
+            self.fields['code_cluster'].disabled = True  # Désactiver le champ pour empêcher la modification
 
     # Récupérer les codes des destinations existantes, sauf celle en cours d'édition
         existing_destinations = Destination.objects.exclude(
@@ -347,11 +355,13 @@ class DestinationDataForm(HelpTextTooltipMixin, forms.ModelForm):
         }
 
     
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, cluster_instance=None, **kwargs):
         destination_instance = None
         instance=kwargs.get('instance', None)
         if instance and instance.code_cluster:
             cluster=instance.code_cluster
+        elif cluster_instance:
+            cluster=cluster_instance
         else:
             initial_data = kwargs.get('initial', {})
             if initial_data and 'code_dest_data' in initial_data:

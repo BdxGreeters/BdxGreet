@@ -42,15 +42,21 @@ class DestinationCreateView(LoginRequiredMixin, SuperAdminRequiredMixin,CreateVi
     app_name = 'destination'
 
     def get(self, request, *args, **kwargs):
-        form = DestinationForm(request.GET or None, user=request.user)
-        context = {'form': form, 'title': _("Créer une destination")}
+        code_cluster_user = getattr(request.user, 'code_cluster', None)
+        form = DestinationForm(request.GET or None, user=request.user, code_cluster_user=code_cluster_user)
+        context = {'form': form, 'title': _("Création d'une destination")}
         return render(request, self.template_name, context)
 
     def post(self, request, *args, **kwargs):
-        form = DestinationForm(request.POST, request.FILES, user=request.user)
+        code_cluster_user = getattr(request.user, 'code_cluster', None)
+        form = DestinationForm(request.POST, request.FILES, user=request.user, code_cluster_user=code_cluster_user)
         if form.is_valid():
             # Sauvegarder l'instance de la destination
             destination= form.save(commit=False)
+            final_code_cluster= request.POST.get('code_cluster_hidden')
+            if final_code_cluster:
+                final_code_cluster=form.cleaned_data.get('code_cluster')
+            destination.code_cluster=final_code_cluster    
             destination.save()
 
             #Mettre à jour les groupes des utilisateurs liés à cette destination
@@ -119,9 +125,9 @@ class CreateRelatedDataModelsView(LoginRequiredMixin, SuperAdminRequiredMixin, V
 
     def post(self, request, destination_id):
         destination = Destination.objects.get(pk=destination_id)
-        cluster=destination.code_cluster_dest
+        cluster=destination.code_cluster
         # Récupérer les formulaires soumis
-        data_form = DestinationDataForm(request.POST, )
+        data_form = DestinationDataForm(request.POST, cluster_instance=cluster )
 
         if data_form.is_valid(): 
             # Sauvegarder Destination_data
