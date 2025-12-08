@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.models import Group
 from django.contrib.contenttypes.models import ContentType
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 from django.views import View
@@ -19,7 +19,6 @@ from destination.models import Destination, Destination_data, Destination_flux
 from PIL import Image
 import os
 from django.conf import settings
-
 
 User=get_user_model()
 
@@ -54,14 +53,15 @@ class DestinationCreateView(LoginRequiredMixin, SuperAdminRequiredMixin,CreateVi
             # Sauvegarder l'instance de la destination
             destination= form.save(commit=False)
             final_code_cluster= request.POST.get('code_cluster_hidden')
-            if final_code_cluster:
+            if final_code_cluster is None:
                 final_code_cluster=form.cleaned_data.get('code_cluster')
-            destination.code_cluster=final_code_cluster    
+            print("Cluster:",final_code_cluster)
+            if final_code_cluster:
+                destination.code_cluster=final_code_cluster    
             destination.save()
 
             #Mettre à jour les groupes des utilisateurs liés à cette destination
             if destination.manager_dest:
-                print(destination.manager_dest)
                 manager_group, created = Group.objects.get_or_create(name='Manager')
                 destination.manager_dest.groups.add(manager_group)
         
@@ -125,6 +125,7 @@ class CreateRelatedDataModelsView(LoginRequiredMixin, SuperAdminRequiredMixin, V
 
     def post(self, request, destination_id):
         destination = Destination.objects.get(pk=destination_id)
+        print("Cluster:", destination.code_cluster)
         cluster=destination.code_cluster
         # Récupérer les formulaires soumis
         data_form = DestinationDataForm(request.POST, cluster_instance=cluster )
@@ -277,3 +278,69 @@ class AjaxFilterUsersView(View):
     
 ###################################################################################################
 
+
+#Vue Mise à jour d'une destination
+
+
+
+class DestinationUpdateView(LoginRequiredMixin, UserPassesTestMixin,UpdateView):
+    # Les mixins de sécurité de SuperAdminRequiredMixin peuvent être réutilisées ici
+    def test_func(self):
+        return self.request.user.groups.filter(name__in=['SuperAdmin', 'Admin']).exists() 
+
+    def get(self, request, pk):
+        destination = get_object_or_404(Destination, pk=pk)
+        # On essaie de récupérer ou de créer les instances liées (pour éviter une erreur si elles n'existent pas)
+        destination_data, created_data = Destination_data.objects.get_or_create(code_dest_data=destination)
+        destination_flux, created_flux = Destination_flux.objects.get_or_create(code_dest_flux=destination)
+        
+        # Initialisation des formulaires avec les instances
+        form = DestinationForm(instance=destination, user=request.user)
+        data_form = DestinationDataForm(instance=destination_data)
+        flux_form = DestinationFluxForm(instance=destination_flux)
+        
+        context = {
+            'form': form,
+            'data_form': data_form,
+            'flux_form': flux_form,
+            'destination': destination,
+            'title': _("Mise à jour de la destination")
+        }
+        return render(request, 'destination/destination_update.html', context)
+    
+    def post(self, request, pk):
+        destination = get_object_or_404(Destination, pk=pk)
+        destination_data, created_data = Destination_data.objects.get_or_create(code_dest_data=destination)
+        destination_flux, created_flux = Destination_flux.objects.get_or_create(code_dest_flux=destination)
+        
+        # Liaison des données POST et des fichiers aux instances
+        form = DestinationForm(request.POST, request.FILES, instance=destination, user=request.user)
+        data_form = DestinationDataForm(request.POST, instance=destination_data)
+        flux_form = DestinationFluxForm(request.POST, instance=destination_flux)
+        
+        if form.is_valid() and data_form.is_valid() and flux_form.is_valid():
+            form.save()
+            
+            # Sauvegarde des instances liées
+            destination_data = data_form.save(commit=False)
+            destination_data.code_dest_data = destination
+            destination_data.save()
+            data_form.save_m2m()
+            
+            destination_flux = flux_form.save(commit=False)
+            destination_flux.code_dest_flux = destination
+            destination_flux.save()
+            
+            messages.success(request, _(f"La destination {destination.name_dest} a été mise à jour."))
+            return redirect('destination_detail', pk=destination.id)
+        
+        else:
+            messages.error(request, _("Le formulaire n'est pas valide."))
+            context = {
+                'form': form,
+                'data_form': data_form,
+                'flux_form': flux_form,
+                'destination': destination,
+                'title': _("Mise à jour de la destination")
+            }
+            return render(request, 'destination/destination_update.html', context)

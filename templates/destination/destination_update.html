@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% load i18n %}
+
+{% block content %}
+<h2>{% trans "Mise à jour de" %} {{ destination.name_dest }}</h2>
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <div class="row">
+        <div class="col-12">
+            {% crispy form %}
+
+            {% crispy data_form %}
+
+            {% crispy flux_form %}
+        </div>
+    </div>
+</form>
+
+<p><a href="{% url 'destination_detail' pk=destination.pk %}">{% trans "Retour au détail" %}</a></p>
+{% endblock content %}

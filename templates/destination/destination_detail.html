@@ -50,12 +50,14 @@
                                 <li class="list-group-item"><strong>{% trans "Manager:" %}</strong> {{ destination.manager_dest|default:_("Non défini") }}</li>
                                 <li class="list-group-item"><strong>{% trans "Référent:" %}</strong> {{ destination.referent_dest|default:_("Non défini") }}</li>
                                 <li class="list-group-item"><strong>{% trans "Gestionnaire:" %}</strong> {{ destination.matcher_dest|default:_("Non défini") }}</li>
+                                <li class="list-group-item"><strong>{% trans "Gestionnaire alternatif :" %}</strong> {{destination.matcher_alt_dest|default:_("Non défini") }}</li>
                                 <li class="list-group-item"><strong>{% trans "Financier:" %}</strong> {{destination.finance_dest|default:_("Non défini") }}</li>
                             </ul>
-                            <h4>{% trans "Emails" %}</h4>
+                            <ul></ul>
+                            <h4>{% trans "Courriels" %}</h4>
                             <ul class="list-group list-group-flush">
-                                <li class="list-group-item"><strong>{% trans "Email de notification:" %}</strong> {{ destination.mail_notification_dest }}</li>
-                                <li class="list-group-item"><strong>{% trans "Email de réponse:" %}</strong> {{destination.mail_response_dest}}</li>
+                                <li class="list-group-item"><strong>{% trans "Courriel de notification:" %}</strong> {{ destination.mail_notification_dest }}</li>
+                                <li class="list-group-item"><strong>{% trans "Courriel de réponse:" %}</strong> {{destination.mail_response_dest}}</li>
                             </ul>
                         </div>
                     </div>
@@ -66,11 +68,6 @@
                                 <li class="list-group-item"><strong>{% trans "Lieux ou thèmes:" %}</strong> {{ destination.list_places_dest }}</li>
                                 <li class="list-group-item"><strong>{% trans "Minimum choix de lieux/thèmes:" %}</strong> {{ destination.mini_lp_dest }}</li>
                                 <li class="list-group-item"><strong>{% trans "Maximum choix de lieux/thèmes:" %}</strong> {{ destination.max_lp_dest }}</li>
-                            </ul>
-                            <h4>{% trans "Centres d'intérêt" %}</h4>
-                            <ul class="list-group list-group-flush">
-                                <li class="list-group-item"><strong>{% trans "Minimum choix de centres d'intérêt:" %}</strong> {{ destination.mini_interest_center_dest }}</li>
-                                <li class="list-group-item"><strong>{% trans "Maximum choix de centres d'intérêt:" %}</strong> {{ destination.max_interest_center_dest }}</li>
                             </ul>
                         </div>
                         <div class="col-md-6">
@@ -83,6 +80,17 @@
                                 {% endif %}
                                 <li class="list-group-item"><strong>{% trans "Dispersion des dates en jours:" %}</strong> {{destination.dispersion_param_dest}}</li>
                             </ul>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <h4>{% trans "Centres d'intérêt" %}</h4>
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item"><strong>{% trans "Minimum choix de centres d'intérêt:" %}</strong> {{ destination.mini_interest_center_dest }}</li>
+                                <li class="list-group-item"><strong>{% trans "Maximum choix de centres d'intérêt:" %}</strong> {{ destination.max_interest_center_dest }}</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
                             <h4>{% trans "Accessibilité" %}</h4>
                             <ul class="list-group list-group-flush">
                                 {% if destination.disability_dest %}
@@ -93,6 +101,7 @@
                                 {% endif %}
                             </ul>
                         </div>
+
                     </div>
                     <div class="row mb-3">
                         <div class="col-md-12 d-flex justify-content-end">
