@@ -17,7 +17,7 @@
                     <button class="nav-link" id="destination-data-tab" data-bs-toggle="tab" data-bs-target="#destination-data" type="button" role="tab">{% trans "Données Fonctionnelles" %}</button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="destination-flux-tab" data-bs-toggle="tab" data-bs-target="#destination-flux" type="button" role="tab">{% trans "Flux" %}</button>
+                    <button class="nav-link" id="destination-flux-tab" data-bs-toggle="tab" data-bs-target="#destination-flux" type="button" role="tab">{% trans "Données de flux" %}</button>
                 </li>
             </ul>
             <!-- Contenu des onglets -->
@@ -50,8 +50,10 @@
                                 <li class="list-group-item"><strong>{% trans "Manager:" %}</strong> {{ destination.manager_dest|default:_("Non défini") }}</li>
                                 <li class="list-group-item"><strong>{% trans "Référent:" %}</strong> {{ destination.referent_dest|default:_("Non défini") }}</li>
                                 <li class="list-group-item"><strong>{% trans "Gestionnaire:" %}</strong> {{ destination.matcher_dest|default:_("Non défini") }}</li>
+                                {% if destination.matcher_alt_dest %}
                                 <li class="list-group-item"><strong>{% trans "Gestionnaire alternatif :" %}</strong> {{destination.matcher_alt_dest|default:_("Non défini") }}</li>
-                                <li class="list-group-item"><strong>{% trans "Financier:" %}</strong> {{destination.finance_dest|default:_("Non défini") }}</li>
+                                {% endif %}
+                                <li class="list-group-item"><strong>{% trans "Responsable financier:" %}</strong> {{destination.finance_dest|default:_("Non défini") }}</li>
                             </ul>
                             <ul></ul>
                             <h4>{% trans "Courriels" %}</h4>
@@ -113,21 +115,200 @@
                 <div class="tab-pane fade" id="destination-data" role="tabpanel">
                     {% with data=destination.destination_data %}
                         {% if data %}
-                            <div class="row mb-3">
-                                <div class="col-md-12">
-                                    <h4>{% trans "Données Fonctionnelles" %}</h4>
+                            <div class="row mb-3 form-group-encadre">
+                                <h4>{% trans "Donations" %}</h4>    
+                                <div class="col-md-6">
                                     <ul class="list-group list-group-flush">
-                                        <li class="list-group-item"><strong>{% trans "Bénéficiaire des dons:" %}</strong> {{ data.beneficiaire_don_dest }}</li>
-                                        <li class="list-group-item"><strong>{% trans "Proposition de don:" %}</strong> {{ data.donation_proposal_dest }} €</li>
-                                        <li class="list-group-item"><strong>{% trans "PayPal:" %}</strong> <a href="{{ data.paypal_dest }}" target="_blank">{{ data.paypal_dest }}</a></li>
-                                        <li class="list-group-item"><strong>{% trans "TripAdvisor:" %}</strong> <a href="{{ data.tripadvisor_dest }}" target="_blank">{{ data.tripadvisor_dest }}</a></li>
-                                        <li class="list-group-item"><strong>{% trans "Google My Business:" %}</strong> <a href="{{ data.googlemybusiness_dest }}" target="_blank">{{ data.googlemybusiness_dest }}</a></li>
+                                        <li class="list-group-item"><strong>{% trans "Bénéficiaire des dons :" %}</strong> {{ data.beneficiaire_don_dest|default:_("Non défini") }}</li>
+                                        <li class="list-group-item"><strong>{% trans "Proposition de don :" %}</strong> {{ data.donation_proposal_dest }} €</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item"><strong>{% trans "Texte de la demande de don :"%}</strong> {{ data.donation_text_dest|default:_("Non défini") }}</li>
+                                        <li class="list-group-item"><strong>{% trans "URL Paypal destination :"%}</strong> {{ data.paypal_dest|default:_("Non défini") }}</li>
                                     </ul>
                                 </div>
                             </div>
                             <div class="row mb-3">
+                                <h4>{% trans "Réseaux sociaux" %}</h4>
+                                <div class="col-md-6">
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item"><strong>{% trans "TripAdvisor :" %}</strong> {{ data.tripadvisor_dest|default:_("Non défini") }}</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item"><strong>{% trans "Google My Business : " %}</strong>{{data.googlemybusiness_dest|default:_("Non défini")}}</li>                            <div class="row mb-3">
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <h4>{% trans "Langues de communication" %}</h4>
+                                <div class="col-md-6">                                  
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item"><strong>{% trans "Langue principale :" %}</strong> {{ data.lang_default_dest|default:_("Non défini") }}</li>
+                                    </ul>    
+                                </div>        
+                                <div class="col-md-6">
+                                    <ul class="list-group list-group-flush">        
+                                        <li class="list-group-item"><strong>{% trans "Langues de communication :" %}</strong> {{ data.langs_com_dest.all|join:", "|default:_("Non défini") }}</li>
+                                    </ul>
+                                </div>    
+                            </div>
+                            <div class="row mb-3">
+                                <h4 >{% trans "Modalités de gestion des demandes" %}</h4>
+                                <div class="col-md-6">
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item"><strong>{% trans "Modalités de gestion :" %}</strong> {{ data.flag_modalités_dest|default:_("Non défini") }}</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item"><strong>{% trans "Périodicité des courriels en mode Greet & Greet :" %}</strong> {{ data.periode_mail_cg_dest|default:_("Non défini") }}</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <ul class="list-group list-group-flush">
+                                        {% if data.flag_cg_T_dest %}
+                                        <li class="list-group-item"><strong>{% trans "Intégrer les demandes en traitement au Greet & Greet : " %}</strong>{% trans "Oui" %}</li>
+                                        {% else %} 
+                                        <li class="list-group-item"><strong>{% trans "Intégrer les demandes en traitement au Greet & Greet : " %}</strong>{% trans "Non" %}</li>
+                                        {% endif %}    
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <ul class="list-group list-group-flush">
+                                        {% if data.flag_cg_U_dest %}
+                                        <li class="list-group-item"><strong>{% trans "Intégrer les demandes en urgence au Greet & Greet : " %}</strong>{% trans "Oui" %}</li>
+                                        {% else %} 
+                                        <li class="list-group-item"><strong>{% trans "Intégrer les demandes en urgence au Greet & Greet : " %}</strong>{% trans "Non" %}</li>
+                                        {% endif %}    
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <h4>{% trans "Personnalisation du formulaire de demande" %}</h4>
+                                <div class="col-md-6">
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item"><strong>{% trans "Demande de commentaires pour le visiteur" %}</strong> {{ data.flag_comment_visitor_dest|default:_("Non défini") }}</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    {% if data.flag_comment_visitor_dest %}
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item"><strong>{% trans "Texte du commentaire pour le visiteur :" %}</strong> {{ data.param_comment_visitor_dest|default:_("Non défini") }}</li>
+                                    </ul>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item"><strong>{% trans "Texte du premier libellé :" %}</strong> {{ data.libelle_form_coche1_dest|default:_("Non défini") }}</li>
+                                        <li class="list-group-item"><strong>{% trans "Nom de l'URL du premier libellé :" %}</strong> {{ data.lib_url_form_coche1_dest|default:_("Non défini") }}</li>
+                                        <li class="list-group-item"><strong>{% trans "URL du premier libellé :" %}</strong> {{ data.url_form_coche1_dest|default:_("Non défini") }}</li>
+                                        {% if data.flag_request_coche1_dest %}
+                                        <li class="list-group-item"><strong>{% trans "Premier libelle obligatoire :" %}</strong> {% trans "Oui" }</li>
+                                        {% else %}
+                                        <li class="list-group-item"><strong>{% trans "Premier libelle obligatoire :" %}</strong> {% trans "Non" %}</li>
+                                        {% endif %}   
+                                    </ul>
+                                </div>
+                                <div class="col-md-4">
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item"><strong>{% trans "Texte du deuxième libellé :" %}</strong> {{ data.libelle_form_coche2_dest|default:_("Non défini") }}</li>
+                                        <li class="list-group-item"><strong>{% trans "Nom de l'URL du deuxième libellé :" %}</strong> {{ data.lib_url_form_coche2_dest|default:_("Non défini") }}</li>
+                                        <li class="list-group-item"><strong>{% trans "URL du deuxième libellé :" %}</strong> {{ data.url_form_coche2_dest|default:_("Non défini") }}</li>
+                                        {% if data.flag_request_coche2_dest %}
+                                        <li class="list-group-item"><strong>{% trans "Deuxième libelle obligatoire :" %}</strong> {% trans "Oui" }</li>
+                                        {% else %}
+                                        <li class="list-group-item"><strong>{% trans "Deuxième libelle obligatoire :" %}</strong> {% trans "Non" %}</li>
+                                        {% endif %}   
+                                    </ul>
+                                </div>
+                                <div class="col-md-4">
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item"><strong>{% trans "Texte du troisième libellé :" %}</strong> {{ data.libelle_form_coche3_dest|default:_("Non défini") }}</li>
+                                        <li class="list-group-item"><strong>{% trans "Nom de l'URL du troisième libellé :" %}</strong> {{ data.lib_url_form_coche3_dest|default:_("Non défini") }}</li>
+                                        <li class="list-group-item"><strong>{% trans "URL du troisième libellé :" %}</strong> {{ data.url_form_coche3_dest|default:_("Non défini") }}</li>
+                                        {% if data.flag_request_coche3_dest %}
+                                        <li class="list-group-item"><strong>{% trans "Troisième libelle obligatoire :" %}</strong> {% trans "Oui" }</li>
+                                        {% else %}
+                                        <li class="list-group-item"><strong>{% trans "Troisième libelle obligatoire :" %}</strong> {% trans "Non" %}</li>
+                                        {% endif %}   
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <h4>{% trans "Gestion des réponses visiteur et Greeter" %}</h4>
+                                <div class="col-md-6">
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item"><strong>{% trans "En cas de non-réponse du visiteur :" %}</strong> {{ data.flag_NoAnswer_visitor_dest}}</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <ul class="list-group list-group-flush">
+                                        {% if data.flag_reason_NoAnswer_greeter_dest  %}
+                                        <li class="list-group-item"><strong>{% trans "Demander le motif de non-proposition du Greeter : " %}</strong> {% trans "Oui"}</li>
+                                        {% else %}
+                                        <li class="list-group-item"><strong>{% trans "Demander le motif de non-proposition du Greeter : " %}</strong> {% trans "Non" %}</li>
+                                        {% endif %}     
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <h4>{% trans "Signature des courriels" %}</h4>
+                                <div class="col-md-6">
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item"><strong>{% trans "Nom de la signature des courriels :" %}</strong> {{ data.name_sign_mail_dest|default:_("Non défini") }}</li>
+                                        <li class="list-group-item"><strong>{% trans "Nom du premier réseau social :" %}</strong> {{ data.libelle_social1_mail_dest|default:_("Non défini") }}</li>
+                                        <li class="list-group-item"><strong>{% trans "Nom du deuxième réseau social :" %}</strong> {{ data.libelle_social2_mail_dest|default:_("Non défini") }}</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <ul class="list-group list-group-flush">   
+                                        <li class="list-group-item"><strong>{% trans "URl de la signature des courriels :" %}</strong> {{ data.url_mail_signature_dest|default:_("Non défini") }}</li>
+                                        <li class="list-group-item"><strong>{% trans "URL du premier réseau social :" %}</strong> {{ data.url_social1_mail_dest|default:_("Non défini") }}</li>
+                                        <li class="list-group-item"><strong>{% trans "URL du deuxième réseau social :" %}</strong> {{ data.url_social2_mail_dest|default:_("Non défini") }}</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-12">
+                                    <ul class="list-group list-group-flush">   
+                                        <li class="list-group-item"><strong>{% trans "Tagline de la signature des courriels :" %}</strong> {{ data.tagline_mail_dest|default:_("Non défini") }}</li>
+                                    </ul>
+                                </div>    
+                                <div class="col-md-6">
+                                    <ul class="list-group list-group-flush">    
+                                        <li class="list-group-item"><strong>{% trans "Tire de l'avis du pied des courriels :" %}</strong> {{ data.titre_avis_mail_dest|default:_("Non défini") }}</li>    
+                                        <li class="list-group-item"><strong>{% trans "Date du début de l'avis : " %}</strong> {{ data.date_debut_avis_mail_dest|default:_("Non défini") }}</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item"><strong>{% trans "Texte de l'avis du pied des courriels :" %}</strong> {{ data.texte_avis_mail_dest|default:_("Non défini") }}</li>  
+                                        <li class="list-group-item"><strong>{% trans "Date de fin de l'avis : " %}</strong> {{ data.date_fin_avis_mail_dest|default:_("Non défini") }}</li> 
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <h4>{% trans "Fermeture exceptionnelle de la destination" %}</h4>
+                                <div class="col-md-12">
+                                    <ul class="list-group list-group-flush">
+                                        {% if data.avis_fermeture_dest %}       
+                                        <li class="list-group-item"><strong>{% trans "Avis de fermeture exceptionnelle : " %}</strong> {% trans "Oui" %}</li>
+                                        <li class="list-group-item"><strong>{% trans "Texte de l'avis de fermeture : " %}</strong> {{ data.texte_avis_fermeture_dest }}</li>
+                                        <li class="list-group-item"><strong>{% trans "Date de début de la fermeture : " %}</strong> {{ data.date_début_avis_fermeture_dest }}</li>
+                                        <li class="list-group-item"><strong>{% trans "Date de fin de la fermeture : " %}</strong> {{ data.date_fin_avis_fermeture_dest }}</li>
+                                        <li class="list-group-item"><strong>{% trans "Nombre de participants acceptés : " %}</strong> {{ data.nbre_participants_fermeture_dest }}</li>
+                                        {% else %}
+                                        <li class="list-group-item"><strong>{% trans "Avis de fermeture exceptionnelle : " %}</strong> {% trans "Non" %}</li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                            </div>     
+                            <div class="row mb-3">
                                 <div class="col-md-12 d-flex justify-content-end">
-                                    <a href="#" class="btn btn-info me-2">{% trans "Voir" %}</a>
                                     <a href="#" class="btn btn-warning">{% trans "Mettre à jour" %}</a>
                                 </div>
                             </div>
@@ -142,18 +323,69 @@
                     {% with flux=destination.destination_flux %}
                         {% if flux %}
                             <div class="row mb-3">
-                                <div class="col-md-12">
-                                    <h4>{% trans "Flux" %}</h4>
+                            <h4>{% trans "Demandes précoces" %}</h4>
+                                <div class="col-md-6">
                                     <ul class="list-group list-group-flush">
-                                        <li class="list-group-item"><strong>{% trans "Type de flux:" %}</strong> {{ flux.type_flux }}</li>
-                                        <li class="list-group-item"><strong>{% trans "Statut:" %}</strong> {{ flux.statut_flux }}</li>
-                                        <li class="list-group-item"><strong>{% trans "Date de création:" %}</strong> {{ flux.date_creation_flux }}</li>
+                                        <li class="list-group-item"><strong>{% trans "Fréquence d'envoi des courriels de rappel : " %}</strong> {{ flux.frequence_mail_precoce }} {% trans "jours" %} </li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item"><strong>{% trans "Nombre de jours avannt le passage en mode Traitement : " %}</strong> {{ flux.flux_treatement_dest}} {% trans "jours" %} </li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item"><strong>{% trans "Nombre de jours avant le passage en mode Urgence : " %}</strong> {{flux.flux_urgency_dest}} {% trans "jours" %}</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item"><strong>{% trans "Nombre minimum de jours avant la date demandée : " %}</strong> {{ flux.flux_delai_organisation}} {% trans "jours" %}</li>
+                                    </ul>  
+                            </div>
+                            <div class="row mb-3">
+                                <h4>{% trans "Gestion de l'attribution" %}</h4>
+                                <div class="col-md-6">
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item"><strong>{% trans "Nombre de jours pour répondre à une attribution : " %}</strong> {{ flux.flux_delai_max_greeter_dest}} {% trans "jours" %}</li>
+                                        <li class="list-group-item"><strong>{% trans "Nombre de jours pour répondre à une Proposition  : " %}</strong> {{ flux.flux_delai_visiteur_max_dest}} {% trans "jours" %}</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item"><strong>{% trans "Fréquence de relance du Greeter pour répondre : " %}</strong> {{ flux.flux_frequence_relance_greeter_dest}} {% trans "jours" %}</li>
+                                        <li class="list-group-item"><strong>{% trans "Fréquence de relance du visiteur pour répondre : " %}</strong> {{ flux.flux_frequence_relance_visiteur_dest}} {% trans "jours" %}</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item"><strong>{% trans "Nombre de jours avant la balade pour envoyer le courriel de rappel : " %}</strong> {{ flux.flux_delai_pre_balade_dest}} {% trans "jours" %}</li>
                                     </ul>
                                 </div>
                             </div>
                             <div class="row mb-3">
+                                <h4>{% trans "Gestion de l'après-balade" %}</h4>
+                                <div class="col-md-12">
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item"><strong>{% trans "Nombre de jours après la balade pour saisir une balade manuelle : " %}</strong> {{ flux.flux_saisie_suivie_dest}} {% trans "jours" %}</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item"><strong>{% trans "Nombre de jours  pour demander le compte-rendu  au Greeter : " %}</strong> {{ flux.flux_delai_compte_rendu_dest}} {% trans "jours" %}</li>
+                                        <li class="list-group-item"><strong>{% trans "Nombre de jours  pour envoyer le courriel d'avis au visiteur : " %}</strong> {{ flux.flux_delai_envoi_avis_visiteur}} {% trans "jours" %}</li>
+                                        <li class="list-group-item"><strong>{% trans "Nombre maximun de jours pour la réponse d'avis du visiteur : " %}</strong> {{ flux.flux_delai_avis_max_dest}} {% trans "jours" %}</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item"><strong>{% trans "Fréquence de relance du Greeter pour le compte-rendu : " %}</strong> {{ flux.flux_frequence_compte_rendu_dest}} {% trans "jours" %}</li>
+                                        <li class="list-group-item"><strong>{% trans "Fréquence de relance du visiteur pour l'avis : " %}</strong> {{ flux.flux_frequence_envoi_avis_dest}} {% trans "jours" %}</li>
+                                    </ul>
+                            </div>
+                            <div class="row mb-3">
                                 <div class="col-md-12 d-flex justify-content-end">
-                                    <a href="#" class="btn btn-info me-2">{% trans "Voir" %}</a>
                                     <a href="#" class="btn btn-warning">{% trans "Mettre à jour" %}</a>
                                 </div>
                             </div>

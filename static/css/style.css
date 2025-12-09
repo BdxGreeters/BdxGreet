@@ -30,3 +30,14 @@
     top: -12px;
     left: 10px;
 }
+/* encadrement des groupes de champs de formulaire */
+.form-group-encadre {
+    /* Ajout d'une bordure noire de 1 pixel */
+    border: 1px solid black;
+    /* Arrondir les coins */
+    border-radius: 10px; /* Vous pouvez ajuster cette valeur */
+    /* Ajouter un peu d'espace entre la bordure et le contenu (champs) */
+    padding: 15px;
+    /* Ajouter un peu d'espace autour du bloc encadré */
+    margin-bottom: 1rem;
+}
