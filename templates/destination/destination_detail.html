@@ -5,7 +5,7 @@
 <div class="container mt-4">
     <div class="card shadow-sm">
         <div class="card-header bg-primary text-white">
-            <h2 class="mb-0">{{ destination.code_dest }} - {{ destination.name_dest }}</h2>
+            <h2 class="mb-0">{{destination.code_cluster}} - {{ destination.code_dest }} - {{ destination.name_dest }}</h2>
         </div>
         <div class="card-body">
             <!-- Onglets -->
@@ -107,7 +107,7 @@
                     </div>
                     <div class="row mb-3">
                         <div class="col-md-12 d-flex justify-content-end">
-                            <a href="#" class="btn btn-warning me-2">{% trans "Mettre à jour" %}</a>
+                            <a href="{% url 'destination_update' destination.pk %}" class="btn btn-warning me-2">{% trans "Mettre à jour" %}</a>
                         </div>
                     </div>
                 </div>
@@ -374,7 +374,7 @@
                                 <div class="col-md-6">
                                     <ul class="list-group list-group-flush">
                                         <li class="list-group-item"><strong>{% trans "Nombre de jours  pour demander le compte-rendu  au Greeter : " %}</strong> {{ flux.flux_delai_compte_rendu_dest}} {% trans "jours" %}</li>
-                                        <li class="list-group-item"><strong>{% trans "Nombre de jours  pour envoyer le courriel d'avis au visiteur : " %}</strong> {{ flux.flux_delai_envoi_avis_visiteur}} {% trans "jours" %}</li>
+                                        <li class="list-group-item"><strong>{% trans "Nombre de jours  pour envoyer le courriel d'avis au visiteur : " %}</strong> {{ flux.flux_delai_envoi_avis_dest}} {% trans "jours" %}</li>
                                         <li class="list-group-item"><strong>{% trans "Nombre maximun de jours pour la réponse d'avis du visiteur : " %}</strong> {{ flux.flux_delai_avis_max_dest}} {% trans "jours" %}</li>
                                     </ul>
                                 </div>
@@ -383,6 +383,15 @@
                                         <li class="list-group-item"><strong>{% trans "Fréquence de relance du Greeter pour le compte-rendu : " %}</strong> {{ flux.flux_frequence_compte_rendu_dest}} {% trans "jours" %}</li>
                                         <li class="list-group-item"><strong>{% trans "Fréquence de relance du visiteur pour l'avis : " %}</strong> {{ flux.flux_frequence_envoi_avis_dest}} {% trans "jours" %}</li>
                                     </ul>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <h4>{% trans "Protection des données personnelles" %}</h4>
+                                <div class="col-md-12">
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item"><strong>{% trans "Nombre de jours avant anonymisation des données personnelles : " %}</strong> {{ flux.flux_rgpd_dest}} {% trans "jours" %}</li>
+                                    </ul>
+                                </div>
                             </div>
                             <div class="row mb-3">
                                 <div class="col-md-12 d-flex justify-content-end">

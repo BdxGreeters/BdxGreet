@@ -168,7 +168,7 @@ class SuperAdminRequiredMixin(UserPassesTestMixin):
         )
 
     def handle_no_permission(self):
-        messages.error(self.request, _("Vous n'avez pas les droits nécessaires pour modifier un cluster."))
+        messages.error(self.request, _("Vous n'avez pas les droits nécessaires pour modifier ce cluster."))
         return redirect('clusters_list')
 
 class ClusterUpdateView(LoginRequiredMixin, SuperAdminRequiredMixin, FieldPermissionMixin, UpdateView):
@@ -215,6 +215,9 @@ class ClusterUpdateView(LoginRequiredMixin, SuperAdminRequiredMixin, FieldPermis
         # Retirer du groupe Admin les utilisateurs qui ne sont plus administrateurs
         for user in old_admins - new_admins:
             user.groups.remove(admin_group)
+            user.code_cluster = None
+            user.save()
+
 
         # Ajouter au groupe Admin les nouveaux administrateurs
         for user in new_admins - old_admins:

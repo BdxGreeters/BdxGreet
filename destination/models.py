@@ -34,11 +34,11 @@ class Destination(models.Model):
     logo_dest=models.ImageField(upload_to='logos/',default='logos/default.jpg',verbose_name=_('Logo'),blank=True, null=True,help_text=_("Taille : 250 px *250 px"))
     libelle_email_dest=models.CharField(max_length=50, default=" ", verbose_name=_("Libellé courriel émetteur "),help_text=_("Saisir le libellé des courriels émetteurs de la destination"))
     statut_dest=models.CharField(max_length=15, choices=choices, default="Drafts",help_text=_("Saisir le statut dela destination"),verbose_name=_("Statut"))
-    manager_dest=models.ForeignKey(User,on_delete=models.SET_NULL,related_name="manager_name_dest", blank=True, null=True,verbose_name=_("Nom du manager"),help_text=_("Saisir le nom du manager de la destination"))
-    referent_dest=models.ForeignKey(User,on_delete=models.SET_NULL,related_name="referent_name_dest", blank=True, null=True,verbose_name=_("Nom du référent"),help_text=_("Saisir le nom du référent de la destination"))
-    matcher_dest=models.ForeignKey(User,on_delete=models.SET_NULL,related_name="matcher_name_dest", blank=True, null=True,verbose_name=_("Nom du gestionnaire"),help_text=_("Saisir le nom du gestionnaire de la destination"))
+    manager_dest=models.ForeignKey(User,on_delete=models.SET_NULL,related_name="manager_name_dest",null=True, verbose_name=_("Nom du manager"),help_text=_("Saisir le nom du manager de la destination"))
+    referent_dest=models.ForeignKey(User,on_delete=models.SET_NULL,related_name="referent_name_dest",null=True, verbose_name=_("Nom du référent"),help_text=_("Saisir le nom du référent de la destination"))
+    matcher_dest=models.ForeignKey(User,on_delete=models.SET_NULL,related_name="matcher_name_dest",null=True, verbose_name=_("Nom du gestionnaire"),help_text=_("Saisir le nom du gestionnaire de la destination"))
     matcher_alt_dest=models.ForeignKey(User,on_delete=models.SET_NULL, related_name="matcher_alt_name_dest", blank=True, null=True,verbose_name=_("Nom du gestionnaire alternatif"),help_text=_("Saisir le nom du gestionnaire alternatif de la destination"))
-    finance_dest=models.ForeignKey(User,on_delete=models.SET_NULL,related_name="finance_name_dest", blank=True, null=True,verbose_name=_("Nom du gestionnaire financier"),help_text=_("Saisir le nom du gestionnaire financier de la destination"))
+    finance_dest=models.ForeignKey(User,on_delete=models.SET_NULL,related_name="finance_name_dest",null=True,verbose_name=_("Nom du gestionnaire financier"),help_text=_("Saisir le nom du gestionnaire financier de la destination"))
     list_places_dest=models.CharField(max_length=500,default=" ", verbose_name=_("Liste des lieux ou thèmes"),help_text=_("Saisir les lieux ou thèmes de la destination"))
     max_lp_dest=models.IntegerField(default=1, verbose_name=_("Nombre maximum de lieux ou thèmes"), help_text=_("Saisir le nombre maximum de lieux ou thèmes par le visiteur"))
     mini_lp_dest=models.IntegerField(default=1, verbose_name=_("Nombre minimum de lieux ou thèmes"), help_text=_("Saisir le nombre minimum de lieux ou thèmes par le visiteur"))
@@ -65,7 +65,7 @@ class Destination(models.Model):
     
     
     def __str__(self):
-        return f"{self.code_dest} - {self.name_dest}  "
+        return f"{self.code_dest} - {self.name_dest}"
     
 ####################################################################################################
 # 

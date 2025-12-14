@@ -19,13 +19,24 @@ from destination.models import Destination, Destination_data, Destination_flux
 User = get_user_model()
 
 class DestinationForm(HelpTextTooltipMixin, CommaSeparatedFieldMixin, forms.ModelForm):
-    
+
+    # Champs modifiables par le matcher
+    matcher_fields = [
+        'list_places_dest',
+        'mini_lp_dest',
+        'max_lp_dest',
+        'mini_interest_center_dest',
+        'max_interest_center_dest',
+        'flag_stay_dest',
+        'dispersion_param_dest'
+        ]
+
+    # Champ pour sélectionner le cluster par son code quand un user a un cluster attribué
     code_cluster = forms.ModelChoiceField(
         queryset=Cluster.objects.all(), # Ou le queryset pertinent
         # ⭐ LA CLÉ : utilise le champ 'code' du Cluster comme valeur dans le HTML
         to_field_name='code_cluster',
         required=True,)
-    
     code_cluster_hidden = forms.CharField(widget=forms.HiddenInput(), required=False)   
 
     class Meta:
@@ -64,7 +75,7 @@ class DestinationForm(HelpTextTooltipMixin, CommaSeparatedFieldMixin, forms.Mode
         ]
         widgets = {
             'status_dest': forms.RadioSelect(),
-            'code_cluster': forms.Select(),
+            'code_cluster': forms.Select(attrs={'class': 'form-select'}),
             'pays_dest': forms.Select(),
             'statut_dest': forms.RadioSelect(),
             'desc_dest': forms.Textarea(attrs={'rows': 2}),
@@ -78,16 +89,27 @@ class DestinationForm(HelpTextTooltipMixin, CommaSeparatedFieldMixin, forms.Mode
         }
 
     def __init__(self, *args,code_cluster_user=None, **kwargs):
+        self.helper = FormHelper()
+        self.helper.form_method = 'post'
         user=kwargs.pop('user', None)
+        self.is_update=kwargs.pop('is_update', False)
+        
         super().__init__(*args, **kwargs)
 
+        # Si on est en mode mise à jour et que l'instance a un cluster, pré-remplir et désactiver le champ code_cluster
+        if self.is_update and self.instance and self.instance.code_cluster:
+            self.initial['code_cluster'] = self.instance.code_cluster.code_cluster
+            self.fields['code_cluster'].disabled = True # Désactiver le champ pour empêcher la modification
+            self.fields['code_dest'].disabled = True # Désactiver le champ pour empêcher la modification
+        
+        else:
         # Si un code_cluster_user est fourni, filtrer les clusters disponibles
-        if code_cluster_user:
-            self.fields['code_cluster'].queryset = Cluster.objects.filter(code_cluster=code_cluster_user)
-            self.fields['code_cluster'].initial = get_object_or_404(Cluster, code_cluster=code_cluster_user)
-            self.fields['code_cluster'].disabled = True  # Désactiver le champ pour empêcher la modification
+            if code_cluster_user:
+                self.fields['code_cluster'].queryset = Cluster.objects.filter(code_cluster=code_cluster_user)
+                self.fields['code_cluster'].initial = get_object_or_404(Cluster, code_cluster=code_cluster_user)
+                self.fields['code_cluster'].disabled = True # Désactiver le champ pour empêcher la modification
 
-    # Récupérer les codes des destinations existantes, sauf celle en cours d'édition
+        # Récupérer les codes des destinations existantes, sauf celle en cours d'édition
         existing_destinations = Destination.objects.exclude(
         pk=self.instance.pk  # Exclure la destination en cours d'édition
         ).values_list('code_dest', flat=True)
@@ -104,7 +126,7 @@ class DestinationForm(HelpTextTooltipMixin, CommaSeparatedFieldMixin, forms.Mode
         label="Code Parent",
         )
 
-    # Lister les utilisateurs par ordre alphabétique membres de  la destination en cours d'édition
+        # Lister les utilisateurs par ordre alphabétique membres de  la destination en cours d'édition
         user_queryset = User.objects.all().order_by('last_name', 'first_name')
         self.fields['manager_dest'].queryset = user_queryset
         self.fields['referent_dest'].queryset = user_queryset
@@ -113,8 +135,7 @@ class DestinationForm(HelpTextTooltipMixin, CommaSeparatedFieldMixin, forms.Mode
         self.fields['finance_dest'].queryset = user_queryset
        
 
-        self.helper = FormHelper()
-        self.helper.form_method = 'post'
+        
         self.helper.layout = Layout(
             TabHolder(
                 Tab(

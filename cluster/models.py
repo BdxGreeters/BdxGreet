@@ -58,5 +58,5 @@ class Cluster(models.Model):
         super().save(*args, **kwargs)
       
     def __str__(self):
-        return f"{self.code_cluster}"
+        return self.code_cluster
 ###################################################################################################
