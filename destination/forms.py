@@ -100,8 +100,7 @@ class DestinationForm(HelpTextTooltipMixin, CommaSeparatedFieldMixin, forms.Mode
         if self.is_update and self.instance and self.instance.code_cluster:
             self.initial['code_cluster'] = self.instance.code_cluster.code_cluster
             self.fields['code_cluster'].disabled = True # Désactiver le champ pour empêcher la modification
-            self.fields['code_dest'].disabled = True # Désactiver le champ pour empêcher la modification
-        
+            self.fields['code_dest'].disabled = True # Désactiver le champ pour empêcher la modification      
         else:
         # Si un code_cluster_user est fourni, filtrer les clusters disponibles
             if code_cluster_user:
