@@ -56,6 +56,8 @@ INSTALLED_APPS = [
     'core',
     'cluster',
     'destination',
+    'greeters',
+    'greet',
     'django.contrib.humanize',
     'celery',
     'crispy_forms',

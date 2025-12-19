@@ -19,9 +19,6 @@ urlpatterns = [
 
     # URLs de votre application
     path('users/create/', account_views.UserCreateView.as_view(), name='create_user'),
-    path('greeter/<int:pk>/update/', account_views.GreeterUpdateGreeter.as_view(), name='greeter_update'),
     path('users/<int:pk>/update/', account_views.UserUpdateView.as_view(), name='user_update'),
-    path('greeter/create/', account_views.CreationGreeter.as_view(), name='create_greeter'),
     path('users/', account_views.UserListView.as_view(), name='user_list'),
-    path('greeters/', account_views.GreeterListView.as_view(), name='greeter_list'),
 ]

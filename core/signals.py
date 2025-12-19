@@ -9,7 +9,7 @@ from django.dispatch import receiver
 from django.utils.translation import gettext_lazy as _
 
 from core.models import Email_Mailjet, InterestCenter
-from users.models import Greeter
+from greeters.models import Greeter
 from users.tasks import reset_password, send_email_mailjet
 
 ###################################################################################################

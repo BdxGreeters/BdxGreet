@@ -42,8 +42,8 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True, verbose_name=_('Courriel'))
     first_name = models.CharField(max_length=150, verbose_name=_("Prénom"))
     last_name = models.CharField(max_length=150, verbose_name=_("Nom"))
-    cellphone =models.CharField(max_length=15,blank=True, null=True,verbose_name=_('Téléphone portable'))
-    lang_com= models.CharField(max_length=10, choices=settings.LANGUAGES, default='fr', verbose_name=_("Langue de communication"))
+    cellphone =models.CharField(max_length=15,blank=True, null=True,verbose_name=_('Téléphone portable'), help_text=_("Saisir le numéro de téléphone portable"))
+    lang_com= models.CharField(max_length=10, choices=settings.LANGUAGES, default='fr', verbose_name=_("Langue de communication"), help_text=_("Saisir la langue de communication"))
     code_cluster=models.CharField(max_length=5, default="",blank=True, null=True,verbose_name=_('Code du cluster'))
     code_dest=models.CharField(max_length=5, default="",blank=True, null=True,verbose_name=_('Code de la destination'))
     
@@ -71,18 +71,4 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
 
-class Greeter(models.Model):
-    user = models.OneToOneField(CustomUser, on_delete=models.PROTECT)
-    adress1 = models.CharField(max_length=100,verbose_name=_('Adresse'))
-    adress2 = models.CharField(max_length=100,blank=True, null=True, verbose_name=_("Complément d'adresse"))
-    postal_code = models.CharField(max_length=5,verbose_name=_('Code postal'))
-    city = models.CharField(max_length=40, verbose_name=_('Ville'))
-    landline =models.CharField(max_length=15,blank=True, null=True,verbose_name=_('Téléphone fixe)'))
-    date_birth = models.DateField(auto_now=False, blank=True, null=True,verbose_name=_('Date de naissance'))
-    job= models.CharField(max_length=20,blank=True, null=True,verbose_name=_('Profession'))
-    photo = models.ImageField (upload_to ='photos_profil/',default='photos_profil/default.jpg', verbose_name=_('Photo de profil'), help_text=_("Taille : 200 px *200 px"))
 
-
-
-    def __str__(self):
-        return f"{self.user.first_name} {self.user.last_name}"

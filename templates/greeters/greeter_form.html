@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block styles %}
+<link rel="stylesheet" href="/static/css/comma_field.css">
+<link rel="stylesheet" href="/static/css/popup_sweetAlert.css">
+<link rel="stylesheet" href="/static/css/checkbox.css">
+{% endblock %}
+
+{% block title %}{%trans "Création d'un Greeter" %} {% endblock %}
+
+{% block content %}
+    <h2>{{ title }}</h2>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {% if user_form.errors %}
+        <div class="alert alert-danger">
+            <strong>Erreurs User :</strong>
+            {{ user_form.errors }}
+        </div>
+    {% endif %}
+
+    {% if greeter_form.errors %}
+        <div class="alert alert-danger">
+            <strong>Erreurs Greeter :</strong>
+            {{ greeter_form.errors }}
+        </div>
+    {% endif%}
+        {%  crispy user_form %}
+        {% crispy greeter_form %}
+        <button type="submit" class="btn btn-primary">{% trans "Enregistrer" %}</button>
+    </form>
+{% endblock %}

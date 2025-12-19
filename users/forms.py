@@ -1,7 +1,7 @@
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
-from .models import CustomUser, Greeter
+from users.models import CustomUser
 
 
 class UserCreationForm(forms.ModelForm):
@@ -19,10 +19,7 @@ class UserUpdateForm(forms.ModelForm):
    
 
 
-class GreeterCreationForm (forms.ModelForm):
-    class Meta :
-        model=Greeter
-        fields=('job','date_birth','photo','adress1','adress2','postal_code','city','landline')
+
         
 
 

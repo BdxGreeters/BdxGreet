@@ -24,6 +24,8 @@ urlpatterns += i18n_patterns(
     path('',include('core.urls')),
     path('',include('cluster.urls')),
     path('',include('destination.urls')),
+    path('',include('greeters.urls')),
+    
    
 ) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
        
