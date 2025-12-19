@@ -25,18 +25,7 @@
         </div>
     </div>
 </div>
-{% if data_form.errors %}
-<div class="alert alert-danger">
-    <strong>Erreurs dans le formulaire des données :</strong>
-    <ul>
-        {% for field, errors in data_form.errors.items %}
-            {% for error in errors %}
-                <li>{{field}} {{ error }}</li>
-            {% endfor %}
-        {% endfor %}
-    </ul>
-</div>
-{% endif %}
+
 
 {% endblock %}
 

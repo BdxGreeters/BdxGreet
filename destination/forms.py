@@ -369,28 +369,32 @@ class DestinationDataForm(HelpTextTooltipMixin, forms.ModelForm):
             'date_fin_avis_mail_dest': forms.DateInput(attrs={'type': 'date'}),
             'param_comment_visitor_dest': forms.Textarea(attrs={'rows': 2}),
             'flag_NoAnswer_visitor_dest': forms.RadioSelect(),
-            'avis_fermeture_dest': forms.Textarea(attrs={'rows': 2}),
+            'nbre_participants_fermeture_dest': forms.NumberInput,
             'texte_avis_fermeture_dest': forms.Textarea(attrs={'rows': 2}),
             'texte_avis_mail_dest': forms.Textarea(attrs={'rows': 2}),
         }
 
     
-    def __init__(self, *args, cluster_instance=None, **kwargs):
-        destination_instance = None
-        instance=kwargs.get('instance', None)
-        if instance and instance.code_cluster:
-            cluster=instance.code_cluster
-        elif cluster_instance:
-            cluster=cluster_instance
-        else:
-            initial_data = kwargs.get('initial', {})
-            if initial_data and 'code_dest_data' in initial_data:
-                destination_instance = initial_data['code_dest_data']
-                cluster = destination_instance.code_cluster
-            else:
-                cluster = None
+    def __init__(self, *args,  **kwargs):
+        cluster_instance = kwargs.pop('cluster_instance', None)
+        instance = kwargs.get('instance', None)
+        cluster = None
         
+        # Logique de récupération du cluster
+        if instance and hasattr(instance, 'code_dest_data'):
+            # instance est un Destination_data, on remonte vers Destination
+            cluster = instance.code_dest_data.code_cluster
+        elif cluster_instance:
+            cluster = cluster_instance
+        else:
+            # Cas d'une création via initial data
+            initial_data = kwargs.get('initial', {})
+            destination_obj = initial_data.get('code_dest_data')
+            if destination_obj:
+                cluster = destination_obj.code_cluster
+
         super().__init__(*args, **kwargs)
+        
         if cluster:
             cluster_langs_ids=cluster.langs_com.values_list('code', flat=True)
             self.fields['langs_com_dest'].queryset = Language_communication.objects.filter(code__in=cluster_langs_ids)
@@ -570,6 +574,23 @@ class DestinationFluxForm(HelpTextTooltipMixin,forms.ModelForm):
 
 
     def __init__(self, *args, **kwargs):
+        cluster_instance = kwargs.pop('cluster_instance', None)
+        instance = kwargs.get('instance', None)
+        cluster = None
+        
+        # Logique de récupération du cluster
+        if instance and hasattr(instance, 'code_dest_data'):
+            # instance est un Destination_flux, on remonte vers Destination
+            cluster = instance.code_dest_flux.code_cluster
+        elif cluster_instance:
+            cluster = cluster_instance
+        else:
+            # Cas d'une création via initial data
+            initial_data = kwargs.get('initial', {})
+            destination_obj = initial_data.get('code_dest_flux')
+            if destination_obj:
+                cluster = destination_obj.code_cluster
+
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.helper.form_method = 'post'

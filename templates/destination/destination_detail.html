@@ -107,7 +107,7 @@
                     </div>
                     <div class="row mb-3">
                         <div class="col-md-12 d-flex justify-content-end">
-                            <a href="{% url 'destination_update' destination.pk %}" class="btn btn-warning me-2">{% trans "Mettre à jour" %}</a>
+                            <a href="{% url 'destination_update' destination.pk %}" class="btn btn-warning me-2">{% trans "Mettre à jour les données générales" %}</a>
                         </div>
                     </div>
                 </div>
@@ -309,7 +309,7 @@
                             </div>     
                             <div class="row mb-3">
                                 <div class="col-md-12 d-flex justify-content-end">
-                                    <a href="#" class="btn btn-warning">{% trans "Mettre à jour" %}</a>
+                                    <a href="{% url 'destination_data_update' data.pk %}" class="btn btn-warning">{% trans "Mettre à jour les données fonctionnelles" %}</a>
                                 </div>
                             </div>
                         {% else %}
@@ -395,7 +395,7 @@
                             </div>
                             <div class="row mb-3">
                                 <div class="col-md-12 d-flex justify-content-end">
-                                    <a href="#" class="btn btn-warning">{% trans "Mettre à jour" %}</a>
+                                    <a href="{% url 'destination_flux_update' flux.pk %}" class="btn btn-warning">{% trans "Mettre à jour les données de flux" %}</a>
                                 </div>
                             </div>
                         {% else %}

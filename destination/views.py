@@ -18,8 +18,10 @@ from destination.forms import DestinationForm, DestinationDataForm, DestinationF
 from destination.models import Destination, Destination_data, Destination_flux
 from PIL import Image
 import os
+from django.db.models import Q   
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
+from django.urls import reverse
 
 User=get_user_model()
 
@@ -224,16 +226,20 @@ class DestinationListView(LoginRequiredMixin, View):
         user=request.user
         is_super_admin = user.groups.filter(name='SuperAdmin').exists()
         is_admin = user.groups.filter(name='Admin').exists()
-        print("is_admin:", is_admin)
+        is_referent = user.groups.filter(name='Referent').exists()
+        is_gestionnaire = user.groups.filter(name='Gestionnaire').exists()
+        is_financier = user.groups.filter(name='Financier').exists()
+        is_manager = user.groups.filter(name='Manager').exists()
+
         if is_super_admin:
             destinations = Destination.objects.all()
         elif is_admin :
             user_code_cluster = user.code_cluster
             print("user_code_cluster:", user_code_cluster)
             destinations = Destination.objects.filter(code_cluster__code_cluster=user_code_cluster)
+        elif is_referent or is_gestionnaire or is_financier or is_manager:
+            destinations = Destination.objects.filter(Q(manager_dest=user) | Q(referent_dest=user) | Q(matcher_dest=user) | Q(matcher_alt_dest=user) | Q(finance_dest=user))        
         else:
-            # 3. Autres utilisateurs : Afficher une erreur d'autorisation 403
-            # Ceci interrompt l'exécution de la vue et affiche la page d'erreur 403
             messages.error(request, _("Vous n'avez pas les droits nécessaires pour consulter la liste des destinations."))
             return redirect('login')  
         context = {'destinations': destinations, 'title': _("Liste des destinations")}
@@ -320,15 +326,95 @@ class AjaxFilterUsersView(View):
 ###################################################################################################
 
 
-#Vue Mise à jour d'une destination
 
+
+# Vue Mixin pour les permissions de champ pour le gestionnaire de destination
+
+from django.contrib.auth.mixins import AccessMixin
+from django.core.exceptions import PermissionDenied
+
+
+class OnlyGestionnaireMixin(AccessMixin):
+    """
+    Mixin pour restreindre la modification des champs.
+    Il vérifie si l'utilisateur est STRICTEMENT 'Gestionnaire', 
+    c'est-à-dire qu'il n'appartient à aucun des groupes à privilège supérieur.
+    """
+    
+    # 🚨 DOIT ÊTRE DÉFINI DANS LA VUE QUI UTILISE LE MIXIN
+    gestionnaire_fields = []
+    
+    # Les groupes qui accordent des privilèges supérieurs à 'Gestionnaire'
+    higher_privilege_groups = ['SuperAdmin', 'Admin','Referent']
+    
+    
+    def _is_only_gestionnaire(self, user):
+        """ Logique interne de vérification des groupes. """
+        if not user.is_authenticated:
+            return False
+
+        user_groups = user.groups.all().values_list('name', flat=True)
+
+        is_gestionnaire = 'Gestionnaire' in user_groups
+        has_higher_privilege = any(group in user_groups for group in self.higher_privilege_groups)
+
+        # L'utilisateur est 'Gestionnaire' ET n'a AUCUN privilège supérieur.
+        return is_gestionnaire and not has_higher_privilege
+
+    
+    def get_form(self, form_class=None):
+        """ Modifie le formulaire en désactivant les champs non autorisés. """
+        form = super().get_form(form_class)
+
+        if form is None:
+            return None
+        
+        user = self.request.user
+        
+        # Appliquer la désactivation SEULEMENT si l'utilisateur est un 'Gestionnaire' simple
+        if self._is_only_gestionnaire(user):
+            if not self.gestionnaire_fields:
+                # Cela empêche une erreur si la liste n'est pas définie dans la vue
+                raise AttributeError(
+                    "Le Mixin OnlyGestionnaireMixin nécessite que la liste 'gestionnaire_fields' soit définie dans la vue."
+                )
+                
+            all_fields = list(form.fields.keys())
+            
+            # Déterminer les champs à désactiver
+            fields_to_disable = [
+                field for field in all_fields 
+                if field not in self.gestionnaire_fields
+            ]
+
+            # Désactiver les champs dans le formulaire
+            for field_name in fields_to_disable:
+                if field_name in form.fields:
+                    form.fields[field_name].disabled = True
+                    
+        return form
+###################################################################################################
+#Vue Mise à jour d'une destination
 
 class AuthorizedRequiredUpdateDestinationMixin(UserPassesTestMixin):
     
 
     def test_func(self):
-    # Autoriser les SuperAdmin ou les utilisateurs qui sont admin du cluster
-        destination = self.get_object()
+    # Autoriser les SuperAdmin, les Admin du cluster de la destination ou les utilisateurs qui sont référents ou gestionnaires
+        obj = self.get_object()
+        if isinstance(self, DestinationUpdateView):
+        # Ici obj est une 'Destination'
+            destination = obj
+        elif isinstance(self, DestinationDataUpdateView):
+        # Ici obj est un 'DestinationData', on remonte à la destination parente
+        # (Adaptez 'destination' selon le nom de votre ForeignKey dans DestinationData)
+            destination = obj.code_dest_data
+        elif isinstance(self, DestinationFluxUpdateView):
+        # Ici obj est un 'DestinationFlux', on remonte à la destination parente 
+            destination = obj.code_dest_flux 
+        else:
+            return False
+            
         
         return (
             self.request.user.groups.filter(name = 'SuperAdmin').exists() or
@@ -343,12 +429,23 @@ class AuthorizedRequiredUpdateDestinationMixin(UserPassesTestMixin):
         messages.error(self.request, _("Vous n'avez pas les droits nécessaires pour éditer cette destination."))
         return redirect('destinations_list')
 
-class DestinationUpdateView(LoginRequiredMixin, AuthorizedRequiredUpdateDestinationMixin,UpdateView):
+
+class DestinationUpdateView(LoginRequiredMixin, AuthorizedRequiredUpdateDestinationMixin, OnlyGestionnaireMixin ,UpdateView):
     
     model = Destination
     form_class = DestinationForm
     template_name = 'destination/destination_update.html'
     context_object_name = 'destination'
+
+    gestionnaire_fields = [
+        'list_places_dest',
+        'mini_lp_dest',
+        'max_lp_dest',
+        'mini_interest_center_dest',
+        'max_interest_center_dest',
+        'flag_stay_dest',
+        'dispersion_param_dest'
+        ]
     
     # Gestion de l'autorisation d'édition du champ 'statut_dest'
     def get_form(self, form_class=None):
@@ -371,35 +468,9 @@ class DestinationUpdateView(LoginRequiredMixin, AuthorizedRequiredUpdateDestinat
             if 'statut_dest' in form.fields:
                 form.fields['statut_dest'].disabled = True
 
-        # Gestion de l'autorisation d'édition pour les champs autres que ceux du matcher
-
-        matcher_fields = [
-        'list_places_dest',
-        'mini_lp_dest',
-        'max_lp_dest',
-        'mini_interest_center_dest',
-        'max_interest_center_dest',
-        'flag_stay_dest',
-        'dispersion_param_dest'
-        ]
-        is_in_matcher=user.groups.filter(name='Gestionnaire').exists()
-        print("is_in_matcher:", is_in_matcher)
-        is_not_excluded= not user.groups.filter(name__in=['SuperAdmin','Admin','Referent']).exists()
-
-        is_only_gestionnaire= is_in_matcher and is_not_excluded
-        print("is_only_gestionnaire:", is_only_gestionnaire)
-        if is_only_gestionnaire:
-            all_form_fields = list(form.fields.keys())
-            fields_to_disable = [
-                field_name 
-                for field_name in all_form_fields 
-                if field_name not in matcher_fields
-            ]
-
-            for field_name in fields_to_disable:
-                if field_name in form.fields:
-                    form.fields[field_name].disabled = True
         return form
+
+        
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -467,12 +538,6 @@ class DestinationUpdateView(LoginRequiredMixin, AuthorizedRequiredUpdateDestinat
         old_user={old_destination.manager_dest, old_destination.referent_dest, old_destination.matcher_dest, old_destination.matcher_alt_dest, old_destination.finance_dest} - {None}
         new_user={destination.manager_dest, destination.referent_dest, destination.matcher_dest, destination.matcher_alt_dest, destination.finance_dest} - {None}
 
-        print("old_user:", old_user)
-        print("new_user:", new_user)
-
-        for user in old_user - new_user:
-            user.code_dest=None
-            user.save()
 
         for user in new_user - old_user:
             user.code_dest=destination.code_dest
@@ -495,7 +560,7 @@ class DestinationUpdateView(LoginRequiredMixin, AuthorizedRequiredUpdateDestinat
         if destination.disability_libelle_dest:
             translation_content.delay("destination","Destination", destination.id, "disability_libelle_dest")
 
-        messages.success(self.request, _(f"La destination {self.object.name_dest} a été mise à jour."))
+        messages.success(self.request, _(f"Les données géénrales de la destination {self.object.name_dest}La destination {self.object.name_dest} a été mise à jour."))
         return super().form_valid(form)
  
     def form_invalid(self, form):
@@ -508,64 +573,98 @@ class DestinationUpdateView(LoginRequiredMixin, AuthorizedRequiredUpdateDestinat
 
 ###################################################################################################
 
-# Vue Mixin pour les permissions de champ pour le gestionnaire de destination
+# M%ise à jour des données fonctionnelles destination_data
 
-from django.contrib.auth.mixins import AccessMixin
-from django.core.exceptions import PermissionDenied
-
-
-class OnlyGestionnaireMixin(AccessMixin):
-    """
-    Mixin pour restreindre la modification des champs.
-    Il vérifie si l'utilisateur est STRICTEMENT 'Gestionnaire', 
-    c'est-à-dire qu'il n'appartient à aucun des groupes à privilège supérieur.
-    """
+class DestinationDataUpdateView(LoginRequiredMixin, AuthorizedRequiredUpdateDestinationMixin, OnlyGestionnaireMixin ,UpdateView):
     
-    # 🚨 DOIT ÊTRE DÉFINI DANS LA VUE QUI UTILISE LE MIXIN
-    gestionnaire_fields = []
+    model = Destination_data
+    form_class = DestinationDataForm
+    template_name = 'destination/destination_data_update.html'
+
     
-    # Les groupes qui accordent des privilèges supérieurs à 'Gestionnaire'
-    higher_privilege_groups = ['SuperAdmin', 'Admin''Referent', 'Admin', 'SuperAdmin']
-    
-    
-    def _is_only_gestionnaire(self, user):
-        """ Logique interne de vérification des groupes. """
-        if not user.is_authenticated:
-            return False
-
-        user_groups = user.groups.all().values_list('name', flat=True)
-
-        is_gestionnaire = 'Gestionnaire' in user_groups
-        has_higher_privilege = any(group in user_groups for group in self.higher_privilege_groups)
-
-        # L'utilisateur est 'Gestionnaire' ET n'a AUCUN privilège supérieur.
-        return is_gestionnaire and not has_higher_privilege
-
+    gestionnaire_fields = [
+            'tripadvisor_dest',
+            'googlemybusiness_dest',
+            'flag_modalités_dest',
+            'date_cg_mail_dest',
+            'periode_mail_cg_dest',
+            'flag_cg_T_dest',
+            'flag_cg_U_dest',
+            'flag_comment_visitor_dest',
+            'param_comment_visitor_dest',
+            'libelle_form_coche1_dest',
+            'lib_url_form_coche1_dest',
+            'url_form_coche1_dest',
+            'libelle_form_coche2_dest',
+            'lib_url_form_coche2_dest',
+            'url_form_coche2_dest',
+            'libelle_form_coche3_dest',
+            'lib_url_form_coche3_dest',
+            'url_form_coche3_dest',
+            'flag_request_coche1_dest',
+            'flag_request_coche2_dest',
+            'flag_request_coche3_dest',
+            'avis_fermeture_dest',
+            'date_début_avis_fermeture_dest',
+            'date_fin_avis_fermeture_dest',
+            'texte_avis_fermeture_dest',
+            'nbre_participants_fermeture_dest',
+            'name_sign_mail_dest',
+            'url_mail_signature_dest',
+            'libelle_social1_mail_dest',
+            'url_social1_mail_dest',
+            'libelle_social2_mail_dest',
+            'url_social2_mail_dest',
+            'tagline_mail_dest',
+            'titre_avis_mail_dest',
+            'texte_avis_mail_dest',
+            'date_debut_avis_mail_dest',
+            'date_fin_avis_mail_dest'
+        ]
     
     def get_form(self, form_class=None):
-        """ Modifie le formulaire en désactivant les champs non autorisés. """
         form = super().get_form(form_class)
-        user = self.request.user
-        
-        # Appliquer la désactivation SEULEMENT si l'utilisateur est un 'Gestionnaire' simple
-        if self._is_only_gestionnaire(user):
-            if not self.gestionnaire_fields:
-                # Cela empêche une erreur si la liste n'est pas définie dans la vue
-                raise AttributeError(
-                    "Le Mixin OnlyGestionnaireMixin nécessite que la liste 'gestionnaire_fields' soit définie dans la vue."
-                )
-                
-            all_fields = list(form.fields.keys())
-            
-            # Déterminer les champs à désactiver
-            fields_to_disable = [
-                field for field in all_fields 
-                if field not in self.gestionnaire_fields
-            ]
-
-            # Désactiver les champs dans le formulaire
-            for field_name in fields_to_disable:
-                if field_name in form.fields:
-                    form.fields[field_name].disabled = True
-                    
         return form
+        
+    def form_valid(self, form):
+        form.save()
+        messages.success(self.request, _(f"Les données fonctionnelles de la destination {self.object.code_dest_data.name_dest} ont été mises à jour."))
+        return super().form_valid(form)
+
+
+    def form_invalid(self, form):
+        messages.error(self.request, _("Le formulaire n'est pas valide."))
+        return super().form_invalid(form)
+
+    def get_success_url(self):
+        return redirect('destination_detail', pk=self.object.code_dest_data.pk).url
+        
+###################################################################################################
+
+# Mise à jour des données de flux de la destination
+
+class DestinationFluxUpdateView(LoginRequiredMixin, AuthorizedRequiredUpdateDestinationMixin, OnlyGestionnaireMixin ,UpdateView):
+    
+    model = Destination_flux
+    form_class = DestinationFluxForm
+    template_name = 'destination/destination_flux_update.html'
+
+    gestionnaire_fields =[]
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        return form
+        
+    def form_valid(self, form):
+        form.save()
+        messages.success(self.request, _(f"Les données de flux de la destination {self.object.code_dest_flux.name_dest} ont été mises à jour."))
+        return super().form_valid(form)
+
+
+    def form_invalid(self, form):
+        messages.error(self.request, _("Le formulaire n'est pas valide."))
+        return super().form_invalid(form)
+
+    def get_success_url(self):
+        return redirect('destination_detail', pk=self.object.code_dest_flux.pk).url
+###################################################################################################
