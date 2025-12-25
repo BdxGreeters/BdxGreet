@@ -49,6 +49,6 @@ class CreationGreeter(View):
                 img.save(img_path)
                 post_save.send(sender=CustomUser, instance=user, created=True, request=request)
                 messages.success(request, _("Le Greeter {} a été créé. Un email lui a été envoyé pour définir son mot de passe.").format(user.email))
-                return redirect('greeter_list')
+                return redirect("#")
         context =  {'user_form': user_form,'greeter_form':greeter_form,'title': _("Création d'un Greeter")}
         return render(request, 'greeters/greeter_form.html', context)
