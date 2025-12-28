@@ -11,11 +11,9 @@ from django.views.generic import DetailView
 from django.views.generic.edit import CreateView, UpdateView
 
 from cluster.forms import ClusterForm
-from cluster.models import Cluster
-from core.mixins import FieldPermissionMixin
+from cluster.models import Cluster, Experience_Greeter, InterestCenter, Reason_No_Response_Greeter, Reason_No_Response_Visitor, Notoriety
+from core.mixins import FieldPermissionMixin, FormFieldPermissionMixin, RelatedModelsMixin
 from core.models import FieldPermission
-from core.tasks import translation_content_items
-from core.translation import ClusterTranslationOptions
 from destination.models import Destination
 
 User=get_user_model()
@@ -32,12 +30,20 @@ class SuperAdminRequiredMixin(UserPassesTestMixin):
         messages.error(self.request, "Vous n'avez pas les droits nécessaires pour créer un cluster.")
         return redirect('clusters_list')
 
-class ClusterCreateView(LoginRequiredMixin, SuperAdminRequiredMixin, FieldPermissionMixin, CreateView):
+class ClusterCreateView(LoginRequiredMixin, SuperAdminRequiredMixin,FormFieldPermissionMixin,RelatedModelsMixin, CreateView):
     template_name = 'cluster/cluster_form.html'
     success_url = reverse_lazy('clusters_list')
     permission_groups = ['SuperAdmin']  # Utilisez une liste pour les groupes de permission
     target_group_name = 'Admin'
     app_name = 'cluster'
+    related_fields = {
+        'experience_greeter': (Experience_Greeter, 'experience_greeter'),
+        'interest_center': (InterestCenter, 'interest_center'),
+        'no_reply_greeter': (Reason_No_Response_Greeter, 'reason_no_reply_greeter'),
+        'no_reply_visitor': (Reason_No_Response_Visitor, 'reason_no_reply_visitor'),
+        'notoriety': (Notoriety, 'notoriety')   
+    }
+
 
     def get(self, request, *args, **kwargs):
         form = ClusterForm(request.GET or None, user=request.user)
@@ -65,16 +71,14 @@ class ClusterCreateView(LoginRequiredMixin, SuperAdminRequiredMixin, FieldPermis
                     
             cluster.save()
 
+            
+
             # Mettre à jour les permissions si l'utilisateur appartient à un groupe autorisé
             if self.user_has_any_permission_group(request.user):
-                self.update_field_permissions(cluster, form)
+                self.update_permissions_from_form(cluster, form)
                 messages.success(request, _("Cluster créé et permissions enregistrées avec succès."))
             else:
                 messages.success(request, _("Cluster créé avec succès."))
-
-            # Traduction des champs
-            for field in ClusterTranslationOptions.fields:
-                translation_content_items.delay('cluster', 'Cluster', cluster.id, field)
 
             messages.success(request, _("Le cluster {} a été créé.").format(cluster.name_cluster))
             return redirect('clusters_list')
@@ -150,9 +154,8 @@ from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
-from core.mixins import FieldPermissionMixin
-from core.tasks import translation_content_items
-from core.translation import ClusterTranslationOptions
+from core.mixins import FormFieldPermissionMixin,FieldPermissionMixin
+
 
 from .forms import ClusterForm
 from .models import Cluster
@@ -171,7 +174,7 @@ class SuperAdminRequiredMixin(UserPassesTestMixin):
         messages.error(self.request, _("Vous n'avez pas les droits nécessaires pour modifier ce cluster."))
         return redirect('clusters_list')
 
-class ClusterUpdateView(LoginRequiredMixin, SuperAdminRequiredMixin, FieldPermissionMixin, UpdateView):
+class ClusterUpdateView(LoginRequiredMixin, SuperAdminRequiredMixin, FormFieldPermissionMixin, UpdateView):
     model = Cluster
     form_class = ClusterForm
     template_name = 'cluster/cluster_form.html'
@@ -180,6 +183,14 @@ class ClusterUpdateView(LoginRequiredMixin, SuperAdminRequiredMixin, FieldPermis
     permission_groups = ['SuperAdmin']  # Liste des groupes autorisés
     target_group_name = 'Admin'
     app_name = 'cluster'
+    related_fields = {
+        'experience_greeter': (Experience_Greeter, 'experience_greeter'),
+        'interest_center': (InterestCenter, 'interest_center'),
+        'no_reply_greeter': (Reason_No_Response_Greeter, 'reason_no_reply_greeter'),
+        'no_reply_visitor': (Reason_No_Response_Visitor, 'reason_no_reply_visitor'),
+        'notoriety': (Notoriety, 'notoriety')   
+    }
+
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -223,10 +234,7 @@ class ClusterUpdateView(LoginRequiredMixin, SuperAdminRequiredMixin, FieldPermis
         for user in new_admins - old_admins:
             user.groups.add(admin_group)
 
-        # Traduction des champs
-        for field in ClusterTranslationOptions.fields:
-            translation_content_items.delay('cluster', 'Cluster', cluster.id, field)
-
+        
         # Mettre à jour les permissions si l'utilisateur appartient à un groupe autorisé
         if self.user_has_any_permission_group(self.request.user):
             self.update_field_permissions(cluster, form)

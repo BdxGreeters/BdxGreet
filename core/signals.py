@@ -22,7 +22,7 @@ def afficher_domaine_actuel(sender, instance, created, **kwargs):
         if request:
             current_site = get_current_site(request)
             code_email="SETPW"
-            id_template_mailjet= Email_Mailjet.objects.get(code_email=code_email, lang_email=instance.user.lang_com).id_mailjet_email
+            id_template_mailjet= Email_Mailjet.objects.get(code_email=code_email, lang_email=instance.lang_com).id_mailjet_email
             reset_password (instance.id,current_site, id_template_mailjet)
             print(f"_(Nouvel utilisateur créé sur le domaine : {current_site.domain})")
         else:

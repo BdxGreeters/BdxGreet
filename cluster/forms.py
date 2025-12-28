@@ -12,19 +12,26 @@ from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext_lazy as _
 
 from cluster.models import Cluster
-from core.mixins import CommaSeparatedFieldMixin, HelpTextTooltipMixin
+from core.mixins import CommaSeparatedFieldMixin, HelpTextTooltipMixin, FormFieldPermissionMixin
 from core.models import FieldPermission, Language_communication, Pays
 
 User = get_user_model()
 
 class ClusterForm(CommaSeparatedFieldMixin, HelpTextTooltipMixin, forms.ModelForm):
+    interest_center = forms.CharField(required=True, label=_("Centres d'intérêt"), help_text=_("Saisissez les centres d'intérêts séparés par une virgule"))
+    experience_greeter = forms.CharField(required=True, label=_("Expériences du Greeter"), help_text=_("Saisissez les expériences du Greeter séparées par une virgule"))
+    no_reply_greeter= forms.CharField(required=True, label=_("Raisons de non réponse du Greeter"), help_text=_("Saisissez les raisons de non réponse du Greeter séparées par une virgule"))
+    no_reply_visitor= forms.CharField(required=True, label=_("Raisons de non réponse du visiteur"), help_text=_("Saisissez les raisons de non réponse du visiteur séparées par une virgule"))
+    notoriety= forms.CharField(required=True, label=_("Notoriété"), help_text=_("Saisissez les motifs de notoriété séparés par une virgule"))
+
+
     editable_fields = [
         'code_cluster', 'name_cluster', 'statut_cluster', 'adress_cluster', 'desc_cluster',
         'paypal_cluster', 'admin_cluster', 'country_admin_cluster', 'admin_alt_cluster',
         'country_admin_alt_cluster', 'param_nbr_part_cluster', 'langs_com',
         'backup_mails_cluster', 'url_biblio_cluster', 'url_biblio_Greeter_cluster',
-        'list_experience_cluster', 'profil_interet_cluster', 'reason_no_reply_greeter_cluster',
-        'reason_no_reply_visitor_cluster', 'list_notoriety_cluster'
+        'experience_greeter', 'interest_center', 'no_reply_greeter',
+        'no_reply_visitor', 'notoriety'
     ]
 
     class Meta:
@@ -33,9 +40,7 @@ class ClusterForm(CommaSeparatedFieldMixin, HelpTextTooltipMixin, forms.ModelFor
             'code_cluster', 'name_cluster', 'statut_cluster', 'adress_cluster', 'desc_cluster',
             'paypal_cluster', 'admin_cluster', 'country_admin_cluster', 'admin_alt_cluster',
             'country_admin_alt_cluster', 'param_nbr_part_cluster', 'langs_com',
-            'backup_mails_cluster', 'url_biblio_cluster', 'url_biblio_Greeter_cluster',
-            'list_experience_cluster', 'profil_interet_cluster', 'reason_no_reply_greeter_cluster',
-            'reason_no_reply_visitor_cluster', 'list_notoriety_cluster'
+            'backup_mails_cluster', 'url_biblio_cluster', 'url_biblio_Greeter_cluster'
         ]
         widgets = {
             'admin_cluster': forms.Select(attrs={'class': 'form-select'}),
@@ -48,11 +53,11 @@ class ClusterForm(CommaSeparatedFieldMixin, HelpTextTooltipMixin, forms.ModelFor
         }
 
     comma_fields_config = {
-        'list_experience_cluster': {'min': 2, 'max': 10},
-        'list_notoriety_cluster': {'min': 2, 'max': 10},
-        'reason_no_reply_visitor_cluster': {'min': 1, 'max': 10},
-        'profil_interet_cluster': {'min': 1, 'max': 10},
-        'reason_no_reply_greeter_cluster': {'min': 1, 'max': 10}
+        'experience_greeter': {'min': 2, 'max': 10},
+        'interest_center': {'min': 2, 'max': 10},
+        'notoriety': {'min': 2, 'max': 10},
+        'no_reply_visitor': {'min': 2, 'max': 10},
+        'no_reply_greeter': {'min': 1, 'max': 10}
     }
 
     def __init__(self, *args, **kwargs):
@@ -61,10 +66,12 @@ class ClusterForm(CommaSeparatedFieldMixin, HelpTextTooltipMixin, forms.ModelFor
 
         # Ajouter un champ BooleanField pour chaque champ éditable
         for field_name in self.editable_fields:
+            print(field_name)
             self.fields[f'can_edit_{field_name}'] = forms.BooleanField(
                 label="",
                 required=False,
                 initial=False,
+                
             )
 
         # Masquer les cases à cocher si l'utilisateur n'est pas dans un groupe autorisé
@@ -131,13 +138,13 @@ class ClusterForm(CommaSeparatedFieldMixin, HelpTextTooltipMixin, forms.ModelFor
                     Row(
                         Column('code_cluster', css_class='col-md-2'),
                         Column('name_cluster', css_class='col-md-6'),
-                        Column('can_edit_name_cluster', css_class='col-md-1'),
+                        Column('can_edit_name_cluster', css_class='col-md-1 d-flex align-items-center justify-content-center'),
                     ),
                     Row(
                         Column('adress_cluster', css_class='col-md-11'),
-                        Column('can_edit_adress_cluster', css_class='col-md-1'),
+                        Column('can_edit_adress_cluster', css_class='col-md-1 d-flex align-items-center justify-content-center'),
                         Column(Field('desc_cluster'), css_class='col-md-11'),
-                        Column('can_edit_desc_cluster', css_class='col-md-1'),
+                        Column('can_edit_desc_cluster', css_class='col-md-1 d-flex align-items-center justify-content-center'),
                     ),
                 ),
                 Tab(
@@ -146,13 +153,13 @@ class ClusterForm(CommaSeparatedFieldMixin, HelpTextTooltipMixin, forms.ModelFor
                         _("Administrateur principal"),
                         Row(
                             Column('admin_cluster', css_class='col-md-6'),
-                            Column('can_edit_admin_cluster', css_class='col-md-1'),
+                            Column('can_edit_admin_cluster', css_class='col-md-1 d-flex align-items-center justify-content-center'),
                             Column(HTML(f'<button type="button" class="btn btn-sm btn-primary ms-2" data-target-field="id_admin_cluster">{_("Nouvel utilisateur")}</button>'),
                                    css_class="d-flex align-items-center")
                         ),
                         Row(
                             Column('country_admin_cluster', css_class='col-md-4'),
-                            Column('can_edit_country_admin_cluster', css_class='col-md-1'),
+                            Column('can_edit_country_admin_cluster', css_class='col-md-1 d-flex align-items-center justify-content-center'),
                         ),
                         css_class="fieldset-personnalise"
                     ),
@@ -160,13 +167,13 @@ class ClusterForm(CommaSeparatedFieldMixin, HelpTextTooltipMixin, forms.ModelFor
                         _("Administrateur alternatif"),
                         Row(
                             Column('admin_alt_cluster', css_class='col-md-6'),
-                            Column('can_edit_admin_alt_cluster', css_class='col-md-1'),
+                            Column('can_edit_admin_alt_cluster', css_class='col-md-1 d-flex align-items-center justify-content-center'),
                             Column(HTML(f'<button type="button" class="btn btn-sm btn-primary ms-2" data-target-field="id_admin_alt_cluster">{_("Nouvel utilisateur")}</button>'),
                                    css_class="d-flex align-items-center")
                         ),
                         Row(
                             Column('country_admin_alt_cluster', css_class='col-md-4'),
-                            Column('can_edit_country_admin_alt_cluster', css_class='col-md-1'),
+                            Column('can_edit_country_admin_alt_cluster', css_class='col-md-1 d-flex align-items-center justify-content-center'),
                         ),
                         css_class="fieldset-personnalise"
                     ),
@@ -175,38 +182,40 @@ class ClusterForm(CommaSeparatedFieldMixin, HelpTextTooltipMixin, forms.ModelFor
                     _("Paramètres"),
                     Row(
                         Column(InlineRadios('statut_cluster', css_class='col-md-6')),
-                        Column('can_edit_statut_cluster', css_class='col-md-1'),
+                        Column('can_edit_statut_cluster', css_class='col-md-1 d-flex align-items-center justify-content-center'),
                     ),
                     Row(
                         Column(InlineCheckboxes('langs_com', css_class='col-md-9')),
-                        Column('can_edit_langs_com', css_class='col-md-1'),
+                        Column('can_edit_langs_com', css_class='col-md-1 d-flex align-items-center justify-content-center'),
                     ),
                     Row(
                         Column('param_nbr_part_cluster', css_class='col-md-3'),
-                        Column('can_edit_param_nbr_part_cluster', css_class='col-md-1'),
+                        Column('can_edit_param_nbr_part_cluster', css_class='col-md-1 d-flex align-items-center justify-content-center'),
                         Column('paypal_cluster', css_class='col-md-6'),
-                        Column('can_edit_paypal_cluster', css_class='col-md-1'),
+                        Column('can_edit_paypal_cluster', css_class='col-md-1 d-flex align-items-center justify-content-center'),
                         Column('backup_mails_cluster', css_class='col-md-6'),
-                        Column('can_edit_backup_mails_cluster', css_class='col-md-1'),
+                        Column('can_edit_backup_mails_cluster', css_class='col-md-1 d-flex align-items-center justify-content-center'),
                         Column('url_biblio_cluster', css_class='col-md-6'),
-                        Column('can_edit_url_biblio_cluster', css_class='col-md-1'),
+                        Column('can_edit_url_biblio_cluster', css_class='col-md-1 d-flex align-items-center justify-content-center'),
                         Column('url_biblio_Greeter_cluster', css_class='col-md-6'),
-                        Column('can_edit_url_biblio_Greeter_cluster', css_class='col-md-1'),
+                        Column('can_edit_url_biblio_Greeter_cluster', css_class='col-md-1 d-flex align-items-center justify-content-center'),
                     ),
                 ),
                 Tab(
                     _("Listes"),
                     Row(
-                        Column(Field('list_experience_cluster'), css_class='col-md-11'),
-                        Column('can_edit_list_experience_cluster', css_class='col-md-1'),
-                        Column('profil_interet_cluster', css_class='col-md-11'),
-                        Column('can_edit_profil_interet_cluster', css_class='col-md-1'),
-                        Column('reason_no_reply_greeter_cluster', css_class='col-md-11'),
-                        Column('can_edit_reason_no_reply_greeter_cluster', css_class='col-md-1'),
-                        Column('reason_no_reply_visitor_cluster', css_class='col-md-11'),
-                        Column('can_edit_reason_no_reply_visitor_cluster', css_class='col-md-1'),
-                        Column('list_notoriety_cluster', css_class='col-md-11'),
-                        Column('can_edit_list_notoriety_cluster', css_class='col-md-1'),
+                        Column(Field('experience_greeter'), css_class='col-md-11'),
+                        Column('can_edit_experience_greeter', css_class='col-md-1 d-flex align-items-center justify-content-center'),
+                        Column('interest_center', css_class='col-md-11'),
+                        Column('can_edit_interest_center', css_class='col-md-1 d-flex align-items-center justify-content-center'),
+                    ),
+                    Row(
+                        Column('no_reply_greeter', css_class='col-md-11'),
+                        Column('can_edit_no_reply_greeter', css_class='col-md-1 d-flex align-items-center justify-content-center'),
+                        Column('no_reply_visitor', css_class='col-md-11'),
+                        Column('can_edit_no_reply_visitor', css_class='col-md-1 d-flex align-items-center justify-content-center'),
+                        Column('notoriety', css_class='col-md-11'),
+                        Column('can_edit_notoriety', css_class='col-md-1 '),
                     ),
                 ),
             ),

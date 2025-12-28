@@ -9,6 +9,8 @@ from modeltranslation.translator import (TranslationOptions, register,
 from core import data
 from core.models import Language_communication, Pays
 
+
+
 # Modele Cluster
 
 User = get_user_model()
@@ -36,14 +38,12 @@ class Cluster(models.Model):
     backup_mails_cluster=models.EmailField(default=" ",help_text=_("Adresse de sauvegarde des courriels générés sur l'ensemnble du cluster"), verbose_name=_("Adresse  de sauvegarde des courriels"))
     url_biblio_cluster=models.URLField(default=" ",blank=True, help_text=(_("Saisir l'URL de la bibliothèque pour les destinations")) ,verbose_name=_("URL de la bibliothèque Cluster des destinations"))
     url_biblio_Greeter_cluster=models.URLField(default=" ",blank=True,help_text=(_("Saisir l'URL de la bibliothèque pour les Greeter")), verbose_name=_("URL de la bibliothèque Cluster des Greeter"))
-    list_experience_cluster=models.CharField(max_length=500,default=" ",help_text=_("Saisir les expériences des Greeter") ,verbose_name=_("Expériences des Greeters"))
-    profil_interet_cluster=models.CharField(max_length=500,default=" ",help_text=_("Saisir les centres d'intérêts des visiteurs et Greeter"), verbose_name=_("Centres d'intérêt"))
-    reason_no_reply_greeter_cluster=models.CharField(max_length=500,default=" ", help_text=_("Saisir les raisons de non réponse du Greeter"), verbose_name=_("Raisons de non réponse du Greeter"))
-    reason_no_reply_visitor_cluster=models.CharField(max_length=500,default=" ", help_text=_("Saisir les raisons de non réponse du visiteur"), verbose_name=_("Raisons de non réponse du visiteur"))
-    list_notoriety_cluster=models.CharField(max_length=500,default=" ", help_text=_("Saisir les raisons d'un visiteur de connaître  l'existence des Greeters"), verbose_name=_("Liste des notoriétés"))
+    list_experience_cluster=models.ManyToManyField('Experience_Greeter', related_name="list_experience_cluster")
+    profil_interet_cluster=models.ManyToManyField('InterestCenter', related_name="profil_interet_cluster")
+    reason_no_reply_greeter_cluster=models.ManyToManyField('Reason_No_Response_Greeter', related_name="reason_no_reply_greeter_cluster")
+    reason_no_reply_visitor_cluster=models.ManyToManyField('Reason_No_Response_Visitor', related_name="reason_no_reply_visitor_cluster")
+    list_notoriety_cluster=models.ManyToManyField('Notoriety', related_name="list_notoriety_cluster")
     
-
-
     def clean(self):
         super().clean()
         
@@ -59,4 +59,55 @@ class Cluster(models.Model):
       
     def __str__(self):
         return self.code_cluster
+###################################################################################################
+
+# Modèle  Liste des expériences Greeters
+
+class Experience_Greeter(models.Model):
+    experience_greeter=models.CharField(max_length=100, default="Pas d'expérience", verbose_name=_("Expérience"), help_text=_("Saisir l'expérience du Greeter"))
+    
+    def __str__(self):
+        return self.experience_greeter
+    
+###################################################################################################
+
+# Modèle Centres d'intérêt
+
+class InterestCenter(models.Model):
+
+    interest_center=models.CharField(max_length=100, verbose_name=_("Centre d'intérêt"))
+
+    def __str__(self):
+        return f"{self.interest_center}"
+        
+###################################################################################################
+
+# Modèle Raison des non réponses du Greeter
+
+class Reason_No_Response_Greeter (models.Model):
+    reason_no_reply_greeter=models.CharField(max_length=100, verbose_name=_("Raison de non réponse du Greeter"))
+
+    def __str__(self):
+        return f"[{self.reason_no_response_greeter}]"
+
+###################################################################################################
+
+# Modèle Raison non réponse du visiteur
+
+class Reason_No_Response_Visitor (models.Model):
+    reason_no_reply_visitor=models.CharField(max_length=100, verbose_name=_("Raison de non réponse du visiteur"))
+
+    def __str__(self):
+        return f"[{self.reason_no_response_visitor}]"
+
+###################################################################################################
+
+# Modèle Notoriété des expériences Greeter
+
+class Notoriety(models.Model):
+    notoriety=models.CharField(max_length=100, verbose_name=_("Notoriété"))
+
+    def __str__(self):
+        return f"[{self.notoriety}]"
+    
 ###################################################################################################

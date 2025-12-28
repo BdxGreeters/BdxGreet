@@ -108,52 +108,7 @@ class LangueDeepLUpdateView(View):
             return redirect('langue_deepl_list')
         context = {'form':form, 'title':_("Modifier une langue prise en charge par Deepl")}
         return render(request, 'core/langue_deepl_form.html', context)
-###################################################################################################
 
-#Vue Création d'un centre d'intérêt et traduction dans les langues de communication
-class InterestCenterCreationView(View):
-    def get(self, request, *args, **kwargs):
-        form = InterestCenterCreationForm()
-        context = {'form': form, 'title':_("Créer un centre d'intérêt")}
-        return render(request, 'core/interest_center_form.html', context)   
-    
-    def post(self,request, *args, **kwargs):
-        form = InterestCenterCreationForm(request.POST)
-        if form.is_valid():
-            interest_center=form.save()
-            translation_content.delay("core","InterestCenter", interest_center.id,"interest_center")
-            messages.success(request, _("Le centre d'intérêt {} a été créé.").format(interest_center.interest_center))
-            return redirect('interest_center_list')
-        context = {'form': form, 'title':_("Créer un centre d'intérêt")}
-        return render (request, 'core/interest_center_form.html', context)
-###################################################################################################
-
-# Vue Liste des centres d'intérêts
-
-class InterestCenterListView(View):
-    def get(self, request, *args, **kwargs):
-        interest_centers = InterestCenter.objects.all().order_by('interest_center')
-        return render(request, 'core/interest_center_list.html', {'interest_centers': interest_centers})    
-###################################################################################################
-
-# Vue modification d'un centre d'intérêt
-class InterestCenterUpdateView(View):
-    def get(self, request, pk, *args, **kwargs):
-        interest_center = get_object_or_404(InterestCenter, pk=pk)
-        form = InterestCenterCreationForm(instance=interest_center)
-        context = {'form': form, 'title':_("Modifier un centre d'intérêt")} 
-        return render(request, 'core/interest_center_form.html', context)
-
-
-    def post(self, request, pk, *args, **kwargs):
-        interest_center = get_object_or_404(InterestCenter, pk=pk)
-        form = InterestCenterCreationForm(request.POST)
-        if form.is_valid():
-            interest_center=form.save()
-            translation_content.delay("core","InterestCenter", interest_center.id,"interest_center")
-            messages.success(request, _("Le centre d'intérêt {} a été modifié.").format(interest_center.interest_center))  
-        context = {'form': form, 'title':_("Modifier un centre d'intérêt")}
-        return render (request, 'core/interest_center_form.html', context)
 ###################################################################################################
 
 # Vue Création d'une raison de non réalisation de l'expérience

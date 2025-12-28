@@ -139,3 +139,110 @@ class FieldPermissionMixin:
                         field_permission.group.add(group)
 
 ###################################################################################################
+# Mixin Gestion des permissions des champs définis éditables dans un formulaire
+
+class FormFieldPermissionMixin:
+    """
+    Mixin pour gérer les permissions de champs basées sur la configuration
+    fournie par un formulaire (attribut editable_fields).
+    """
+    permission_groups = []  # Groupes autorisés à modifier les permissions (ex: ['SuperAdmin'])
+    target_group_name = None  # Groupe cible (ex: 'Admin')
+    app_name = None
+
+    def user_has_any_permission_group(self, user):
+        """
+        Vérifie si l'utilisateur appartient à au moins un des groupes dans permission_groups.
+        """
+        if not self.permission_groups:
+            raise ValueError("La liste des groupes de permission est vide.")
+
+        user_groups = user.groups.values_list('name', flat=True)
+        return any(group in user_groups for group in self.permission_groups)
+
+    def get_field_permissions(self, obj):
+        """
+        Récupère les permissions de champs pour un objet donné,
+        en filtrant par le groupe cible.
+        """
+        if not self.target_group_name:
+            raise ValueError("Le nom du groupe cible n'est pas défini.")
+
+        target_group = get_object_or_404(Group, name=self.target_group_name)
+        content_type = ContentType.objects.get_for_model(obj)
+        permissions = FieldPermission.objects.filter(
+            content_type=content_type,
+            object_id=obj.id,
+            app_name=self.app_name,
+            target_group=target_group  # Filtrer par le groupe cible
+        )
+        return {p.field_name: p.is_editable for p in permissions}
+
+
+    def update_permissions_from_form(self, obj, form):
+        if not self.target_group_name or not self.app_name:
+            raise ValueError("target_group_name et app_name doivent être définis.")
+
+        target_group = get_object_or_404(Group, name=self.target_group_name)
+        permission_group_objs = list(Group.objects.filter(name__in=self.permission_groups))
+        content_type = ContentType.objects.get_for_model(obj)
+        
+        # Liste des champs actuellement définis dans le formulaire
+        current_editable_fields = getattr(form, 'editable_fields', [])
+
+        # 1. NETTOYAGE : Supprimer les permissions qui ne sont plus dans editable_fields
+        FieldPermission.objects.filter(
+            content_type=content_type,
+            object_id=obj.id,
+            target_group=target_group,
+            app_name=self.app_name
+        ).exclude(field_name__in=current_editable_fields).delete()
+
+        # 2. MISE À JOUR / CRÉATION
+        for field_name in current_editable_fields:
+            permission_key = f'can_edit_{field_name}'
+            # On récupère la valeur, par défaut False si absent
+            is_editable = form.cleaned_data.get(permission_key, False)
+
+            field_permission, created = FieldPermission.objects.update_or_create(
+                field_name=field_name,
+                content_type=content_type,
+                object_id=obj.id,
+                app_name=self.app_name,
+                target_group=target_group,
+                defaults={'is_editable': is_editable}
+            )
+            
+            if permission_group_objs:
+                field_permission.group.set(permission_group_objs)
+
+###################################################################################################
+
+# Mixin pour gérer la création/mise à jour des modèles liés à un autre modèle par des champs CharFied
+
+from django.forms import CharField
+
+class RelatedModelsMixin:
+    """
+
+    Attributs requis dans la classe fille :
+    - related_fields : dictionnaire {nom_champ_form: (Model, nom_champ_m2m)}
+    """
+    related_fields = {}  # À définir dans la vue du modèle de base
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        cluster = self.object
+
+        for form_field, (model, m2m_field) in self.related_fields.items():
+            # Récupère les noms depuis le champ CharField du formulaire
+            names = [name.strip() for name in form.cleaned_data[form_field].split(',') if name.strip()]
+            objects = []
+            for name in names:
+                obj, created = model.objects.get_or_create(nom=name)
+                objects.append(obj)
+            # Met à jour la relation ManyToMany
+            getattr(cluster, m2m_field).set(objects)
+
+
+        return response

@@ -2,22 +2,21 @@ from django.utils.translation import gettext_lazy as _
 from modeltranslation.translator import (TranslationOptions, register,
                                          translator)
 
-from cluster.models import Cluster
+from cluster.models import Cluster, Experience_Greeter, InterestCenter, Notoriety, Reason_No_Response_Greeter, Reason_No_Response_Visitor
 from core.models import (Beneficiaire, InterestCenter, Language_communication,
                          LangueDeepL, LangueParlee, No_show, Pays, Periode,
                          TrancheAge, Types_handicap)
 from destination.models import Destination, Destination_data
 
+###################################################################################################
+
+# Traduction des modèles du core
 
 class LangueDeepLTranslationOptions(TranslationOptions):
     fields = ('lang_deepl',)
 
 translator.register(LangueDeepL, LangueDeepLTranslationOptions) 
 
-class InterestCenterTranslationOptions(TranslationOptions):
-    fields =('interest_center',)
-
-translator.register(InterestCenter,InterestCenterTranslationOptions)
 
 class LangueParleeTranslationOptions(TranslationOptions):
     fields =('langue_parlee',)
@@ -49,15 +48,29 @@ class Types_handicapTranslationOptions(TranslationOptions):
 
 translator.register(Types_handicap, Types_handicapTranslationOptions)
 
-class ClusterTranslationOptions(TranslationOptions):
-    fields =('list_experience_cluster','profil_interet_cluster','reason_no_reply_greeter_cluster', 'reason_no_reply_visitor_cluster', 'list_notoriety_cluster')
-    
-translator.register(Cluster, ClusterTranslationOptions)
-
 class Language_communicationTranslationOptions(TranslationOptions):
     fields =('name',)
 
 translator.register(Language_communication, Language_communicationTranslationOptions)
+
+###################################################################################################
+
+# Traduction des modèles Cluster
+
+class Experience_GreeterTranslationOptions(TranslationOptions):
+    fields =('experience_greeter',)
+
+translator.register(Experience_Greeter, Experience_GreeterTranslationOptions)
+
+class InterestCenterTranslationOptions(TranslationOptions):
+    fields =('interest_center',)
+
+translator.register(InterestCenter, InterestCenterTranslationOptions)
+
+
+###################################################################################################
+
+# Traduction des modèles Destination
 
 class DestinationTranslationOptions(TranslationOptions):
     fields =('list_places_dest','disability_libelle_dest',)
