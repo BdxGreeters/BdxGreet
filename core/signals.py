@@ -8,7 +8,7 @@ from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 from django.utils.translation import gettext_lazy as _
 
-from core.models import Email_Mailjet, InterestCenter
+from core.models import Email_Mailjet
 from greeters.models import Greeter
 from users.tasks import reset_password, send_email_mailjet
 
@@ -65,18 +65,5 @@ def notifier_modified_fields( sender, instance,created,**kwargs):
         send_email_mailjet.delay(recipient_email, recipient_name,  id_template_mailjet, vars)
         
 ###################################################################################################
-# Signal permettant de faire la traduction automatique des centres d'intérêts
 
-@receiver(post_save, sender=InterestCenter)
-def translate_centre_interet(sender, instance, created, **kwargs):
-    if created:
-        translator = deepl.Translator(settings.DEEPL_API_KEY)
-        for lang_code in settings.LANGUAGES:
-            if lang_code != settings.LANGUAGE_CODE:
-                lang = lang_code[0]
-                translated_text = translator.translate_text(instance.interest_center, target_lang=lang_code[0].upper())
-                if "-" in lang:
-                            lang=lang.replace("-", "_")
-                setattr(instance, f"interest_center_{lang}", translated_text.text)
-        instance.save()
         

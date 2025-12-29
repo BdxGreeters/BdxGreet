@@ -1,13 +1,13 @@
 from django.contrib import admin
 
 from core.models import (Beneficiaire, Email_Mailjet, FieldPermission,
-                         InterestCenter, Language_communication, LangueDeepL,
+                         Language_communication, LangueDeepL,
                          LangueParlee, No_show, Pays, Periode, TrancheAge,
                          Types_handicap)
 
 admin.site.register(Email_Mailjet)
 admin.site.register(LangueDeepL)
-admin.site.register(InterestCenter)
+
 admin.site.register(LangueParlee)
 admin.site.register(Pays)
 admin.site.register(No_show)

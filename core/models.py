@@ -21,18 +21,6 @@ class Email_Mailjet(models.Model):
     
 ###################################################################################################
 
-#Modele de la liste des centres d'intérêt
-
-class InterestCenter(models.Model):
-    interest_center=models.CharField(max_length=100, verbose_name=_("Centre d'intérêt"))
-
-    def __str__(self):
-        return f"{self.interest_center}"
-    
-
-    
-###################################################################################################
-
 # Modèle contenant les langues supportées par Deepl
 
 class LangueDeepL(models.Model):

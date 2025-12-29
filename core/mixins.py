@@ -1,6 +1,8 @@
 from django import forms
 from django.utils.safestring import mark_safe
 
+from core.tasks import translation_content
+
 # Affichage des Help_text
 
 class HelpTextTooltipMixin:
@@ -226,7 +228,7 @@ class RelatedModelsMixin:
     """
 
     Attributs requis dans la classe fille :
-    - related_fields : dictionnaire {nom_champ_form: (Model, nom_champ_m2m)}
+    - related_fields : dictionnaire {nom_champ_form: (Model, nom_champ_m2m,nomchamp Model)}
     """
     related_fields = {}  # À définir dans la vue du modèle de base
 
@@ -234,15 +236,30 @@ class RelatedModelsMixin:
         response = super().form_valid(form)
         cluster = self.object
 
-        for form_field, (model, m2m_field) in self.related_fields.items():
-            # Récupère les noms depuis le champ CharField du formulaire
-            names = [name.strip() for name in form.cleaned_data[form_field].split(',') if name.strip()]
+        for form_field, (model, m2m_field, model_attr) in self.related_fields.items():
+            data_string = form.cleaned_data.get(form_field, "")
+            if not data_string:
+                continue
+
+            names = [name.strip() for name in data_string.split(',') if name.strip()]
             objects = []
             for name in names:
-                obj, created = model.objects.get_or_create(nom=name)
-                objects.append(obj)
-            # Met à jour la relation ManyToMany
-            getattr(cluster, m2m_field).set(objects)
+                # 1. Récupération ou création de l'objet
+                obj, created = model.objects.get_or_create(**{model_attr: name})
+                
+                # 2. Si l'objet est nouveau, on déclenche la traduction
+                if created:
+                    translation_content(
+                        app_label=obj._meta.app_label,
+                        model_name=obj._meta.model_name,
+                        object_id=obj.pk,
+                        field_name=model_attr
+                    )
+                    # On rafraîchit l'objet pour avoir les champs traduits en mémoire
+                    obj.refresh_from_db()
 
+                objects.append(obj)
+            
+            getattr(cluster, m2m_field).set(objects)
 
         return response

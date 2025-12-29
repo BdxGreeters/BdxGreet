@@ -3,7 +3,7 @@ from modeltranslation.translator import (TranslationOptions, register,
                                          translator)
 
 from cluster.models import Cluster, Experience_Greeter, InterestCenter, Notoriety, Reason_No_Response_Greeter, Reason_No_Response_Visitor
-from core.models import (Beneficiaire, InterestCenter, Language_communication,
+from core.models import (Beneficiaire, Language_communication,
                          LangueDeepL, LangueParlee, No_show, Pays, Periode,
                          TrancheAge, Types_handicap)
 from destination.models import Destination, Destination_data
@@ -67,6 +67,20 @@ class InterestCenterTranslationOptions(TranslationOptions):
 
 translator.register(InterestCenter, InterestCenterTranslationOptions)
 
+
+
+class NotorietyTranslationOptions(TranslationOptions):
+    fields =('notoriety',)
+
+translator.register(Notoriety, NotorietyTranslationOptions)
+
+class Reason_No_Response_GreeterTranslationOptions(TranslationOptions):
+    fields =('reason_no_reply_greeter',)
+translator.register(Reason_No_Response_Greeter, Reason_No_Response_GreeterTranslationOptions)
+
+class Reason_No_Response_VisitorTranslationOptions(TranslationOptions):
+    fields =('reason_no_reply_visitor',)
+translator.register(Reason_No_Response_Visitor, Reason_No_Response_VisitorTranslationOptions)
 
 ###################################################################################################
 

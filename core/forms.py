@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.models import Group
 from django.utils.translation import gettext_lazy as _
 
-from core.models import (Beneficiaire, Email_Mailjet, InterestCenter,
+from core.models import (Beneficiaire, Email_Mailjet,
                          LangueDeepL, No_show, Periode, TrancheAge,
                          Types_handicap)
 
@@ -19,14 +19,6 @@ class LangueDeepLCreationForm (forms.ModelForm):
     class Meta:
         model=LangueDeepL    
         fields=('code_iso','lang_deepl')
-###################################################################################################
-
-# Form Création d'un centre d'intérêt
-
-class InterestCenterCreationForm (forms.ModelForm):
-    class Meta:
-        model= InterestCenter
-        fields =('interest_center',)
 ###################################################################################################
 
 # Form Création d'une raison de non réalisation de l'expérience

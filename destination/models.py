@@ -6,8 +6,8 @@ from django.utils.translation import gettext_lazy as _
 from modeltranslation.translator import (TranslationOptions, register,
                                          translator)
 
-from cluster.models import Cluster
-from core.models import (Beneficiaire, InterestCenter, Language_communication,
+from cluster.models import Cluster, InterestCenter
+from core.models import (Beneficiaire,  Language_communication,
                          LangueDeepL, LangueParlee, No_show, Pays, Periode,
                          TrancheAge, Types_handicap)
 

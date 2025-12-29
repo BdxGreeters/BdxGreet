@@ -38,11 +38,11 @@ class Cluster(models.Model):
     backup_mails_cluster=models.EmailField(default=" ",help_text=_("Adresse de sauvegarde des courriels générés sur l'ensemnble du cluster"), verbose_name=_("Adresse  de sauvegarde des courriels"))
     url_biblio_cluster=models.URLField(default=" ",blank=True, help_text=(_("Saisir l'URL de la bibliothèque pour les destinations")) ,verbose_name=_("URL de la bibliothèque Cluster des destinations"))
     url_biblio_Greeter_cluster=models.URLField(default=" ",blank=True,help_text=(_("Saisir l'URL de la bibliothèque pour les Greeter")), verbose_name=_("URL de la bibliothèque Cluster des Greeter"))
-    list_experience_cluster=models.ManyToManyField('Experience_Greeter', related_name="list_experience_cluster")
-    profil_interet_cluster=models.ManyToManyField('InterestCenter', related_name="profil_interet_cluster")
-    reason_no_reply_greeter_cluster=models.ManyToManyField('Reason_No_Response_Greeter', related_name="reason_no_reply_greeter_cluster")
-    reason_no_reply_visitor_cluster=models.ManyToManyField('Reason_No_Response_Visitor', related_name="reason_no_reply_visitor_cluster")
-    list_notoriety_cluster=models.ManyToManyField('Notoriety', related_name="list_notoriety_cluster")
+    experience_greeter=models.ManyToManyField('Experience_Greeter', related_name="list_experience_cluster")
+    interest_center=models.ManyToManyField('InterestCenter', related_name="profil_interet_cluster")
+    reason_no_reply_greeter=models.ManyToManyField('Reason_No_Response_Greeter', related_name="reason_no_reply_greeter_cluster")
+    reason_no_reply_visitor=models.ManyToManyField('Reason_No_Response_Visitor', related_name="reason_no_reply_visitor_cluster")
+    notoriety=models.ManyToManyField('Notoriety', related_name="list_notoriety_cluster")
     
     def clean(self):
         super().clean()
@@ -78,7 +78,7 @@ class InterestCenter(models.Model):
     interest_center=models.CharField(max_length=100, verbose_name=_("Centre d'intérêt"))
 
     def __str__(self):
-        return f"{self.interest_center}"
+        return self.interest_center
         
 ###################################################################################################
 
@@ -88,7 +88,7 @@ class Reason_No_Response_Greeter (models.Model):
     reason_no_reply_greeter=models.CharField(max_length=100, verbose_name=_("Raison de non réponse du Greeter"))
 
     def __str__(self):
-        return f"[{self.reason_no_response_greeter}]"
+        return self.reason_no_reply_greeter
 
 ###################################################################################################
 
@@ -98,7 +98,7 @@ class Reason_No_Response_Visitor (models.Model):
     reason_no_reply_visitor=models.CharField(max_length=100, verbose_name=_("Raison de non réponse du visiteur"))
 
     def __str__(self):
-        return f"[{self.reason_no_response_visitor}]"
+        return self.reason_no_reply_visitor
 
 ###################################################################################################
 
@@ -108,6 +108,6 @@ class Notoriety(models.Model):
     notoriety=models.CharField(max_length=100, verbose_name=_("Notoriété"))
 
     def __str__(self):
-        return f"[{self.notoriety}]"
+        return self.notoriety
     
 ###################################################################################################

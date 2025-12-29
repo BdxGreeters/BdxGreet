@@ -14,10 +14,10 @@ from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 
 from core.forms import (BeneficiaireCreationForm, Email_MailjetCreationForm,
-                        InterestCenterCreationForm, LangueDeepLCreationForm,
+                        LangueDeepLCreationForm,
                         No_showCreationForm, PeriodeCreationForm,
                         TrancheAgeCreationForm, Types_handicapCreationForm)
-from core.models import (Beneficiaire, Email_Mailjet, InterestCenter,
+from core.models import (Beneficiaire, Email_Mailjet,
                          Language_communication, LangueDeepL, No_show, Periode,
                          TrancheAge, Types_handicap)
 from core.tasks import envoyer_email_creation_utilisateur, translation_content

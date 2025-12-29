@@ -37,11 +37,11 @@ class ClusterCreateView(LoginRequiredMixin, SuperAdminRequiredMixin,FormFieldPer
     target_group_name = 'Admin'
     app_name = 'cluster'
     related_fields = {
-        'experience_greeter': (Experience_Greeter, 'experience_greeter'),
-        'interest_center': (InterestCenter, 'interest_center'),
-        'no_reply_greeter': (Reason_No_Response_Greeter, 'reason_no_reply_greeter'),
-        'no_reply_visitor': (Reason_No_Response_Visitor, 'reason_no_reply_visitor'),
-        'notoriety': (Notoriety, 'notoriety')   
+        'experience_greeter': (Experience_Greeter, 'experience_greeter', 'experience_greeter'),
+        'interest_center': (InterestCenter, 'interest_center', 'interest_center'),
+        'no_reply_greeter': (Reason_No_Response_Greeter, 'reason_no_reply_greeter', 'reason_no_reply_greeter'),
+        'no_reply_visitor': (Reason_No_Response_Visitor, 'reason_no_reply_visitor', 'reason_no_reply_visitor'),
+        'notoriety': (Notoriety, 'notoriety', 'notoriety')  
     }
 
 
@@ -53,39 +53,49 @@ class ClusterCreateView(LoginRequiredMixin, SuperAdminRequiredMixin,FormFieldPer
     def post(self, request, *args, **kwargs):
         form = ClusterForm(request.POST, user=request.user)
         if form.is_valid():
-            # Sauvegarder l'instance du cluster
+            # 1. Préparation de l'objet (sans sauvegarde M2M immédiate)
             cluster = form.save(commit=False)
 
-            # Ajouter les groupes aux administrateurs
-            admin_group, created = Group.objects.get_or_create(name='Admin')
-
+            # 2. Logique des groupes Admin
+            admin_group, _ = Group.objects.get_or_create(name='Admin')
             if cluster.admin_cluster:
-                if not cluster.admin_cluster.pk:
-                    cluster.admin_cluster.save()
+                if not cluster.admin_cluster.pk: cluster.admin_cluster.save()
                 cluster.admin_cluster.groups.add(admin_group)
 
             if cluster.admin_alt_cluster:
-                if not cluster.admin_alt_cluster.pk:
-                    cluster.admin_alt_cluster.save()
+                if not cluster.admin_alt_cluster.pk: cluster.admin_alt_cluster.save()
                 cluster.admin_alt_cluster.groups.add(admin_group)
-                    
-            cluster.save()
 
-            
+            # 3. On attache l'objet à la vue pour que le Mixin y accède
+            self.object = cluster
+            self.object.save() 
 
-            # Mettre à jour les permissions si l'utilisateur appartient à un groupe autorisé
-            if self.user_has_any_permission_group(request.user):
-                self.update_permissions_from_form(cluster, form)
-                messages.success(request, _("Cluster créé et permissions enregistrées avec succès."))
-            else:
-                messages.success(request, _("Cluster créé avec succès."))
-
-            messages.success(request, _("Le cluster {} a été créé.").format(cluster.name_cluster))
-            return redirect('clusters_list')
+            # 4. On appelle form_valid qui va déclencher le RelatedModelsMixin
+            return self.form_valid(form)
         else:
             messages.error(request, _("Le formulaire n'est pas valide."))
-            context = {'form': form, 'title': _("Créer un cluster")}
-            return render(request, self.template_name, context)
+            return self.render_to_response(self.get_context_data(form=form))
+
+    def form_valid(self, form):
+        """
+        Cette méthode est appelée après self.object.save() par le post.
+        Le RelatedModelsMixin va ici créer les tags/modèles liés.
+        """
+        # Appel du form_valid du Mixin (gestion des RelatedModels)
+        response = super().form_valid(form)
+        
+        cluster = self.object
+        
+        # 5. Logique des permissions
+        if self.user_has_any_permission_group(self.request.user):
+            self.update_permissions_from_form(cluster, form)
+            messages.success(self.request, _("Cluster créé et permissions enregistrées avec succès."))
+        else:
+            messages.success(self.request, _("Cluster créé avec succès."))
+
+        messages.success(self.request, _("Le cluster {} a été créé.").format(cluster.name_cluster))
+        
+        return response
         
 ###################################################################################################
 
