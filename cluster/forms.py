@@ -18,11 +18,11 @@ from core.models import FieldPermission, Language_communication, Pays
 User = get_user_model()
 
 class ClusterForm(CommaSeparatedFieldMixin, HelpTextTooltipMixin, forms.ModelForm):
-    interest_center = forms.CharField(required=True, label=_("Centres d'intérêt"), help_text=_("Saisissez les centres d'intérêts séparés par une virgule"))
-    experience_greeter = forms.CharField(required=True, label=_("Expériences du Greeter"), help_text=_("Saisissez les expériences du Greeter séparées par une virgule"))
-    no_reply_greeter= forms.CharField(required=True, label=_("Raisons de non réponse du Greeter"), help_text=_("Saisissez les raisons de non réponse du Greeter séparées par une virgule"))
-    no_reply_visitor= forms.CharField(required=True, label=_("Raisons de non réponse du visiteur"), help_text=_("Saisissez les raisons de non réponse du visiteur séparées par une virgule"))
-    notoriety= forms.CharField(required=True, label=_("Notoriété"), help_text=_("Saisissez les motifs de notoriété séparés par une virgule"))
+    interest_center = forms.CharField(required=True, label=_("Centres d'intérêt"), help_text=_("Saisissez les centres d'intérêts en les validant par Entrée"))
+    experience_greeter = forms.CharField(required=True, label=_("Expériences du Greeter"), help_text=_("Saisissez les expériences du Greeter sen les validant par Entrée"))
+    no_reply_greeter= forms.CharField(required=True, label=_("Raisons de non réponse du Greeter"), help_text=_("Saisissez les raisons de non réponse du Greeter en les validant par Entrée"))
+    no_reply_visitor= forms.CharField(required=True, label=_("Raisons de non réponse du visiteur"), help_text=_("Saisissez les raisons de non réponse du visiteur en les validant par Entrée"))
+    notoriety= forms.CharField(required=True, label=_("Notoriété"), help_text=_("Saisissez les motifs de notoriété en les validant par Entrée"))
 
 
     editable_fields = [
@@ -66,11 +66,11 @@ class ClusterForm(CommaSeparatedFieldMixin, HelpTextTooltipMixin, forms.ModelFor
 
         # Ajouter un champ BooleanField pour chaque champ éditable
         for field_name in self.editable_fields:
-            print(field_name)
             self.fields[f'can_edit_{field_name}'] = forms.BooleanField(
                 label="",
                 required=False,
                 initial=False,
+                help_text=_("Cocher la case pour autoriser l'édition du champ par l'administrateur")
                 
             )
 
@@ -127,6 +127,8 @@ class ClusterForm(CommaSeparatedFieldMixin, HelpTextTooltipMixin, forms.ModelFor
 
         self.fields['country_admin_cluster'].queryset = Pays.objects.all().order_by('nom_pays')
         self.fields['country_admin_alt_cluster'].queryset = Pays.objects.all().order_by('nom_pays')
+
+        self.apply_tooltips() #Appel du mixin HelpextTooltip
 
         # Configuration du layout avec crispy_forms
         self.helper = FormHelper()
@@ -215,7 +217,7 @@ class ClusterForm(CommaSeparatedFieldMixin, HelpTextTooltipMixin, forms.ModelFor
                         Column('no_reply_visitor', css_class='col-md-11'),
                         Column('can_edit_no_reply_visitor', css_class='col-md-1 d-flex align-items-center justify-content-center'),
                         Column('notoriety', css_class='col-md-11'),
-                        Column('can_edit_notoriety', css_class='col-md-1 '),
+                        Column('can_edit_notoriety', css_class='col-md-1 d-flex align-items-center justify-content-center'),
                     ),
                 ),
             ),

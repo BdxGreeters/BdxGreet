@@ -1,26 +1,39 @@
-from django import forms
 from django.utils.safestring import mark_safe
-
-from core.tasks import translation_content
-
-# Affichage des Help_text
+from django.utils.text import capfirst
 
 class HelpTextTooltipMixin:
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
+    """
+    Mixin qui transforme les help_text en tooltips Bootstrap.
+    Doit être appelé explicitement via self.apply_tooltips() à la fin du __init__ du formulaire.
+    """
+    def apply_tooltips(self):
         for field_name, field in self.fields.items():
             help_text = field.help_text
+            
+            # On traite le champ seulement s'il a un help_text
             if help_text:
+                # Si le label est vide (cas de vos checkboxes), on met une chaîne vide pour éviter 'None'
+                current_label = field.label or ""
+                
+                # Si le label n'est pas défini mais que ce n'est pas voulu vide (ex: champs automatiques)
+                if not current_label and field.label is None:
+                     current_label = capfirst(field_name.replace("_", " "))
+
+                # On vide le help_text standard pour éviter le doublon
                 field.help_text = None
-                # Ajouter une icône Bootstrap avec tooltip dans le label
+                
+                # Création de l'icône. 
+                # Astuce : Pour une checkbox sans label, on ajoute un petit padding
+                icon_style = "margin-left: 5px;" if current_label else ""
+                
                 tooltip_html = f'''
                     <span data-bs-toggle="tooltip" title="{help_text}" style="cursor: help;">
-                        <i class="bi bi-info-circle" style="margin-left: 10px;"></i>
+                        <i class="bi bi-info-circle text-info" style="{icon_style}"></i>
                     </span>
                 '''
-                field.label = mark_safe(f"{field.label}{tooltip_html}")
-
+                
+                # On met à jour le label
+                field.label = mark_safe(f"{current_label}{tooltip_html}")
 ###################################################################################################
 
 # Ajout à une liste dans un champ Texte
@@ -56,117 +69,32 @@ class CommaSeparatedFieldMixin:
                 cleaned_data[field_name] = ",".join(items)
         return cleaned_data
 
-###################################################################################################
-
-#Champs éditables selon les groupes d'utilisateurs
-
-from django.contrib.auth.models import Group
-from django.contrib.contenttypes.models import ContentType
-from django.shortcuts import get_object_or_404
-
-from core.models import FieldPermission
-
-
-class FieldPermissionMixin:
-    """
-    Mixin pour gérer les permissions de champs pour un objet donné,
-    avec support pour une liste de groupes et une relation ManyToManyField.
-    """
-    permission_groups = []  # Liste des groupes autorisés à définir les permissions
-    target_group_name = None  # Groupe cible qui reçoit les permissions
-    app_name = None  # Nom de l'application
-
-    def user_has_any_permission_group(self, user):
-        """
-        Vérifie si l'utilisateur appartient à au moins un des groupes dans permission_groups.
-        """
-        if not self.permission_groups:
-            raise ValueError("La liste des groupes de permission est vide.")
-
-        user_groups = user.groups.values_list('name', flat=True)
-        return any(group in user_groups for group in self.permission_groups)
-
-    def get_field_permissions(self, obj):
-        """
-        Récupère les permissions de champs pour un objet donné,
-        en filtrant par le groupe cible.
-        """
-        if not self.target_group_name:
-            raise ValueError("Le nom du groupe cible n'est pas défini.")
-
-        target_group = get_object_or_404(Group, name=self.target_group_name)
-        content_type = ContentType.objects.get_for_model(obj)
-        permissions = FieldPermission.objects.filter(
-            content_type=content_type,
-            object_id=obj.id,
-            app_name=self.app_name,
-            target_group=target_group  # Filtrer par le groupe cible
-        )
-        return {p.field_name: p.is_editable for p in permissions}
-
-    def update_field_permissions(self, obj, form):
-        """
-        Met à jour les permissions de champs pour un objet donné,
-        en gérant la relation ManyToManyField pour les groupes.
-        """
-        if not self.permission_groups or not self.target_group_name:
-            raise ValueError("Les groupes de permission ou le groupe cible ne sont pas définis.")
-
-        # Récupérer les groupes de permission et le groupe cible
-        permission_group_objs = [get_object_or_404(Group, name=group) for group in self.permission_groups]
-        target_group = get_object_or_404(Group, name=self.target_group_name)
-
-        content_type = ContentType.objects.get_for_model(obj)
-
-        for field_name in form.editable_fields:
-            is_editable = form.cleaned_data.get(f'can_edit_{field_name}', True)
-
-            # Mettre à jour ou créer la permission
-            field_permission, created = FieldPermission.objects.update_or_create(
-                field_name=field_name,
-                content_type=content_type,
-                object_id=obj.id,
-                app_name=self.app_name,
-                target_group=target_group,
-                defaults={'is_editable': is_editable}
-            )
-
-            # Gérer la relation ManyToManyField pour les groupes
-            if created:
-                field_permission.group.set(permission_group_objs)
-            else:
-                # Ajouter les groupes manquants
-                for group in permission_group_objs :
-                    if group not in field_permission.group.all():
-                        field_permission.group.add(group)
 
 ###################################################################################################
 # Mixin Gestion des permissions des champs définis éditables dans un formulaire
 
+from django.shortcuts import get_object_or_404
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.auth.models import Group
+# Assurez-vous d'importer votre modèle FieldPermission
+from core.models import FieldPermission 
+
 class FormFieldPermissionMixin:
-    """
-    Mixin pour gérer les permissions de champs basées sur la configuration
-    fournie par un formulaire (attribut editable_fields).
-    """
-    permission_groups = []  # Groupes autorisés à modifier les permissions (ex: ['SuperAdmin'])
-    target_group_name = None  # Groupe cible (ex: 'Admin')
+    permission_groups = []  
+    target_group_name = None  
     app_name = None
 
     def user_has_any_permission_group(self, user):
-        """
-        Vérifie si l'utilisateur appartient à au moins un des groupes dans permission_groups.
-        """
-        if not self.permission_groups:
-            raise ValueError("La liste des groupes de permission est vide.")
+    # Un superutilisateur a toujours les droits
+        if user.is_superuser:
+            return True # Indentation corrigée
+        
+        if not self.permission_groups: # Indentation corrigée
+            return False # Indentation corrigée
 
-        user_groups = user.groups.values_list('name', flat=True)
-        return any(group in user_groups for group in self.permission_groups)
+        return user.groups.filter(name__in=self.permission_groups).exists() # Indentation corrigée
 
     def get_field_permissions(self, obj):
-        """
-        Récupère les permissions de champs pour un objet donné,
-        en filtrant par le groupe cible.
-        """
         if not self.target_group_name:
             raise ValueError("Le nom du groupe cible n'est pas défini.")
 
@@ -176,23 +104,22 @@ class FormFieldPermissionMixin:
             content_type=content_type,
             object_id=obj.id,
             app_name=self.app_name,
-            target_group=target_group  # Filtrer par le groupe cible
+            target_group=target_group
         )
         return {p.field_name: p.is_editable for p in permissions}
 
-
-    def update_permissions_from_form(self, obj, form):
+    # RENOMMÉ POUR CORRESPONDRE À LA VUE
+    def update_field_permissions(self, obj, form):
         if not self.target_group_name or not self.app_name:
             raise ValueError("target_group_name et app_name doivent être définis.")
 
         target_group = get_object_or_404(Group, name=self.target_group_name)
-        permission_group_objs = list(Group.objects.filter(name__in=self.permission_groups))
         content_type = ContentType.objects.get_for_model(obj)
         
-        # Liste des champs actuellement définis dans le formulaire
+        # Récupère la liste des champs gérables définie dans le formulaire
         current_editable_fields = getattr(form, 'editable_fields', [])
 
-        # 1. NETTOYAGE : Supprimer les permissions qui ne sont plus dans editable_fields
+        # 1. NETTOYAGE
         FieldPermission.objects.filter(
             content_type=content_type,
             object_id=obj.id,
@@ -203,20 +130,20 @@ class FormFieldPermissionMixin:
         # 2. MISE À JOUR / CRÉATION
         for field_name in current_editable_fields:
             permission_key = f'can_edit_{field_name}'
-            # On récupère la valeur, par défaut False si absent
-            is_editable = form.cleaned_data.get(permission_key, False)
-
-            field_permission, created = FieldPermission.objects.update_or_create(
-                field_name=field_name,
-                content_type=content_type,
-                object_id=obj.id,
-                app_name=self.app_name,
-                target_group=target_group,
-                defaults={'is_editable': is_editable}
-            )
+            # Important : on vérifie si la clé existe dans cleaned_data
+            if permission_key in form.cleaned_data:
+                is_editable = form.cleaned_data.get(permission_key)
+                
+                FieldPermission.objects.update_or_create(
+                    field_name=field_name,
+                    content_type=content_type,
+                    object_id=obj.id,
+                    app_name=self.app_name,
+                    target_group=target_group,
+                    defaults={'is_editable': is_editable}
+                )
             
-            if permission_group_objs:
-                field_permission.group.set(permission_group_objs)
+            
 
 ###################################################################################################
 
@@ -263,3 +190,4 @@ class RelatedModelsMixin:
             getattr(cluster, m2m_field).set(objects)
 
         return response
+    

@@ -10,7 +10,7 @@ from django.views import View
 from django.views.generic import DetailView
 from django.views.generic.edit import CreateView, UpdateView
 from django.views.generic import DetailView
-from core.mixins import FieldPermissionMixin
+
 from core.models import FieldPermission
 from core.tasks import translation_content, translation_content_items
 from core.translation import DestinationTranslationOptions

@@ -26,11 +26,26 @@
             <strong>{% trans "Sauvegarde des courriels" %} : </strong>{{ cluster.backup_mails_cluster }}<br>
             <strong>{% trans "URL de la bibliothèque des destinations" %} : </strong>{{ cluster.url_biblio_cluster }}<br>
             <strong>{% trans "URL de la bibliothèque du greeter" %} : </strong>{{ cluster.url_biblio_Greeter_cluster }}<br>
-            <strong>{% trans "Liste des expériences Greeter" %} : </strong>{{ cluster.list_experience_cluster }}<br>
-            <strong>{% trans "Liste des centres d'intêrets" %}: </strong>{{ cluster.profil_interet_cluster }}<br>
-            <strong>{% trans "Liste des non réponses du Greeter" %} : </strong>{{ cluster.reason_no_reply_greeter_cluster}}<br>
-            <strong>{% trans "Liste des non réponses du visiteur" %} : </strong>{{ cluster.reason_no_reply_visitor_cluster}}<br>
-            <strong>{% trans "Liste des notoriétés" %} : </strong>{{ cluster.list_notoriety_cluster }}<br>
+            <strong>{% trans "Liste des expériences Greeter" %} : </strong>
+            {% for experience in cluster.experience_greeter.all %}
+                {{ experience }}{% if not forloop.last %}, {% endif %}  
+            {% endfor %}<br>
+            <strong>{% trans "Liste des centres d'intêrets" %}: </strong>
+            {% for interest in cluster.interest_center.all %}
+                {{ interest }}{% if not forloop.last %}, {% endif %}
+            {% endfor %}<br>
+            <strong>{% trans "Liste des non réponses du Greeter" %} : </strong>
+            {% for reason in cluster.reason_no_reply_greeter.all %}
+                {{ reason }}{% if not forloop.last %}, {% endif %}
+            {% endfor %}<br>
+            <strong>{% trans "Liste des non réponses du visiteur" %} : </strong>
+            {% for reason in cluster.reason_no_reply_visitor.all %}
+                {{reason }}{% if not forloop.last %}, {% endif %}
+            {% endfor %}<br>
+            <strong>{% trans "Liste des notoriétés" %} : </strong>
+            {% for notoriety in cluster.notoriety.all %}
+                {{ notoriety }}{% if not forloop.last %}, {% endif %}
+            {% endfor %}<br>
             <strong>{% trans "Liste des destinations" %} : </strong>
            <select class="form-control">
                 {% for destination in destinations %}
