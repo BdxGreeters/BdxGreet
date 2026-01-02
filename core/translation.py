@@ -6,7 +6,7 @@ from cluster.models import Cluster, Experience_Greeter, InterestCenter, Notoriet
 from core.models import (Beneficiaire, Language_communication,
                          LangueDeepL, LangueParlee, No_show, Pays, Periode,
                          TrancheAge, Types_handicap)
-from destination.models import Destination, Destination_data
+from destination.models import Destination, Destination_data,List_places
 
 ###################################################################################################
 
@@ -87,7 +87,7 @@ translator.register(Reason_No_Response_Visitor, Reason_No_Response_VisitorTransl
 # Traduction des modèles Destination
 
 class DestinationTranslationOptions(TranslationOptions):
-    fields =('list_places_dest','disability_libelle_dest',)
+    fields =('disability_libelle_dest',)
 
 translator.register(Destination, DestinationTranslationOptions) 
 
@@ -100,3 +100,8 @@ class Destination_dataTranslationOptions(TranslationOptions):
     fields=('donation_text_dest','param_comment_visitor_dest','libelle_form_coche1_dest', 'lib_url_form_coche1_dest', 'libelle_form_coche2_dest', 'lib_url_form_coche2_dest', 'libelle_form_coche3_dest', 'lib_url_form_coche3_dest','texte_avis_fermeture_dest','tagline_mail_dest','texte_avis_mail_dest')
 
 translator.register(Destination_data, Destination_dataTranslationOptions)
+
+class List_placesTranslationOptions(TranslationOptions):
+    fields =('list_places_dest',)
+
+translator.register(List_places, List_placesTranslationOptions)

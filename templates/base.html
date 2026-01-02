@@ -68,22 +68,20 @@
    {% block script %}
    {% endblock %}
     {% if messages %}
-    ><script>
+    <script>
         document.addEventListener('DOMContentLoaded', function() {
             let messagesText = '';
             let messageIcon = 'info'; // Icône par défaut
 
             {% for message in messages %}
-                // Concaténer les messages s'il y en a plusieurs
-                messagesText += '{{ message|escapejs }}\\n'; 
+                messagesText += '{{ message|escapejs }}\n'; 
 
-                // Déterminer l'icône en fonction du tag du message
                 {% if message.tags == 'success' %}
                     messageIcon = 'success';
+                {% elif message.tags == 'error' or message.tags == 'danger' %}
+                    messageIcon = 'error';
                 {% elif message.tags == 'warning' %}
                     messageIcon = 'warning';
-                {% elif message.tags == 'error' %}
-                    messageIcon = 'error';
                 {% endif %}
             {% endfor %}
 

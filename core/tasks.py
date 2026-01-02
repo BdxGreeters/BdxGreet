@@ -12,7 +12,6 @@ def translation_content(app_label,model_name, object_id, field_name):
     try:
         Model = apps.get_model(app_label,model_name)
         objet = Model.objects.get(pk=object_id)
-        print(objet)
     except (LookupError, ObjectDoesNotExist) as e:
         raise ValueError(f"Erreur : {e}")
 
@@ -80,8 +79,6 @@ from mailjet_rest import Client
 @shared_task
 def send_email_mailjet (recipient_email,recipient_name, template_mailjet_id, vars):
     template_id = template_mailjet_id
-    print ("clef api mailjet {settings.MAILJET_API_KEY}")
-    print ("secret mailjet {settings.MAILJET_SECRET_KEY}")
     mailjet = Client (auth=(settings.MAILJET_API_KEY,settings.MAILJET_SECRET_KEY),version='v3.1')
     data = {
         'Messages':[
@@ -102,7 +99,7 @@ def send_email_mailjet (recipient_email,recipient_name, template_mailjet_id, var
     result = mailjet.send.create(data=data)
     return result.status_code
  ##################################################################################################
- # Fonctio d'envoi de creation d'un utilisateur
+ # Fonction d'envoi du courriel  de creation d'un utilisateur
 
 from django.contrib.sites.shortcuts import get_current_site
 from django.db.models.signals import post_save
@@ -155,3 +152,4 @@ def reset_password (user_id, domain, template_mailjet_id):
     send_email_mailjet.delay(recipient_email, recipient_name,template_mailjet_id, vars)
 ###################################################################################################
 
+ t

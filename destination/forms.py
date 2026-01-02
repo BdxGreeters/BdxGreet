@@ -19,6 +19,7 @@ from destination.models import Destination, Destination_data, Destination_flux
 User = get_user_model()
 
 class DestinationForm(HelpTextTooltipMixin, CommaSeparatedFieldMixin, forms.ModelForm):
+    list_places_dest = forms.CharField(required=True, label=_("Lieux ou thèmes"), help_text=_("Saisissez les lieux ou thèmes en les validant par Entrée"))
 
     # Champs modifiables par le matcher
     gestionnaire_fields = [
@@ -62,7 +63,6 @@ class DestinationForm(HelpTextTooltipMixin, CommaSeparatedFieldMixin, forms.Mode
             'matcher_dest',
             'matcher_alt_dest',
             'finance_dest',
-            'list_places_dest',
             'mini_lp_dest',
             'max_lp_dest',
             'mini_interest_center_dest',
@@ -79,7 +79,6 @@ class DestinationForm(HelpTextTooltipMixin, CommaSeparatedFieldMixin, forms.Mode
             'statut_dest': forms.RadioSelect(),
             'desc_dest': forms.Textarea(attrs={'rows': 2}),
             'adress_dest': forms.Textarea(attrs={'rows': 2}),
-            'list_places_dest': forms.TextInput(attrs={'class': '.comma-input-field'}),
             'disability_libelle_dest': forms.Textarea(attrs={'rows': 3}),
         }
 
@@ -132,7 +131,7 @@ class DestinationForm(HelpTextTooltipMixin, CommaSeparatedFieldMixin, forms.Mode
         self.fields['matcher_alt_dest'].queryset = user_queryset
         self.fields['finance_dest'].queryset = user_queryset
        
-
+        self.apply_tooltips() #Appel du mixin HelpTooltipsMixin
         
         self.helper.layout = Layout(
             TabHolder(
@@ -228,26 +227,14 @@ class DestinationForm(HelpTextTooltipMixin, CommaSeparatedFieldMixin, forms.Mode
 
         # 1. Récupérer le cluster sélectionné
         cluster = cleaned_data.get('code_cluster')
-        
+        print(type(cluster))
         # 2. Récupérer la valeur de max_interest_center_dest
         max_interest_center_dest = cleaned_data.get('max_interest_center_dest')
 
         if cluster and max_interest_center_dest is not None:
             # 3. Calculer le nombre d'items dans profil_interet_cluster du cluster
-            
-            # Récupère la chaîne de centres d'intérêt
-            interet_cluster_str = cluster.profil_interet_cluster
-            
-            # Sépare les items par la virgule et filtre les chaînes vides
-            # Ex: "sport,lecture,musique" -> ['sport', 'lecture', 'musique'] -> 3
-            # Ex: "sport,,lecture" -> ['sport', 'lecture'] -> 2
-            list_interets = [
-                item.strip() 
-                for item in interet_cluster_str.split(',') 
-                if item.strip()
-            ]
-            
-            total_interets = len(list_interets)
+            total_interets = cluster.interest_center.count()
+
 
             # 4. Effectuer la comparaison
             if max_interest_center_dest > total_interets:
@@ -402,6 +389,9 @@ class DestinationDataForm(HelpTextTooltipMixin, forms.ModelForm):
             self.fields['langs_com_dest'].queryset = Language_communication.objects.none()
             self.fields['lang_default_dest'].queryset = Language_communication.objects.none()        
         
+        self.apply_tooltips() #Appel du mixin HelpextTooltip
+
+
         self.helper = FormHelper()
         self.helper.form_method = 'post'
         self.helper.layout = Layout(
@@ -591,6 +581,9 @@ class DestinationFluxForm(HelpTextTooltipMixin,forms.ModelForm):
                 cluster = destination_obj.code_cluster
 
         super().__init__(*args, **kwargs)
+
+        self.apply_tooltips() #Appel du mixin HelpextTooltip
+
         self.helper = FormHelper()
         self.helper.form_method = 'post'
         self.helper.layout = Layout(

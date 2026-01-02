@@ -150,6 +150,8 @@ class FormFieldPermissionMixin:
 # Mixin pour gérer la création/mise à jour des modèles liés à un autre modèle par des champs CharFied
 
 from django.forms import CharField
+from core.tasks import translation_content
+
 
 class RelatedModelsMixin:
     """

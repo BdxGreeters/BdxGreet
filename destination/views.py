@@ -1,4 +1,4 @@
-from django.contrib import messages
+from django.contrib import messages as django_messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.models import Group
@@ -10,12 +10,12 @@ from django.views import View
 from django.views.generic import DetailView
 from django.views.generic.edit import CreateView, UpdateView
 from django.views.generic import DetailView
-
+from core.mixins import RelatedModelsMixin, HelpTextTooltipMixin
 from core.models import FieldPermission
 from core.tasks import translation_content, translation_content_items
 from core.translation import DestinationTranslationOptions
 from destination.forms import DestinationForm, DestinationDataForm, DestinationFluxForm
-from destination.models import Destination, Destination_data, Destination_flux
+from destination.models import Destination, Destination_data, Destination_flux,List_places
 from PIL import Image
 import os
 from django.db.models import Q   
@@ -33,82 +33,105 @@ class SuperAdminRequiredMixin(UserPassesTestMixin):
         return self.request.user.groups.filter(name__in=['SuperAdmin', 'Admin']).exists() 
 
     def handle_no_permission(self):
-        messages.error(self.request, "Vous n'avez pas les droits nécessaires pour créer une destination.")
+        django_messages.error(self.request, "Vous n'avez pas les droits nécessaires pour créer une destination.")
         return redirect('clusters_list')
 
-class DestinationCreateView(LoginRequiredMixin, SuperAdminRequiredMixin,CreateView):
+class DestinationCreateView(LoginRequiredMixin, SuperAdminRequiredMixin, HelpTextTooltipMixin, RelatedModelsMixin, CreateView):
     template_name = 'destination/destination_form.html'
-    success_url = reverse_lazy('destinations_list')
-    permission_groups = ['SuperAdmin', 'Admin']  # Utilisez une liste pour les groupes de permission
+    # success_url est techniquement requis par CreateView, mais nous allons le surcharger dans form_valid
+    success_url = reverse_lazy('destinations_list') 
+    permission_groups = ['SuperAdmin', 'Admin']
     target_group_name = 'Referent'
     app_name = 'destination'
+    
+    # Configuration pour RelatedModelsMixin
+    related_fields = {
+        'list_places_dest': (List_places, 'list_places_dest', 'list_places_dest')
+    }
+    form_class = DestinationForm # Il est préférable de définir form_class ici
 
-    def get(self, request, *args, **kwargs):
-        code_cluster_user = getattr(request.user, 'code_cluster', None)
-        form = DestinationForm(request.GET or None, user=request.user, code_cluster_user=code_cluster_user)
-        context = {'form': form, 'title': _("Création d'une destination")}
-        return render(request, self.template_name, context)
+    def get_context_data(self, **kwargs):
+        """Ajoute le titre ou d'autres variables au contexte"""
+        context = super().get_context_data(**kwargs)
+        context['title'] = _("Création d'une destination")
+        return context
 
-    def post(self, request, *args, **kwargs):
-        code_cluster_user = getattr(request.user, 'code_cluster', None)
-        form = DestinationForm(request.POST, request.FILES, user=request.user, code_cluster_user=code_cluster_user)
-        if form.is_valid():
-            # Sauvegarder l'instance de la destination
-            destination= form.save(commit=False)
-            final_code_cluster= request.POST.get('code_cluster_hidden')
-            if final_code_cluster is None:
-                final_code_cluster=form.cleaned_data.get('code_cluster')
-            if final_code_cluster:
-                destination.code_cluster=final_code_cluster    
-            destination.save()
+    def get_form_kwargs(self):
+        """Passe les arguments supplémentaires (user, code_cluster) au formulaire"""
+        kwargs = super().get_form_kwargs()
+        code_cluster_user = getattr(self.request.user, 'code_cluster', None)
+        # On injecte les kwargs attendus par DestinationForm.__init__
+        kwargs.update({
+            'user': self.request.user,
+            'code_cluster_user': code_cluster_user
+        })
+        return kwargs
 
-            #Mettre à jour les groupes des utilisateurs liés à cette destination
-            if destination.manager_dest:
-                manager_group, created = Group.objects.get_or_create(name='Manager')
-                destination.manager_dest.groups.add(manager_group)
-        
-            if destination.referent_dest:
-                referent_group, created = Group.objects.get_or_create(name='Referent')
-                destination.referent_dest.groups.add(referent_group)
-
-            if destination.matcher_dest:
-                matcher_group, created = Group.objects.get_or_create(name='Gestionnaire')
-                destination.matcher_dest.groups.add(matcher_group)  
-
-            if destination.matcher_alt_dest:
-                matcher_alt_group, created = Group.objects.get_or_create(name='Gestionnaire')
-                destination.matcher_alt_dest.groups.add(matcher_alt_group)
-
-            if destination.finance_dest:
-                finance_group, created = Group.objects.get_or_create(name='Financier')
-                destination.finance_dest.groups.add(finance_group)
-
-            # Redimension du logo en 200*200px
-            img_path=os.path.join(settings.MEDIA_ROOT, str(destination.logo_dest.name))
-            img = Image.open(img_path)
-            img.thumbnail ((200,200))
-            img.save(img_path)
-
-
-            destination.save()
-            form.save_m2m()  # Sauvegarder les relations ManyToMany si nécessaire
-
-            # Traduction des lieux ou thèmes de la destination
-            for field in DestinationTranslationOptions.fields:
-                translation_content_items.delay('destination', 'Destination', destination.id, field)
+    def form_valid(self, form):
             
-            # Traduction des types de handicap
-            if destination.disability_libelle_dest:
-                translation_content.delay("destination","Destination", destination.id, "disability_libelle_dest")
-            
-            # Création automatique de Destination_data et Destination_flux
-            return redirect('create_related_data', destination_id=destination.id)
-
-        else:
-            messages.error(request, _("Le formulaire n'est pas valide."))
-            context = {'form': form, 'title': _("Créer une destination")}
-            return render(request, self.template_name, context)
+        # Appel du parent (CreateView + RelatedModelsMixin)
+        # Cela sauvegarde self.object et gère les champs related_fields du Mixin
+        response = super().form_valid(form)
         
+        destination = self.object # L'objet est maintenant créé en base
+
+        
+        final_code_cluster = self.request.POST.get('code_cluster_hidden')
+        if not final_code_cluster:
+            final_code_cluster = form.cleaned_data.get('code_cluster')
+        
+        if final_code_cluster:
+            destination.code_cluster = final_code_cluster
+            
+        
+        if destination.manager_dest:
+            manager_group, _ = Group.objects.get_or_create(name='Manager')
+            destination.manager_dest.groups.add(manager_group)
+    
+        if destination.referent_dest:
+            referent_group, _ = Group.objects.get_or_create(name='Referent')
+            destination.referent_dest.groups.add(referent_group)
+
+        if destination.matcher_dest:
+            matcher_group, _ = Group.objects.get_or_create(name='Gestionnaire')
+            destination.matcher_dest.groups.add(matcher_group)  
+
+        if destination.matcher_alt_dest:
+            matcher_alt_group, _ = Group.objects.get_or_create(name='Gestionnaire')
+            destination.matcher_alt_dest.groups.add(matcher_alt_group)
+
+        if destination.finance_dest:
+            finance_group, _ = Group.objects.get_or_create(name='Financier')
+            destination.finance_dest.groups.add(finance_group)
+
+       
+        if destination.logo_dest:
+            try:
+                img_path = os.path.join(settings.MEDIA_ROOT, str(destination.logo_dest.name))
+                if os.path.exists(img_path):
+                    img = Image.open(img_path)
+                    img.thumbnail((200, 200))
+                    img.save(img_path)
+            except Exception as e:
+                # Bonnes pratiques : logger l'erreur plutôt que de faire planter la vue
+                print(f"Erreur redimensionnement image: {e}")
+
+        destination.save()
+        
+       
+        if destination.disability_libelle_dest:
+            translation_content.delay("destination", "Destination", destination.id, "disability_libelle_dest")
+       
+        return redirect('create_related_data', destination_id=destination.id)
+    
+    def form_invalid(self, form):
+        """
+        Exécuté quand le formulaire est INVALIDE.
+        C'est ici qu'on remet le message d'erreur global.
+        """
+        django_messages.error(self.request, _("Le formulaire n'est pas valide. Veuillez vérifier les champs."))
+        
+        return super().form_invalid(form)
 ###################################################################################################
 
 #Vue Création Destination_data
@@ -169,7 +192,7 @@ class CreateRelatedDataModelsView(LoginRequiredMixin, SuperAdminRequiredMixin, V
             'data_form': data_form,
           
         }
-        messages.error(request, _("Le formulaire n'est pas valide."))
+        django_messages.error(request, _("Le formulaire n'est pas valide."))
         return render(request, 'destination/create_related_data.html', context)
 
 ###################################################################################################
@@ -205,7 +228,7 @@ class CreateRelatedFluxModelsView(LoginRequiredMixin, SuperAdminRequiredMixin, V
             destination_flux.save()
             
 
-            messages.success(request, _("La destination {} a été créée.").format(destination.name_dest))
+            django_messages.success(request, _("La destination {} a été créée.").format(destination.name_dest))
             return redirect('destination_detail', pk=destination.id)
 
         context = {
@@ -213,7 +236,7 @@ class CreateRelatedFluxModelsView(LoginRequiredMixin, SuperAdminRequiredMixin, V
             'flux_form': flux_form,
           
         }
-        messages.error(request, _("Le formulaire n'est pas valide."))
+        django_messages.error(request, _("Le formulaire n'est pas valide."))
         return render(request, 'destination/create_related_flux.html', context)
 
 ###################################################################################################
@@ -240,7 +263,7 @@ class DestinationListView(LoginRequiredMixin, View):
         elif is_referent or is_gestionnaire or is_financier or is_manager:
             destinations = Destination.objects.filter(Q(manager_dest=user) | Q(referent_dest=user) | Q(matcher_dest=user) | Q(matcher_alt_dest=user) | Q(finance_dest=user))        
         else:
-            messages.error(request, _("Vous n'avez pas les droits nécessaires pour consulter la liste des destinations."))
+            django_messages.error(request, _("Vous n'avez pas les droits nécessaires pour consulter la liste des destinations."))
             return redirect('login')  
         context = {'destinations': destinations, 'title': _("Liste des destinations")}
         return render(request, self.template_name, context) 
@@ -268,7 +291,7 @@ class AuthorizedRequiredReadDestinationMixin(UserPassesTestMixin):
             )
 
     def handle_no_permission(self):
-        messages.error(self.request, _("Vous n'avez pas les droits nécessaires pour consulter cette destination."))
+        django_messages.error(self.request, _("Vous n'avez pas les droits nécessaires pour consulter cette destination."))
         return redirect('destinations_list')
 
 class DestinationDetailView(LoginRequiredMixin, AuthorizedRequiredReadDestinationMixin, DetailView):
@@ -426,7 +449,7 @@ class AuthorizedRequiredUpdateDestinationMixin(UserPassesTestMixin):
             )
 
     def handle_no_permission(self):
-        messages.error(self.request, _("Vous n'avez pas les droits nécessaires pour éditer cette destination."))
+        django_messages.error(self.request, _("Vous n'avez pas les droits nécessaires pour éditer cette destination."))
         return redirect('destinations_list')
 
 
@@ -560,11 +583,11 @@ class DestinationUpdateView(LoginRequiredMixin, AuthorizedRequiredUpdateDestinat
         if destination.disability_libelle_dest:
             translation_content.delay("destination","Destination", destination.id, "disability_libelle_dest")
 
-        messages.success(self.request, _(f"Les données géénrales de la destination {self.object.name_dest}La destination {self.object.name_dest} a été mise à jour."))
+        django_messages.success(self.request, _(f"Les données géénrales de la destination {self.object.name_dest}La destination {self.object.name_dest} a été mise à jour."))
         return super().form_valid(form)
  
     def form_invalid(self, form):
-        messages.error(self.request, _("Le formulaire n'est pas valide."))
+        django_messages.error(self.request, _("Le formulaire n'est pas valide."))
         return super().form_invalid(form)
 
     def get_success_url(self):
@@ -628,12 +651,12 @@ class DestinationDataUpdateView(LoginRequiredMixin, AuthorizedRequiredUpdateDest
         
     def form_valid(self, form):
         form.save()
-        messages.success(self.request, _(f"Les données fonctionnelles de la destination {self.object.code_dest_data.name_dest} ont été mises à jour."))
+        django_messages.success(self.request, _(f"Les données fonctionnelles de la destination {self.object.code_dest_data.name_dest} ont été mises à jour."))
         return super().form_valid(form)
 
 
     def form_invalid(self, form):
-        messages.error(self.request, _("Le formulaire n'est pas valide."))
+        django_messages.error(self.request, _("Le formulaire n'est pas valide."))
         return super().form_invalid(form)
 
     def get_success_url(self):
@@ -657,12 +680,12 @@ class DestinationFluxUpdateView(LoginRequiredMixin, AuthorizedRequiredUpdateDest
         
     def form_valid(self, form):
         form.save()
-        messages.success(self.request, _(f"Les données de flux de la destination {self.object.code_dest_flux.name_dest} ont été mises à jour."))
+        django_messages.success(self.request, _(f"Les données de flux de la destination {self.object.code_dest_flux.name_dest} ont été mises à jour."))
         return super().form_valid(form)
 
 
     def form_invalid(self, form):
-        messages.error(self.request, _("Le formulaire n'est pas valide."))
+        django_messages.error(self.request, _("Le formulaire n'est pas valide."))
         return super().form_invalid(form)
 
     def get_success_url(self):
