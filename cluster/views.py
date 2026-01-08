@@ -52,18 +52,21 @@ class ClusterCreateView(LoginRequiredMixin, SuperAdminRequiredMixin,FormFieldPer
 
     def post(self, request, *args, **kwargs):
         form = ClusterForm(request.POST, user=request.user)
+        self.object = None  # Initialiser self.object à None pour CreateView
         if form.is_valid():
             # 1. Préparation de l'objet (sans sauvegarde M2M immédiate)
             cluster = form.save(commit=False)
 
             # 2. Logique des groupes Admin
-            admin_group = Group.objects.get_or_create(name='Admin')
+            admin_group, created = Group.objects.get_or_create(name='Admin')
             if cluster.admin_cluster:
-                if not cluster.admin_cluster.pk: cluster.admin_cluster.save()
+                if not cluster.admin_cluster.pk: 
+                    cluster.admin_cluster.save()
                 cluster.admin_cluster.groups.add(admin_group)
 
             if cluster.admin_alt_cluster:
-                if not cluster.admin_alt_cluster.pk: cluster.admin_alt_cluster.save()
+                if not cluster.admin_alt_cluster.pk: 
+                    cluster.admin_alt_cluster.save()
                 cluster.admin_alt_cluster.groups.add(admin_group)
 
             # 3. On attache l'objet à la vue pour que le Mixin y accède
@@ -81,14 +84,15 @@ class ClusterCreateView(LoginRequiredMixin, SuperAdminRequiredMixin,FormFieldPer
         Cette méthode est appelée après self.object.save() par le post.
         Le RelatedModelsMixin va ici créer les tags/modèles liés.
         """
+        cluster = self.object
         # Appel du form_valid du Mixin (gestion des RelatedModels)
         response = super().form_valid(form)
         
-        cluster = self.object
+        
         
         # 5. Logique des permissions
         if self.user_has_any_permission_group(self.request.user):
-            self.update_permissions_from_form(cluster, form)
+            self.update_field_permissions(cluster, form)
             messages.success(self.request, _("Cluster créé et permissions enregistrées avec succès."))
         else:
             messages.success(self.request, _("Cluster  créé avec succès."))

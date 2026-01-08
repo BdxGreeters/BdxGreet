@@ -152,4 +152,3 @@ def reset_password (user_id, domain, template_mailjet_id):
     send_email_mailjet.delay(recipient_email, recipient_name,template_mailjet_id, vars)
 ###################################################################################################
 
- t

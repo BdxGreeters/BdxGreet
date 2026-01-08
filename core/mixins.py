@@ -159,7 +159,7 @@ class RelatedModelsMixin:
     Attributs requis dans la classe fille :
     - related_fields : dictionnaire {nom_champ_form: (Model, nom_champ_m2m,nomchamp Model)}
     """
-    related_fields = {}  # À définir dans la vue du modèle de base
+    related_fields = {} 
 
     def form_valid(self, form):
         response = super().form_valid(form)
@@ -167,16 +167,17 @@ class RelatedModelsMixin:
 
         for form_field, (model, m2m_field, model_attr) in self.related_fields.items():
             data_string = form.cleaned_data.get(form_field, "")
-            if not data_string:
-                continue
-
+            
+            # 1. Identifier les anciens objets liés avant la modification
+            old_objects_ids = list(getattr(cluster, m2m_field).values_list('id', flat=True))
+            print("Old object IDs:", old_objects_ids)
+            # 2. Traiter les nouvelles données
             names = [name.strip() for name in data_string.split(',') if name.strip()]
-            objects = []
+            new_objects = []
+            
             for name in names:
-                # 1. Récupération ou création de l'objet
                 obj, created = model.objects.get_or_create(**{model_attr: name})
                 
-                # 2. Si l'objet est nouveau, on déclenche la traduction
                 if created:
                     translation_content(
                         app_label=obj._meta.app_label,
@@ -184,12 +185,38 @@ class RelatedModelsMixin:
                         object_id=obj.pk,
                         field_name=model_attr
                     )
-                    # On rafraîchit l'objet pour avoir les champs traduits en mémoire
                     obj.refresh_from_db()
 
-                objects.append(obj)
+                new_objects.append(obj)
             
-            getattr(cluster, m2m_field).set(objects)
+            # 3. Mettre à jour la relation ManyToMany
+            getattr(cluster, m2m_field).set(new_objects)
 
-        return response
+            # 4. Suppression des orphelins
+            # On cherche les objets qui étaient liés (old_objects_ids) 
+            # mais qui ne sont pas dans la nouvelle liste (new_objects)
+            new_objects_ids = [o.id for o in new_objects]
+            print("New object IDs:", new_objects_ids)
+            removed_ids = set(old_objects_ids) - set(new_objects_ids)
+            print("Removed object IDs:", removed_ids)   
+            # 1. Récupérer l'objet champ M2M depuis la définition du modèle
+            # ... (votre code précédent)
+
+            if removed_ids:
+                # 1. Récupérer l'objet champ M2M depuis la définition du modèle
+                m2m_field_obj = cluster._meta.get_field(m2m_field)
     
+                # 2. Obtenir le nom de la relation inverse (related_query_name)
+                # C'est le nom utilisé pour filtrer depuis le modèle lié vers le Cluster
+                related_query_name = m2m_field_obj.related_query_name()
+
+                for obj_id in removed_ids: # Indentation corrigée
+                    orphan = model.objects.get(id=obj_id)
+        
+                # 3. Compter combien de clusters sont encore liés à cet objet
+                # On utilise le related_query_name récupéré plus haut
+                related_count = getattr(orphan, related_query_name).count()
+        
+                if related_count == 0:
+                    orphan.delete()
+        return response
