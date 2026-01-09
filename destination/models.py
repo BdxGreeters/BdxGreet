@@ -39,7 +39,7 @@ class Destination(models.Model):
     matcher_dest=models.ForeignKey(User,on_delete=models.SET_NULL,related_name="matcher_name_dest",null=True, verbose_name=_("Nom du gestionnaire"),help_text=_("Saisir le nom du gestionnaire de la destination"))
     matcher_alt_dest=models.ForeignKey(User,on_delete=models.SET_NULL, related_name="matcher_alt_name_dest", blank=True, null=True,verbose_name=_("Nom du gestionnaire alternatif"),help_text=_("Saisir le nom du gestionnaire alternatif de la destination"))
     finance_dest=models.ForeignKey(User,on_delete=models.SET_NULL,related_name="finance_name_dest",null=True,verbose_name=_("Nom du gestionnaire financier"),help_text=_("Saisir le nom du gestionnaire financier de la destination"))
-    list_places_dest=models.ManyToManyField('List_places',blank=True,verbose_name=_("Lieux ou thèmes"),help_text=_("Sélectionner les lieux ou thèmes de la destination"))
+    list_places_dest=models.ManyToManyField('List_places',related_name='destinations',blank=True,verbose_name=_("Lieux ou thèmes"),help_text=_("Sélectionner les lieux ou thèmes de la destination"))
     max_lp_dest=models.IntegerField(default=1, verbose_name=_("Nombre maximum de lieux ou thèmes"), help_text=_("Saisir le nombre maximum de lieux ou thèmes par le visiteur"))
     mini_lp_dest=models.IntegerField(default=1, verbose_name=_("Nombre minimum de lieux ou thèmes"), help_text=_("Saisir le nombre minimum de lieux ou thèmes par le visiteur"))
     max_interest_center_dest=models.IntegerField(default=1, verbose_name=_("Nombre maximum de centres d'intérêts"), help_text=_("Saisir le nombre maximum de centres d'intérêts par le visiteur"))

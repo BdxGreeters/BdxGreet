@@ -453,13 +453,16 @@ class AuthorizedRequiredUpdateDestinationMixin(UserPassesTestMixin):
         return redirect('destinations_list')
 
 
-class DestinationUpdateView(LoginRequiredMixin, AuthorizedRequiredUpdateDestinationMixin, OnlyGestionnaireMixin ,UpdateView):
+class DestinationUpdateView(LoginRequiredMixin, AuthorizedRequiredUpdateDestinationMixin, OnlyGestionnaireMixin , RelatedModelsMixin,UpdateView):
     
     model = Destination
     form_class = DestinationForm
     template_name = 'destination/destination_update.html'
     context_object_name = 'destination'
-
+    # Configuration pour RelatedModelsMixin
+    related_fields = {
+        'list_places_dest': (List_places, 'list_places_dest', 'list_places_dest')
+    }
     gestionnaire_fields = [
         'list_places_dest',
         'mini_lp_dest',
@@ -493,7 +496,13 @@ class DestinationUpdateView(LoginRequiredMixin, AuthorizedRequiredUpdateDestinat
 
         return form
 
-        
+    def get_initial(self):
+        initial = super().get_initial()
+        destination= self.object
+        for form_field,(model,m2m_field,model_attr) in self.related_fields.items():
+            existing_values = getattr(destination, m2m_field).values_list(model_attr, flat=True)
+            initial[form_field] = ', '.join(existing_values)
+        return initial   
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -506,64 +515,35 @@ class DestinationUpdateView(LoginRequiredMixin, AuthorizedRequiredUpdateDestinat
         # Sauvegarder la destination
         destination = form.save(commit=False)
         destination.code_cluster = old_destination.code_cluster # 
-        destination.save() 
+        # 1. Définition des sets d'utilisateurs (Anciens vs Nouveaux)
+        # On utilise l'idiome {user} - {None} pour exclure les champs vides proprement
+    
+        # Managers & Référents (Groupe Manager)
+        old_mgrs = {old_destination.manager_dest, old_destination.referent_dest} - {None}
+        new_mgrs = {destination.manager_dest} - {None}
+        self.sync_user_groups(old_mgrs, new_mgrs, 'Manager')
 
-        old_manager = {old_destination.manager_dest, old_destination.referent_dest} - {None}
-        new_manager = {destination.manager_dest} - {None}
-        
+        # Référents uniquement (Groupe Referent)
+        old_refs = {old_destination.referent_dest} - {None}
+        new_refs = {destination.referent_dest} - {None}
+        self.sync_user_groups(old_refs, new_refs, 'Referent')
 
-        manager_group, created = Group.objects.get_or_create(name='Manager')
-        
-        for user in old_manager - new_manager:
-            user.groups.remove(manager_group)
-            user.save()
-        
-        for user in new_manager - old_manager:
-            user.groups.add(manager_group)
-            user.save()
+        # Matchers (Groupe Gestionnaire)
+        old_matchers = {old_destination.matcher_dest, old_destination.matcher_alt_dest} - {None}
+        new_matchers = {destination.matcher_dest, destination.matcher_alt_dest} - {None}
+        self.sync_user_groups(old_matchers, new_matchers, 'Gestionnaire')
 
-        old_referent = {old_destination.referent_dest} - {None}
-        new_referent = {destination.referent_dest} - {None}
-        referent_group, created = Group.objects.get_or_create(name='Referent')
-        
-        for user in old_referent - new_referent:
-            user.groups.remove(referent_group)
-            user.save()
+        # Financiers (Groupe Financier)
+        old_fin = {old_destination.finance_dest} - {None}
+        new_fin = {destination.finance_dest} - {None}
+        self.sync_user_groups(old_fin, new_fin, 'Financier')
 
-        for user in new_referent - old_referent:
-            user.groups.add(referent_group)
-            user.save()
-
-        old_matcher = {old_destination.matcher_dest, old_destination.matcher_alt_dest} - {None}
-        new_matcher = {destination.matcher_dest, destination.matcher_alt_dest} - {None}
-        matcher_group, created = Group.objects.get_or_create(name='Gestionnaire')
-
-        for user in old_matcher - new_matcher:
-            user.groups.remove(matcher_group)
-            user.save()
-
-        for user in new_matcher - old_matcher:
-            user.groups.add(matcher_group)
-            user.save()
-
-        old_financier = {old_destination.finance_dest} - {None}
-        new_financier = {destination.finance_dest} - {None}
-        financier_group, created = Group.objects.get_or_create(name='Financier')
-
-        for user in old_financier - new_financier:
-            user.groups.remove(financier_group)
-            user.save()
-
-        for user in new_financier - old_financier:
-            user.groups.add(financier_group)
-            user.save()
-
-        old_user={old_destination.manager_dest, old_destination.referent_dest, old_destination.matcher_dest, old_destination.matcher_alt_dest, old_destination.finance_dest} - {None}
-        new_user={destination.manager_dest, destination.referent_dest, destination.matcher_dest, destination.matcher_alt_dest, destination.finance_dest} - {None}
-
-
-        for user in new_user - old_user:
-            user.code_dest=destination.code_dest
+        # 2. Mise à jour du code_dest pour les nouveaux utilisateurs
+        all_old = old_mgrs | old_refs | old_matchers | old_fin
+        all_new = new_mgrs | new_refs | new_matchers | new_fin
+    
+        for user in (all_new - all_old):
+            user.code_dest = destination.code_dest
             user.save()
         
         img_path=os.path.join(settings.MEDIA_ROOT, str(destination.logo_dest.name))
@@ -571,20 +551,17 @@ class DestinationUpdateView(LoginRequiredMixin, AuthorizedRequiredUpdateDestinat
         img.thumbnail ((200,200))
         img.save(img_path)
 
+        response = super().form_valid(form)
+        
+        #form.save_m2m()  # Sauvegarder les relations ManyToMany si nécessaire
 
-        destination.save()
-        form.save_m2m()  # Sauvegarder les relations ManyToMany si nécessaire
-
-        # Traduction des lieux ou thèmes de la destination
-        for field in DestinationTranslationOptions.fields:
-            translation_content_items.delay('destination', 'Destination', destination.id, field)
             
         # Traduction des types de handicap
         if destination.disability_libelle_dest:
             translation_content.delay("destination","Destination", destination.id, "disability_libelle_dest")
 
-        django_messages.success(self.request, _(f"Les données géénrales de la destination {self.object.name_dest}La destination {self.object.name_dest} a été mise à jour."))
-        return super().form_valid(form)
+        django_messages.success(self.request, _(f"Les données générales de la destination {self.object.name_dest} ont été mises à jour."))
+        return response
  
     def form_invalid(self, form):
         django_messages.error(self.request, _("Le formulaire n'est pas valide."))
@@ -593,6 +570,20 @@ class DestinationUpdateView(LoginRequiredMixin, AuthorizedRequiredUpdateDestinat
     def get_success_url(self):
         return redirect('destination_detail', pk=self.object.pk).url
     
+    def sync_user_groups(self, old_users, new_users, group_name):
+        """
+        Synchronise les groupes Django pour une liste d'utilisateurs.
+        old_users / new_users : sets d'objets User
+        """
+        group, _ = Group.objects.get_or_create(name=group_name)
+    
+        # Retirer le groupe à ceux qui ne sont plus dans la liste
+        for user in (old_users - new_users):
+            user.groups.remove(group)
+    
+    # Ajouter le groupe aux nouveaux arrivants
+        for user in (new_users - old_users):
+            user.groups.add(group)
 
 ###################################################################################################
 

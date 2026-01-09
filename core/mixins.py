@@ -176,6 +176,7 @@ class RelatedModelsMixin:
             new_objects = []
             
             for name in names:
+                
                 obj, created = model.objects.get_or_create(**{model_attr: name})
                 
                 if created:
@@ -215,8 +216,10 @@ class RelatedModelsMixin:
         
                 # 3. Compter combien de clusters sont encore liés à cet objet
                 # On utilise le related_query_name récupéré plus haut
-                related_count = getattr(orphan, related_query_name).count()
-        
-                if related_count == 0:
-                    orphan.delete()
+                    related_count = getattr(orphan, related_query_name).count()
+                    print("Related count for orphan ID", obj_id, ":", related_count)
+                    if related_count == 0:
+                        orphan.delete()
+
+
         return response

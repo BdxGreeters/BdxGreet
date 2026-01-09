@@ -4,7 +4,8 @@ from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager,
 from django.db import models
 from users.models import CustomUser
 from core.models import TrancheAge,LangueParlee, Pays, Periode
-
+from cluster.models import Experience_Greeter
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 
@@ -46,7 +47,7 @@ class Greeter(models.Model):
     landline_phone_greeter=models.CharField(max_length=20,default="",blank=True,null=True,verbose_name=_('Téléphone fixe'),help_text=_("Saisir le numéro de téléphone fixe du Greeter"))
     whatsapp_phone_greeter=models.CharField(max_length=20,default="",blank=True,null=True,verbose_name=_('Téléphone whatsapp'),help_text=_("Saisir le numéro de téléphone whatsapp du Greeter"))
     age_greeter=models.ForeignKey(TrancheAge, on_delete=models.PROTECT,verbose_name=_("Tranche d'âge"),help_text=_("Saisir la tranche d'âge du Greeter"))
-    experiences_greeters=models.CharField( max_length=300,default="",verbose_name=_('Expériences'),help_text=_("Saisir les expériences du Greeter"))
+    experiences_greeters=models.ManyToManyField(Experience_Greeter, blank=True,verbose_name=_('Expériences de Greeter'),help_text=_("Saisir les expériences de Greeter"))
     photo = models.ImageField (upload_to ='photos_profil/',default='photos_profil/default.jpg', verbose_name=_('Photo de profil'), help_text=_("Taille : 200 px *200 px"))
     bio_greeter=models.TextField(max_length=1500,default="",verbose_name=_('Biographie'),help_text=_("Saisir la biographie du Greeter"))
     handicap_greeter=models.BooleanField(default=False,verbose_name=_('Accepte des balades avec des personnes ayant un handicap'),help_text=_("Saisir si le Greeter accepte des balades avec des personnes ayant un handicap"))

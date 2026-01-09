@@ -15,21 +15,6 @@
     <h2>{{ title }}</h2>
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
-        {% if user_form.errors %}
-        <div class="alert alert-danger">
-            <strong>Erreurs User :</strong>
-            {{ user_form.errors }}
-        </div>
-    {% endif %}
-
-    {% if greeter_form.errors %}
-        <div class="alert alert-danger">
-            <strong>Erreurs Greeter :</strong>
-            {{ greeter_form.errors }}
-        </div>
-    {% endif%}
-        {%  crispy user_form %}
-        {% crispy greeter_form %}
-        <button type="submit" class="btn btn-primary">{% trans "Enregistrer" %}</button>
+        {%  crispy form %}
     </form>
 {% endblock %}

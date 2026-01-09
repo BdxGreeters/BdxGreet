@@ -93,6 +93,7 @@ class DestinationForm(HelpTextTooltipMixin, CommaSeparatedFieldMixin, forms.Mode
         self.is_update=kwargs.pop('is_update', False)
         
         super().__init__(*args, **kwargs)
+        
 
         # Si on est en mode mise à jour et que l'instance a un cluster, pré-remplir et désactiver le champ code_cluster
         if self.is_update and self.instance and self.instance.code_cluster:

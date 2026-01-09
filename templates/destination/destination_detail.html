@@ -67,7 +67,10 @@
                         <div class="col-md-6">
                             <h4>{% trans "Lieux ou Thèmes" %}</h4>
                             <ul class="list-group list-group-flush">
-                                <li class="list-group-item"><strong>{% trans "Lieux ou thèmes:" %}</strong> {{ destination.list_places_dest }}</li>
+                                <li class="list-group-item"><strong>{% trans "Lieux ou thèmes:" %}</strong>
+                                   {% for list in destination.list_places_dest.all %}
+                                    {{ list }}{% if not forloop.last %}, {% endif %}  
+                                {% endfor %}<br></li>
                                 <li class="list-group-item"><strong>{% trans "Minimum choix de lieux/thèmes:" %}</strong> {{ destination.mini_lp_dest }}</li>
                                 <li class="list-group-item"><strong>{% trans "Maximum choix de lieux/thèmes:" %}</strong> {{ destination.max_lp_dest }}</li>
                             </ul>
