@@ -160,7 +160,7 @@ class ClusterForm(CommaSeparatedFieldMixin, HelpTextTooltipMixin, forms.ModelFor
                         Row(
                             Column('admin_cluster', css_class='col-md-6'),
                             Column('can_edit_admin_cluster', css_class='col-md-1 d-flex align-items-center justify-content-center'),
-                            Column(HTML(f'<button type="button" class="btn btn-sm btn-primary ms-2" data-target-field="id_adm", data-pending-field="id_pending_adm_id">{_("Nouvel utilisateur")}</button>'),
+                            Column(HTML(f'<button type="button" class="btn btn-sm btn-primary ms-2" data-target-field="id_adm" data-pending-field="id_pending_adm_id">{_("Nouvel utilisateur")}</button>'),
                                    css_class="d-flex align-items-center")
                         ),
                         Row(
@@ -174,7 +174,7 @@ class ClusterForm(CommaSeparatedFieldMixin, HelpTextTooltipMixin, forms.ModelFor
                         Row(
                             Column('admin_alt_cluster', css_class='col-md-6'),
                             Column('can_edit_admin_alt_cluster', css_class='col-md-1 d-flex align-items-center justify-content-center'),
-                            Column(HTML(f'<button type="button" class="btn btn-sm btn-primary ms-2" data-target-field="id_adm_alt",data-pending-field="id_pending_adm_alt_id">{_("Nouvel utilisateur")}</button>'),
+                            Column(HTML(f'<button type="button" class="btn btn-sm btn-primary ms-2" data-target-field="id_adm_alt" data-pending-field="id_pending_adm_alt_id">{_("Nouvel utilisateur")}</button>'),
                                    css_class="d-flex align-items-center")
                         ),
                         Row(
