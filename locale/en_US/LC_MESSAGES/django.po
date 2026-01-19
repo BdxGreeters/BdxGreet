@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-29 09:33+0100\n"
+"POT-Creation-Date: 2026-01-11 18:12+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,55 +17,111 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: BdxGreet/settings.py:141
+#: BdxGreet/settings.py:147
 msgid "Anglais (US)"
 msgstr "English (US)"
 
-#: BdxGreet/settings.py:142
+#: BdxGreet/settings.py:148
 msgid "Français"
 msgstr "French"
 
-#: BdxGreet/settings.py:143
+#: BdxGreet/settings.py:149
 msgid "Allemand"
 msgstr "German"
 
-#: BdxGreet/settings.py:144
+#: BdxGreet/settings.py:150
 msgid "Espagnol"
 msgstr "Spanish"
 
-#: cluster/forms.py:29 cluster/models.py:34
-msgid "Langues de communication"
-msgstr "Communication languages"
+#: cluster/forms.py:21 templates/destination/destination_detail.html:92
+msgid "Centres d'intérêt"
+msgstr "Interests"
 
-#: cluster/forms.py:30 cluster/models.py:34
-msgid "Sélectionner les langues de communication du cluster"
-msgstr "Select cluster communication languages"
+#: cluster/forms.py:21
+#, fuzzy
+#| msgid "Saisir les centres d'intérêts des visiteurs et Greeter"
+msgid "Saisissez les centres d'intérêts en les validant par Entrée"
+msgstr "Enter your areas of interest and confirm by pressing Enter."
 
-#: cluster/forms.py:147
+#: cluster/forms.py:22
+#, fuzzy
+#| msgid "Expériences des Greeters"
+msgid "Expériences du Greeter"
+msgstr "Greeter experiences"
+
+#: cluster/forms.py:22
+#, fuzzy
+#| msgid "Saisir les expériences des Greeter"
+msgid "Saisissez les expériences du Greeter sen les validant par Entrée"
+msgstr "Enter the Greeter's experiences and confirm them by pressing Enter."
+
+#: cluster/forms.py:23
+msgid "Raisons de non réponse du Greeter"
+msgstr "Reasons for the Greeter's non-response"
+
+#: cluster/forms.py:23
+#, fuzzy
+#| msgid "Saisir les raisons de non réponse du Greeter"
+msgid ""
+"Saisissez les raisons de non réponse du Greeter en les validant par Entrée"
+msgstr ""
+"Enter the reasons for the Greeter's non-response and confirm by pressing "
+"Enter."
+
+#: cluster/forms.py:24
+msgid "Raisons de non réponse du visiteur"
+msgstr "Reasons for visitor non-response"
+
+#: cluster/forms.py:24
+#, fuzzy
+#| msgid "Saisir les raisons de non réponse du visiteur"
+msgid ""
+"Saisissez les raisons de non réponse du visiteur en les validant par Entrée"
+msgstr ""
+"Enter the reasons for the visitor's non-response and confirm by pressing "
+"Enter."
+
+#: cluster/forms.py:25 cluster/models.py:108
+#, fuzzy
+#| msgid "Liste des notoriétés"
+msgid "Notoriété"
+msgstr "Notoriety"
+
+#: cluster/forms.py:25
+msgid "Saisissez les motifs de notoriété en les validant par Entrée"
+msgstr "Enter the reasons for notoriety and confirm them by pressing Enter."
+
+#: cluster/forms.py:73
+msgid "Cocher la case pour autoriser l'édition du champ par l'administrateur"
+msgstr "Check the box to allow the administrator to edit the field."
+
+#: cluster/forms.py:139
 msgid "Identification"
 msgstr "Identification"
 
-#: cluster/forms.py:163
+#: cluster/forms.py:153 destination/forms.py:171 greeters/forms.py:169
 msgid "Administration"
 msgstr "Administration"
 
-#: cluster/forms.py:165
+#: cluster/forms.py:155 templates/cluster/cluster_detail.html:16
 msgid "Administrateur principal"
 msgstr "Managing Director"
 
-#: cluster/forms.py:179
+#: cluster/forms.py:169 templates/cluster/cluster_detail.html:18
 msgid "Administrateur alternatif"
 msgstr "Alternative administrator"
 
-#: cluster/forms.py:194
+#: cluster/forms.py:184
 msgid "Paramètres"
 msgstr "Parameters"
 
-#: cluster/forms.py:220
+#: cluster/forms.py:207
 msgid "Listes"
 msgstr "Lists"
 
-#: cluster/forms.py:235 templates/core/beneficiaire_form.html:10
+#: cluster/forms.py:224 destination/forms.py:221 destination/forms.py:503
+#: destination/forms.py:633 greeters/forms.py:180
+#: templates/core/beneficiaire_form.html:10
 #: templates/core/email_mailjet_form.html:10
 #: templates/core/interest_center_form.html:10
 #: templates/core/langue_deepl_form.html:10
@@ -76,179 +132,220 @@ msgstr "Lists"
 msgid "Enregistrer"
 msgstr "Register"
 
-#: cluster/models.py:17 destination/models.py:15
+#: cluster/models.py:20 destination/models.py:19 greeters/models.py:18
 msgid "Brouillon"
 msgstr "Draft"
 
-#: cluster/models.py:18 destination/models.py:16
+#: cluster/models.py:21 destination/models.py:20 greeters/models.py:19
 msgid "Actif"
 msgstr "Assets"
 
-#: cluster/models.py:19 destination/models.py:17
+#: cluster/models.py:22 destination/models.py:21 greeters/models.py:20
 msgid "Inactif"
 msgstr "Inactif"
 
-#: cluster/models.py:20 destination/models.py:18
+#: cluster/models.py:23 destination/models.py:22
 msgid "Désactivé"
 msgstr "Off"
 
-#: cluster/models.py:23 destination/models.py:22
+#: cluster/models.py:26 destination/models.py:26
 #: templates/cluster/cluster_detail.html:12
 #: templates/cluster/clusters_list.html:23
 #: templates/core/email_mailjet_list.html:13
 msgid "Code"
 msgstr "Code"
 
-#: cluster/models.py:24 cluster/models.py:29 cluster/models.py:31
-#: destination/models.py:25 templates/core/email_mailjet_list.html:14
+#: cluster/models.py:27 cluster/models.py:32 cluster/models.py:34
+#: destination/models.py:29 greeters/forms.py:25
+#: templates/core/email_mailjet_list.html:14
+#: templates/destination/destinations_list.html:25
 #: templates/users/greeter_list.html:14 templates/users/user_list.html:14
-#: users/models.py:42
+#: users/models.py:44
 msgid "Nom"
 msgstr "Nom"
 
-#: cluster/models.py:25
+#: cluster/models.py:28
 msgid "Saisir le statut du cluster"
 msgstr "Enter cluster status"
 
-#: cluster/models.py:25 destination/models.py:32
+#: cluster/models.py:28 destination/models.py:36 greeters/models.py:41
+#: templates/cluster/cluster_detail.html:13
 msgid "Statut"
 msgstr "Statut"
 
-#: cluster/models.py:26 destination/models.py:27 users/models.py:61
+#: cluster/models.py:29 destination/models.py:31
+#: templates/cluster/cluster_detail.html:14
 msgid "Adresse"
 msgstr "Address"
 
-#: cluster/models.py:27
+#: cluster/models.py:30
 msgid "Décrire les zones géographiques du cluster"
 msgstr "Describe the geographical areas of the cluster"
 
-#: cluster/models.py:27 destination/models.py:26
+#: cluster/models.py:30 destination/models.py:30 greeters/models.py:101
+#: templates/cluster/cluster_detail.html:15
 msgid "Description"
 msgstr "Description"
 
-#: cluster/models.py:28
+#: cluster/models.py:31
 msgid "URL du compte Paypal du cluster"
 msgstr "Cluster Paypal account URL"
 
-#: cluster/models.py:28
+#: cluster/models.py:31
 msgid "Paypal du cluster"
 msgstr "Cluster Paypal"
 
-#: cluster/models.py:30 cluster/models.py:32 core/models.py:60
-#: destination/models.py:29
+#: cluster/models.py:32
+msgid "Saisir l'administrateur parmi les utilisateurs ou en créer un"
+msgstr "Select the administrator from among the users or create one."
+
+#: cluster/models.py:33 cluster/models.py:35 core/models.py:48
+#: destination/models.py:33 greeters/models.py:47
 msgid "Pays"
 msgstr "Country"
 
 #: cluster/models.py:33
+#, fuzzy
+#| msgid "Saisir le nom de la destination"
+msgid "Saisir le pays de l'administrateur"
+msgstr "Enter the administrator's country"
+
+#: cluster/models.py:34
+msgid ""
+"Saisir l'administrateur alternatif parmi les utilisateurs ou en créer un"
+msgstr "Enter the alternate administrator from among the users or create one."
+
+#: cluster/models.py:35
+#, fuzzy
+#| msgid "Administrateur alternatif"
+msgid "Saisir le pays de l'admnistrateur alternatif"
+msgstr "Enter the country of the alternate administrator"
+
+#: cluster/models.py:36
 msgid "Nombre maximun de visiteurs pour le cluster"
 msgstr "Maximum number of visitors to the cluster"
 
-#: cluster/models.py:33
+#: cluster/models.py:36
 msgid "Nombre maximun de participants"
 msgstr "Maximum number of participants"
 
-#: cluster/models.py:35
+#: cluster/models.py:37 destination/models.py:101
+#: templates/cluster/cluster_detail.html:21
+#: templates/destination/destination_detail.html:150
+msgid "Langues de communication"
+msgstr "Communication languages"
+
+#: cluster/models.py:37
+msgid "Sélectionner les langues de communication du cluster"
+msgstr "Select cluster communication languages"
+
+#: cluster/models.py:38
 msgid "Adresse de sauvegarde des courriels générés sur l'ensemnble du cluster"
 msgstr "Backup address for e-mails generated on the entire cluster"
 
-#: cluster/models.py:35
+#: cluster/models.py:38
 msgid "Adresse  de sauvegarde des courriels"
 msgstr "Email backup address"
 
-#: cluster/models.py:36
+#: cluster/models.py:39
 msgid "Saisir l'URL de la bibliothèque pour les destinations"
 msgstr "Enter library URL for destinations"
 
-#: cluster/models.py:36
+#: cluster/models.py:39
 msgid "URL de la bibliothèque Cluster des destinations"
 msgstr "URL of destination cluster library"
 
-#: cluster/models.py:37
+#: cluster/models.py:40
 msgid "Saisir l'URL de la bibliothèque pour les Greeter"
 msgstr "Enter library URL for Greeter"
 
-#: cluster/models.py:37
+#: cluster/models.py:40
 msgid "URL de la bibliothèque Cluster des Greeter"
 msgstr "URL of the Greeter Cluster Library"
 
-#: cluster/models.py:38
-msgid "Saisir les expériences des Greeter"
-msgstr "Capturing Greeter experiences"
-
-#: cluster/models.py:38
-msgid "Expériences des Greeters"
-msgstr "Greeters' experiences"
-
-#: cluster/models.py:39
-msgid "Saisir les centres d'intérêts des visiteurs et Greeter"
-msgstr "Capture visitor and greeter interests"
-
-#: cluster/models.py:39
-msgid "Centres d'intérêt"
-msgstr "Interests"
-
-#: cluster/models.py:40
-msgid "Saisir les raisons de non réponse du Greeter"
-msgstr "Enter the reasons for the Greeter's non-response"
-
-#: cluster/models.py:40
-msgid "Raisons de non réponse du Greeter"
-msgstr "Reasons for the Greeter's non-response"
-
-#: cluster/models.py:41
-msgid "Saisir les raisons de non réponse du visiteur"
-msgstr "Capture reasons for visitor's non-response"
-
-#: cluster/models.py:41
-msgid "Raisons de non réponse du visiteur"
-msgstr "Reasons for visitor non-response"
-
-#: cluster/models.py:42
-msgid ""
-"Saisir les raisons d'un visiteur de connaître  l'existence des Greeters"
-msgstr "Find out why visitors want to know about Greeters"
-
-#: cluster/models.py:42
-msgid "Liste des notoriétés"
-msgstr "List of notoriety"
-
-#: cluster/models.py:51
+#: cluster/models.py:54
 msgid "Le nombre maximum de participants est de {}."
 msgstr "The maximum number of participants is {}."
 
-#: cluster/views.py:43 cluster/views.py:83
+#: cluster/models.py:67
+#, fuzzy
+#| msgid "Expériences des Greeters"
+msgid "Expérience"
+msgstr "Experience"
+
+#: cluster/models.py:67
+#, fuzzy
+#| msgid "Saisir les expériences des Greeter"
+msgid "Saisir l'expérience du Greeter"
+msgstr "Capturing the Greeter experience"
+
+#: cluster/models.py:78 templates/core/interest_center_list.html:13
+msgid "Centre d'intérêt"
+msgstr "Area of interest"
+
+#: cluster/models.py:88
+#, fuzzy
+#| msgid "Raisons de non réponse du Greeter"
+msgid "Raison de non réponse du Greeter"
+msgstr "Reason for non-response from the Greeter"
+
+#: cluster/models.py:98
+#, fuzzy
+#| msgid "Raisons de non réponse du visiteur"
+msgid "Raison de non réponse du visiteur"
+msgstr "Reason for visitor not responding"
+
+#: cluster/views.py:50
 msgid "Créer un cluster"
 msgstr "Create a cluster"
 
-#: cluster/views.py:78
+#: cluster/views.py:79 destination/views.py:195 destination/views.py:239
+#: destination/views.py:566 destination/views.py:649 destination/views.py:678
+#, fuzzy
+#| msgid "Le formulaire n'est pas valide"
+msgid "Le formulaire n'est pas valide."
+msgstr "The form is invalid."
+
+#: cluster/views.py:96
+#, fuzzy
+#| msgid "Cluster et permissions mis à jour avec succès."
+msgid "Cluster créé et permissions enregistrées avec succès."
+msgstr "Cluster created and permissions successfully saved."
+
+#: cluster/views.py:98
+#, fuzzy
+#| msgid "Cluster mis à jour avec succès."
+msgid "Cluster  créé avec succès."
+msgstr "Cluster successfully created."
+
+#: cluster/views.py:100
 msgid "Le cluster {} a été créé."
 msgstr "The {} cluster has been created."
 
-#: cluster/views.py:81
-msgid "Le formulaire n'est pas valide"
-msgstr "The form is invalid"
-
-#: cluster/views.py:112
+#: cluster/views.py:141
 msgid "Vous n'avez pas les droits nécessaires pour consulter ce cluster."
 msgstr "You do not have the necessary rights to view this cluster."
 
-#: cluster/views.py:122
+#: cluster/views.py:159
 msgid "Détail du cluster"
 msgstr "Cluster details"
 
-#: cluster/views.py:137
-msgid "Vous n'avez pas les droits nécessaires pour modifier un cluster."
-msgstr "You do not have the necessary rights to modify a cluster."
+#: cluster/views.py:188
+#, fuzzy
+#| msgid ""
+#| "Vous n'avez pas les droits nécessaires pour modifier un cluster."
+msgid "Vous n'avez pas les droits nécessaires pour modifier ce cluster."
+msgstr "You do not have the necessary rights to modify this cluster."
 
-#: cluster/views.py:145
+#: cluster/views.py:196
 msgid "Modification du cluster"
 msgstr "Cluster modification"
 
-#: cluster/views.py:194
+#: cluster/views.py:267
 msgid "Cluster et permissions mis à jour avec succès."
 msgstr "Cluster and permissions successfully updated."
 
-#: cluster/views.py:196
+#: cluster/views.py:269
 msgid "Cluster mis à jour avec succès."
 msgstr "Cluster successfully updated."
 
@@ -260,452 +357,1755 @@ msgstr "E-mail_code"
 msgid "Nom_courriel"
 msgstr "Email_name"
 
-#: core/models.py:16 core/models.py:40
+#: core/models.py:16 core/models.py:28
 #: templates/core/email_mailjet_list.html:15
 #: templates/core/langue_deepl_list.html:14
 msgid "Langue"
 msgstr "Language"
 
-#: core/models.py:27 templates/core/interest_center_list.html:13
-msgid "Centre d'intérêt"
-msgstr "Area of interest"
-
-#: core/models.py:50
+#: core/models.py:38
 msgid "Langue parlée"
 msgstr "Spoken language"
 
-#: core/models.py:69
+#: core/models.py:62
 msgid "Raison non réalisation"
 msgstr "Reason for non-implementation"
 
-#: core/models.py:78 templates/core/beneficiaire_list.html:13
+#: core/models.py:71 templates/core/beneficiaire_list.html:13
 msgid "Nom du bénéficiaire"
 msgstr "Beneficiary name"
 
-#: core/models.py:87
+#: core/models.py:80
 msgid "Période de la journée"
 msgstr "Time of day"
 
-#: core/models.py:96
+#: core/models.py:89 greeters/models.py:50
 msgid "Tranche d'âge"
 msgstr "Age range"
 
-#: core/models.py:105 templates/core/types_handicap_list.html:13
+#: core/models.py:98 templates/core/types_handicap_list.html:13
 msgid "Type de handicap"
 msgstr "Type of disability"
 
-#: core/signals.py:28
+#: core/signals.py:29
 msgid "Aucun objet request trouvé pour obtenir le domaine actuel."
 msgstr "No request object found to obtain the current domain."
 
-#: core/views.py:16 core/views.py:26
+#: core/views.py:31 core/views.py:41
 msgid "Créer un modèle d'email Mailjet"
 msgstr "Create a Mailjet email template"
 
-#: core/views.py:24
+#: core/views.py:39
 msgid "Le modèle d'email Mailjet {} a été créé."
 msgstr "The Mailjet {} email template has been created."
 
-#: core/views.py:42 core/views.py:52
+#: core/views.py:57 core/views.py:67
 msgid "Modifier un modèle d'email Mailjet"
 msgstr "Modify a Mailjet email template"
 
-#: core/views.py:50
+#: core/views.py:65
 msgid "Le modèle d'email Mailjet {} a été modifié."
 msgstr "The Mailjet {} email template has been modified."
 
-#: core/views.py:59 core/views.py:68
+#: core/views.py:74 core/views.py:83
 msgid "Créer une langue prise en charge par Deepl"
 msgstr "Creating a language supported by Deepl"
 
-#: core/views.py:66
+#: core/views.py:81
 msgid "La langue {} a été prise en charge par Deepl."
 msgstr "The {} language is now supported by Deepl."
 
-#: core/views.py:84 core/views.py:94
+#: core/views.py:99 core/views.py:109
 msgid "Modifier une langue prise en charge par Deepl"
 msgstr "Changing a language supported by Deepl"
 
-#: core/views.py:92
+#: core/views.py:107
 msgid "La langue {} a été modifiée."
 msgstr "The {} language has been changed."
 
-#: core/views.py:102 core/views.py:114
-msgid "Créer un centre d'intérêt"
-msgstr "Create a focus"
-
-#: core/views.py:112
-msgid "Le centre d'intérêt {} a été créé."
-msgstr "The {} focus has been created."
-
-#: core/views.py:131 core/views.py:144
-msgid "Modifier un centre d'intérêt"
-msgstr "Modify a focus"
-
-#: core/views.py:143
-msgid "Le centre d'intérêt {} a été modifié."
-msgstr "The {} focus has been modified."
-
-#: core/views.py:153
+#: core/views.py:119
 msgid "Créer une raison de non réalisation"
 msgstr "Create a reason for non-fulfilment"
 
-#: core/views.py:164
+#: core/views.py:127
 msgid "La raison de non réalisation {} a été créée."
 msgstr "The {} reason for non-fulfilment has been created."
 
-#: core/views.py:182
+#: core/views.py:145
 msgid "Modifier une raison de non réalisation"
 msgstr "Modify a reason for non-fulfilment"
 
-#: core/views.py:194
+#: core/views.py:154
 msgid "La raison de non réalisation {} a été modifiée."
 msgstr "The {} reason for non-fulfilment has been changed."
 
-#: core/views.py:203
+#: core/views.py:163
 msgid "Créer un bénéficiaire"
 msgstr "Create a beneficiary"
 
-#: core/views.py:214
+#: core/views.py:171
 msgid "Le bénéficiaire {} a été créé."
 msgstr "The {} beneficiary has been created."
 
-#: core/views.py:224
+#: core/views.py:181
 msgid "Modifier un bénéficiaire"
 msgstr "Modify a beneficiary"
 
-#: core/views.py:236
+#: core/views.py:190
 msgid "Le bénéficiaire {} a été modifié."
 msgstr "The {} beneficiary has been modified."
 
-#: core/views.py:253
+#: core/views.py:207
 msgid "Créer une période de la journée"
 msgstr "Create a time of day"
 
-#: core/views.py:264
+#: core/views.py:215
 msgid "La pé'periode_createriode de la journée {} a été créée."
 msgstr "The periode_createriode of the day {} has been created."
 
-#: core/views.py:282
+#: core/views.py:233
 msgid "Modifier une période de la journée"
 msgstr "Modify a time of day"
 
-#: core/views.py:293
+#: core/views.py:241
 msgid "La période de la journée {} a été modifiée."
 msgstr "The period of the day {} has been modified."
 
-#: core/views.py:302
+#: core/views.py:250
 msgid "Créer une tranche d'âge"
 msgstr "Create an age range"
 
-#: core/views.py:313
+#: core/views.py:258
 msgid "La tranche d'âge {} a été créée."
 msgstr "The {} age bracket has been created."
 
-#: core/views.py:331
+#: core/views.py:276
 msgid "Modifier une tranche d'âge"
 msgstr "Modify an age range"
 
-#: core/views.py:343
+#: core/views.py:285
 msgid "La tranche d'âge {} a été modifiée."
 msgstr "The {} age range has been changed."
 
-#: core/views.py:352
+#: core/views.py:294
 msgid "Créer un type de handicap"
 msgstr "Create a disability type"
 
-#: core/views.py:363
+#: core/views.py:302
 msgid "Le type de handicap {} a été créé."
 msgstr "Disability type {} has been created."
 
-#: core/views.py:381
+#: core/views.py:320
 msgid "Modifier un type de handicap"
 msgstr "Modify a disability type"
 
-#: core/views.py:393
+#: core/views.py:329
 msgid "Le type de handicap {} a été modifié."
 msgstr "The {} handicap type has been modified."
 
-#: core/views.py:421
+#: core/views.py:346
 msgid "Les champs email, first_name et last_name sont obligatoires."
 msgstr "The email, first_name and last_name fields are mandatory."
 
-#: core/views.py:424
+#: core/views.py:349
 msgid "Un utilisateur avec cet email existe déjà."
 msgstr "A user with this email address already exists."
 
-#: destination/models.py:21
+#: destination/forms.py:22 destination/models.py:42
+#, fuzzy
+#| msgid "Liste des lieux ou thèmes"
+msgid "Lieux ou thèmes"
+msgstr "Places or themes"
+
+#: destination/forms.py:22
+#, fuzzy
+#| msgid "Saisir les lieux ou thèmes de la destination"
+msgid "Saisissez les lieux ou thèmes en les validant par Entrée"
+msgstr "Enter the locations or themes and confirm by pressing Enter."
+
+#: destination/forms.py:140
+msgid "Informations générales"
+msgstr "General information"
+
+#: destination/forms.py:199
+#, fuzzy
+#| msgid "Saisir les centres d'intérêts des visiteurs et Greeter"
+msgid "Lieux, centres d'intérêts,dates de séjour et accessibilité"
+msgstr "Places, points of interest, dates of stay, and accessibility"
+
+#: destination/forms.py:244
+#, python-format
+msgid ""
+"Le nombre maximum de centres d'intérêts (%(max_ci)s) ne peut pas être "
+"supérieur au nombre total de centres d'intérêts du cluster sélectionné "
+"(%(total_ci)s)."
+msgstr ""
+"The maximum number of centers of interest (%(max_ci)s) cannot exceed the "
+"total number of centers of interest in the selected cluster (%(total_ci)s)."
+
+#: destination/forms.py:271
+#, python-format
+msgid ""
+"Le nombre maximum de lieux ou thèmes (%(max_lp)s) ne peut pas être supérieur"
+" au nombre total de lieux ou thèmes sélectionnés (%(total_lp)s)."
+msgstr ""
+"The maximum number of locations or themes (%(max_lp)s) cannot exceed the "
+"total number of locations or themes selected (%(total_lp)s)."
+
+#: destination/forms.py:284
+#, fuzzy
+#| msgid ""
+#| "Saisir le nombre maximum de centres d'intérêts par le visiteur"
+msgid "Le maximum de centres d'intérêt ne peut pas être inférieur au minimum."
+msgstr ""
+"The maximum number of areas of interest cannot be less than the minimum."
+
+#: destination/forms.py:286
+#, fuzzy
+#| msgid "Saisir le nombre maximum de lieux ou thèmes par le visiteur"
+msgid "Le maximum de lieux ou thèmes ne peut pas être inférieur au minimum."
+msgstr ""
+"The maximum number of locations or themes cannot be less than the minimum."
+
+#: destination/forms.py:401
+#, fuzzy
+#| msgid "Sélectionner les langues de communication du cluster"
+msgid "Dons, langues de communication et réseaux sociaux"
+msgstr "Donations, languages of communication, and social networks"
+
+#: destination/forms.py:419
+#, fuzzy
+#| msgid "Gestion des balades"
+msgid "Gestion des demandes"
+msgstr "Request management"
+
+#: destination/forms.py:465 templates/destination/destination_detail.html:264
+#, fuzzy
+#| msgid "Adresse  de sauvegarde des courriels"
+msgid "Signature des courriels"
+msgstr "Email signatures"
+
+#: destination/forms.py:491
+msgid "Avis de fermetures exceptionnelles    "
+msgstr "Notice of exceptional closures "
+
+#: destination/forms.py:593
+msgid "Flux avant la balade"
+msgstr "Flow before the ride"
+
+#: destination/forms.py:615
+msgid "Compte-rendu de la balade"
+msgstr "Report on the walk"
+
+#: destination/forms.py:627
+#, fuzzy
+#| msgid "Gestion des bénéficiaires des dons"
+msgid "Gestion des données personnelles"
+msgstr "Management of personal data"
+
+#: destination/models.py:25
 msgid "Cluster"
 msgstr "Cluster"
 
-#: destination/models.py:21
+#: destination/models.py:25
 msgid "Sélectionner le cluster de la destination"
 msgstr "Select destination cluster"
 
-#: destination/models.py:22
+#: destination/models.py:26 users/models.py:48
 msgid "Saisir le code de la destination"
 msgstr "Enter destination code"
 
-#: destination/models.py:23
+#: destination/models.py:27
 msgid "Code parent"
 msgstr "Parent code"
 
-#: destination/models.py:23
+#: destination/models.py:27
 msgid "Saisir le code parent de la destination"
 msgstr "Enter the destination's parent code"
 
-#: destination/models.py:24
+#: destination/models.py:28
 msgid "Code IGA"
 msgstr "Code IGA"
 
-#: destination/models.py:24
+#: destination/models.py:28
 msgid "Saisir le code IGA de la destination"
 msgstr "Enter destination IGA code"
 
-#: destination/models.py:25
+#: destination/models.py:29
 msgid "Saisir le nom de la destination"
 msgstr "Enter destination name"
 
-#: destination/models.py:26
+#: destination/models.py:30
 msgid "Décrire la destination"
 msgstr "Describe the destination"
 
-#: destination/models.py:27
+#: destination/models.py:31
 msgid "Saisir l'adresse de la destination"
 msgstr "Enter destination address"
 
-#: destination/models.py:28
+#: destination/models.py:32
 msgid "Région"
 msgstr "Region"
 
-#: destination/models.py:28
+#: destination/models.py:32
 msgid "Saisir la région de la destination"
 msgstr "Enter destination region"
 
-#: destination/models.py:29
+#: destination/models.py:33
 msgid "Sélectionner le pays de la destination"
 msgstr "Select destination country"
 
-#: destination/models.py:30
+#: destination/models.py:34 templates/destination/destination_detail.html:30
 msgid "Logo"
 msgstr "Logo"
 
-#: destination/models.py:30
+#: destination/models.py:34
 msgid "Taille : 250 px *250 px"
 msgstr "Size: 250 px *250 px"
 
-#: destination/models.py:31
+#: destination/models.py:35
 msgid "Libellé courriel émetteur "
 msgstr "Sender e-mail address"
 
-#: destination/models.py:31
+#: destination/models.py:35
 msgid "Saisir le libellé des courriels émetteurs de la destination"
 msgstr "Enter the wording of the destination's sender emails"
 
-#: destination/models.py:32
+#: destination/models.py:36
 msgid "Saisir le statut dela destination"
 msgstr "Enter destination status"
 
-#: destination/models.py:33
+#: destination/models.py:37
 msgid "Nom du manager"
 msgstr "Manager's name"
 
-#: destination/models.py:33
+#: destination/models.py:37
 msgid "Saisir le nom du manager de la destination"
 msgstr "Enter the name of the destination manager"
 
-#: destination/models.py:34
-msgid "Email du manager"
-msgstr "Manager's email"
-
-#: destination/models.py:34
-msgid "Saisir l'email du manager de la destination"
-msgstr "Enter destination manager's email address"
-
-#: destination/models.py:35 destination/models.py:38 destination/models.py:41
-#: destination/models.py:44 destination/models.py:47
-msgid "Téléphone"
-msgstr "Phone"
-
-#: destination/models.py:35
-msgid "Saisir le téléphone du manager de la destination"
-msgstr "Enter the destination manager's telephone number"
-
-#: destination/models.py:36
+#: destination/models.py:38
 msgid "Nom du référent"
 msgstr "Referrer's name"
 
-#: destination/models.py:36
+#: destination/models.py:38
 msgid "Saisir le nom du référent de la destination"
 msgstr "Enter the name of the destination referrer"
 
-#: destination/models.py:37
-msgid "Email du référent"
-msgstr "Referrer email"
-
-#: destination/models.py:37
-msgid "Saisir l'email du référent de la destination"
-msgstr "Enter the destination contact's email address"
-
-#: destination/models.py:38
-msgid "Saisir le téléphone du référent de la destination"
-msgstr "Enter the destination contact's telephone number"
-
 #: destination/models.py:39
-msgid "Nom du gestionnairer"
-msgstr "Manager's name"
+#, fuzzy
+#| msgid "Nom du gestionnairer"
+msgid "Nom du gestionnaire"
+msgstr "Name of the manager"
 
 #: destination/models.py:39
 msgid "Saisir le nom du gestionnaire de la destination"
 msgstr "Enter the name of the destination manager"
 
 #: destination/models.py:40
-msgid "Email du gestionnaire"
-msgstr "Manager's email"
-
-#: destination/models.py:40
-msgid "Saisir l'email du gestionnaire de la destination"
-msgstr "Enter the destination manager's email address"
-
-#: destination/models.py:41
-msgid "Saisir le téléphone du gestionnaire de la destination"
-msgstr "Enter the destination manager's telephone number"
-
-#: destination/models.py:42
 msgid "Nom du gestionnaire alternatif"
 msgstr "Name of alternative manager"
 
-#: destination/models.py:42
+#: destination/models.py:40
 msgid "Saisir le nom du gestionnaire alternatif de la destination"
 msgstr "Enter the name of the destination's alternative manager"
 
-#: destination/models.py:43
-msgid "Email du gestionnaire alternatif"
-msgstr "Email from alternative operator"
-
-#: destination/models.py:43
-msgid "Saisir l'email du gestionnaire alternatif de la destination"
-msgstr "Enter the email address of the alternative destination manager"
-
-#: destination/models.py:44
-msgid "Saisir le téléphone du gestionnaire alternatif de la destination"
-msgstr "Enter the telephone number of the destination's alternative operator"
-
-#: destination/models.py:45
+#: destination/models.py:41
 msgid "Nom du gestionnaire financier"
 msgstr "Name of financial manager"
 
-#: destination/models.py:45
+#: destination/models.py:41
 msgid "Saisir le nom du gestionnaire financier de la destination"
 msgstr "Enter the name of the financial manager for the destination"
 
-#: destination/models.py:46
-msgid "Email du gestionnaire financier"
-msgstr "Financial manager email"
+#: destination/models.py:42
+#, fuzzy
+#| msgid "Saisir les lieux ou thèmes de la destination"
+msgid "Sélectionner les lieux ou thèmes de la destination"
+msgstr "Select the locations or themes of the destination"
 
-#: destination/models.py:46
-msgid "Saisir l'email du gestionnaire financier de la destination"
-msgstr "Enter the destination financial manager's email address"
-
-#: destination/models.py:47
-msgid "Saisir le téléphone du gestionnaire financier de la destination"
-msgstr "Enter the telephone number of the destination's financial manager"
-
-#: destination/models.py:48
-msgid "Liste des lieux ou thèmes"
-msgstr "List of locations or themes"
-
-#: destination/models.py:48
-msgid "Saisir les lieux ou thèmes de la destination"
-msgstr "Enter destination locations or themes"
-
-#: destination/models.py:49
+#: destination/models.py:43
 msgid "Nombre maximum de lieux ou thèmes"
 msgstr "Maximum number of locations or themes"
 
-#: destination/models.py:49
+#: destination/models.py:43
 msgid "Saisir le nombre maximum de lieux ou thèmes par le visiteur"
 msgstr "Enter maximum number of locations or themes per visitor"
 
-#: destination/models.py:50
+#: destination/models.py:44
 msgid "Nombre minimum de lieux ou thèmes"
 msgstr "Minimum number of locations or themes"
 
-#: destination/models.py:50
+#: destination/models.py:44
 msgid "Saisir le nombre minimum de lieux ou thèmes par le visiteur"
 msgstr "Enter minimum number of locations or themes per visitor"
 
-#: destination/models.py:51
+#: destination/models.py:45
 msgid "Nombre maximum de centres d'intérêts"
 msgstr "Maximum number of interests"
 
-#: destination/models.py:51
+#: destination/models.py:45
 msgid "Saisir le nombre maximum de centres d'intérêts par le visiteur"
 msgstr "Enter maximum number of centers of interest per visitor"
 
-#: destination/models.py:52
+#: destination/models.py:46
 msgid "Nombre minimum de centres d'intérêts"
 msgstr "Minimum number of interests"
 
-#: destination/models.py:52
+#: destination/models.py:46
 msgid "Saisir le nombre minimum de centres d'intérêts par le visiteur"
 msgstr "Enter minimum number of visitor's interests"
 
-#: destination/models.py:53
+#: destination/models.py:47
 msgid "URL de retour"
 msgstr "Return URL"
 
-#: destination/models.py:53
+#: destination/models.py:47
 msgid "Saisir l'URL de retour après la validation d'une demande"
 msgstr "Enter return URL after request validation"
 
-#: destination/models.py:54
+#: destination/models.py:48
 msgid "Dates du séjour"
 msgstr "Dates of stay"
 
-#: destination/models.py:54
-msgid "Saisir les dates du séjour (Oui/non)?"
-msgstr "Enter dates of stay (Yes/No)?"
+#: destination/models.py:48
+msgid "Cocher la case si les dates du séjour sont obligatoires"
+msgstr "Check the box if the dates of stay are mandatory."
 
-#: destination/models.py:55
+#: destination/models.py:49
 msgid "Dispersion des dates demandées"
 msgstr "Dispersion of requested dates"
 
-#: destination/models.py:55
+#: destination/models.py:49
 msgid "Saisir le paramètre de dispersion des dates demandées"
 msgstr "Enter the dispersion parameter for the requested dates"
 
-#: destination/models.py:56
+#: destination/models.py:50
 msgid "Email de notification"
 msgstr "Email notification"
 
-#: destination/models.py:56
+#: destination/models.py:50
 msgid "Saisir l'email de notification"
 msgstr "Enter notification email"
 
-#: destination/models.py:57
+#: destination/models.py:51
 msgid "Email de réponse"
 msgstr "Reply email"
 
-#: destination/models.py:57
+#: destination/models.py:51
 msgid "Saisir l'email de réponse pour un courriel envoyé par le système"
 msgstr "Enter the reply email for an email sent by the system"
 
-#: destination/models.py:58
+#: destination/models.py:52
 msgid "Handicap accepté"
 msgstr "Handicap accepted"
 
-#: destination/models.py:58
-msgid "saisir si des handicap sont acceptés"
-msgstr "enter whether handicaps are accepted"
+#: destination/models.py:52
+#, fuzzy
+#| msgid "saisir si des handicap sont acceptés"
+msgid "Cocher la case si des visteurs ayant un handicap sont acceptés"
+msgstr "Check the box if visitors with disabilities are accepted."
 
-#: destination/models.py:59
+#: destination/models.py:53
 msgid "Présentation de la gestion du handicap"
 msgstr "Introduction to disability management"
 
-#: destination/models.py:59
+#: destination/models.py:53
 msgid "Saisir la présentation de la gestion du handicap"
 msgstr "Enter the disability management presentation"
+
+#: destination/models.py:74
+#, fuzzy
+#| msgid "Liste des lieux ou thèmes"
+msgid "Lieu ou thème "
+msgstr "Location or theme "
+
+#: destination/models.py:74
+#, fuzzy
+#| msgid "Liste des lieux ou thèmes"
+msgid "Saisir le lieu ou thème"
+msgstr "Enter the location or theme"
+
+#: destination/models.py:85
+msgid "C&G contrôlé"
+msgstr "C&G controlled"
+
+#: destination/models.py:86
+msgid "C&G direct"
+msgstr "C&G Direct"
+
+#: destination/models.py:87
+#, fuzzy
+#| msgid "Nom du gestionnairer"
+msgid "Gestionnaire"
+msgstr "Manager"
+
+#: destination/models.py:90
+msgid "Annulation demande"
+msgstr "Cancel request"
+
+#: destination/models.py:91
+msgid "Annulation proposition"
+msgstr "Cancellation proposal"
+
+#: destination/models.py:95
+#, fuzzy
+#| msgid "Liste des bénéficiaires des dons"
+msgid "Bénéficiaire des dons"
+msgstr "Recipient of donations"
+
+#: destination/models.py:95
+#, fuzzy
+#| msgid "Sélectionner le pays de la destination"
+msgid "Sélectionner le bénéficiaire des dons pour la destination"
+msgstr "Select the recipient of donations for the destination"
+
+#: destination/models.py:96
+msgid "Proposition de don"
+msgstr "Donation proposal"
+
+#: destination/models.py:96
+#, fuzzy
+#| msgid "Saisir la région de la destination"
+msgid "Saisir la proposition de don pour la destination"
+msgstr "Enter the donation proposal for the destination"
+
+#: destination/models.py:97
+#, fuzzy
+#| msgid "Saisir le code parent de la destination"
+msgid "Saisir l'URL du compte Paypal de la destination"
+msgstr "Enter the URL of the PayPal account of the recipient."
+
+#: destination/models.py:97
+#, fuzzy
+#| msgid "Saisir le nom de la destination"
+msgid "Paypal de la destination"
+msgstr "PayPal of the destination"
+
+#: destination/models.py:98
+#, fuzzy
+#| msgid "Saisir les raisons de non réponse du visiteur"
+msgid "Saisir le texte pour la demande de don sur le courriel du visiteur"
+msgstr "Enter the text for the donation request in the visitor's email."
+
+#: destination/models.py:98
+msgid "Texte de la demande de don"
+msgstr "Text of the donation request"
+
+#: destination/models.py:99
+#, fuzzy
+#| msgid "Saisir l'email du manager de la destination"
+msgid "Saisir l'URL de la page TripAdvisor de la destination"
+msgstr "Enter the URL of the TripAdvisor page for the destination"
+
+#: destination/models.py:99
+#, fuzzy
+#| msgid "Décrire la destination"
+msgid "TripAdvisor de la destination"
+msgstr "TripAdvisor for the destination"
+
+#: destination/models.py:100
+#, fuzzy
+#| msgid "Saisir le code parent de la destination"
+msgid "Saisir l'URL de la page Google My Business de la destination"
+msgstr "Enter the URL of the Google My Business page for the destination"
+
+#: destination/models.py:100
+#, fuzzy
+#| msgid "Saisir l'adresse de la destination"
+msgid "Google My Business de la destination"
+msgstr "Google My Business de la destination"
+
+#: destination/models.py:101
+#, fuzzy
+#| msgid "Sélectionner les langues de communication du cluster"
+msgid "Sélectionner les langues de communication de la destination"
+msgstr "Select the languages of communication for the destination"
+
+#: destination/models.py:102
+#, fuzzy
+#| msgid "Langue de communication"
+msgid "Langue de communication par défaut"
+msgstr "Default communication language"
+
+#: destination/models.py:102
+#, fuzzy
+#| msgid "Sélectionner les langues de communication du cluster"
+msgid "Sélectionner la langue de communication par défaut de la destination"
+msgstr "Select the default communication language for the destination"
+
+#: destination/models.py:103 greeters/models.py:56
+#, fuzzy
+#| msgid "Langue parlée"
+msgid "Langues parlées"
+msgstr "Languages spoken"
+
+#: destination/models.py:103
+#, fuzzy
+#| msgid "Sélectionner le pays de la destination"
+msgid "Sélectionner les langues parlées dans la destination"
+msgstr "Select the languages spoken at the destination"
+
+#: destination/models.py:104
+#, fuzzy
+#| msgid "Saisir le nom du gestionnaire de la destination"
+msgid "Saisir le type de gestion de la destination"
+msgstr "Enter the destination management type"
+
+#: destination/models.py:104
+msgid "Type de gestion"
+msgstr "Management type"
+
+#: destination/models.py:105
+msgid "Date d'envoi du prochain courriel C&G"
+msgstr "Date of next C&G email"
+
+#: destination/models.py:105
+msgid "Saisir la date pour l'envoi du prochain courriel de Greet & Greet"
+msgstr "Enter the date for sending the next Greet & Greet email"
+
+#: destination/models.py:106
+msgid "Période d'envoi des courriels C&G (en jours)"
+msgstr "C&G email delivery period (in days)"
+
+#: destination/models.py:106
+msgid "Saisir la période d'envoi des courriels de Greet & Greet en jours"
+msgstr "Enter the period for sending Greet & Greet emails in days"
+
+#: destination/models.py:107
+msgid "Intégrer les demandes en mode  Traitement sur le mur C&G"
+msgstr "Integrate requests in Processing mode on the C&G wall"
+
+#: destination/models.py:107
+msgid ""
+"Saisir si les demandes en mode Traitement  doivent être intégrées au mur C&G"
+msgstr ""
+"Enter whether requests in Processing mode should be integrated into the C&G "
+"wall"
+
+#: destination/models.py:108
+msgid "Intégrer les demandes en mode  Urgent sur le mur C&G"
+msgstr "Add requests in Urgent mode to the C&G wall"
+
+#: destination/models.py:108
+msgid ""
+"Saisir si les demandes en mode Urgent  doivent être intégrées au mur C&G"
+msgstr ""
+"Enter whether requests in Urgent mode should be included in the C&G wall."
+
+#: destination/models.py:109
+msgid "Activer les commentaires du visiteur à l'inscription"
+msgstr "Enable visitor comments upon registration"
+
+#: destination/models.py:109
+msgid ""
+"Saisir si les commentaires du visteur à l'inscription sont obligatoires"
+msgstr "Specify whether visitor comments upon registration are required"
+
+#: destination/models.py:110
+msgid "Présentation des commentaires pour le visiteur"
+msgstr "Presentation of comments for visitors"
+
+#: destination/models.py:110
+#, fuzzy
+#| msgid "Saisir la présentation de la gestion du handicap"
+msgid ""
+"Saisir la présentation des commentaires pour le visiteur à l'inscription"
+msgstr "Enter the presentation of comments for visitors upon registration"
+
+#: destination/models.py:111
+msgid "Libellé de la première case à cocher "
+msgstr "Label for the first checkbox "
+
+#: destination/models.py:111
+#, fuzzy
+#| msgid "Saisir le libellé des courriels émetteurs de la destination"
+msgid ""
+"Saisir le libellé de la première case à cocher sur le formulaire "
+"d'inscription"
+msgstr "Enter the wording of the first checkbox on the registration form"
+
+#: destination/models.py:112
+msgid ""
+"Saisir le texte de l'URL liée à la première case à cocher sur le formulaire "
+"d'inscription"
+msgstr ""
+"Enter the text of the URL linked to the first checkbox on the registration "
+"form."
+
+#: destination/models.py:112
+msgid "texte de l'URL de la première case à cocher"
+msgstr "text of the URL of the first checkbox"
+
+#: destination/models.py:113
+msgid ""
+"Saisir l'URL liée à la première case à cocher sur le formulaire "
+"d'inscription"
+msgstr "Enter the URL linked to the first checkbox on the registration form"
+
+#: destination/models.py:113
+msgid "URL de la première case à cocher"
+msgstr "URL of the first checkbox"
+
+#: destination/models.py:114
+msgid "Libellé de la deuxième case à cocher "
+msgstr "Label for the second checkbox "
+
+#: destination/models.py:114
+#, fuzzy
+#| msgid "Saisir le libellé des courriels émetteurs de la destination"
+msgid ""
+"Saisir le libellé de la deuxième case à cocher sur le formulaire "
+"d'inscription"
+msgstr "Enter the wording for the second checkbox on the registration form."
+
+#: destination/models.py:115
+msgid ""
+"Saisir le texte de l'URL liée à la deuxième case à cocher sur le formulaire "
+"d'inscription"
+msgstr ""
+"Enter the text of the URL linked to the second checkbox on the registration "
+"form."
+
+#: destination/models.py:115
+msgid "texte de l'URL de la deuxième case à cocher"
+msgstr "text of the URL of the second checkbox"
+
+#: destination/models.py:116
+msgid ""
+"Saisir l'URL liée à la deuxième case à cocher sur le formulaire "
+"d'inscription"
+msgstr "Enter the URL linked to the second checkbox on the registration form"
+
+#: destination/models.py:116
+msgid "URL de la deuxième case à cocher"
+msgstr "URL of the second checkbox"
+
+#: destination/models.py:117
+msgid "Libellé de la troisième case à cocher "
+msgstr "Label for the third checkbox "
+
+#: destination/models.py:117
+#, fuzzy
+#| msgid "Saisir le libellé des courriels émetteurs de la destination"
+msgid ""
+"Saisir le libellé de la troisième case à cocher sur le formulaire "
+"d'inscription"
+msgstr "Enter the wording for the third checkbox on the registration form."
+
+#: destination/models.py:118
+msgid ""
+"Saisir le texte de l'URL liée à la troisième case à cocher sur le formulaire"
+" d'inscription"
+msgstr ""
+"Enter the text of the URL linked to the third checkbox on the registration "
+"form."
+
+#: destination/models.py:118
+msgid "texte de l'URL de la troisième case à cocher"
+msgstr "text of the URL in the third checkbox"
+
+#: destination/models.py:119
+msgid ""
+"Saisir l'URL liée à la troisième case à cocher sur le formulaire "
+"d'inscription"
+msgstr "Enter the URL linked to the third checkbox on the registration form"
+
+#: destination/models.py:119
+msgid "URL de la troisième case à cocher"
+msgstr "URL of the third checkbox"
+
+#: destination/models.py:120
+msgid "Case à cocher obligatoire 1"
+msgstr "Required checkbox 1"
+
+#: destination/models.py:120
+msgid ""
+"Saisir si la première case à cocher est obligatoire sur le formulaire "
+"d'inscription"
+msgstr ""
+"Enter whether the first checkbox is mandatory on the registration form"
+
+#: destination/models.py:121
+msgid "Case à cocher obligatoire 2"
+msgstr "Required checkbox 2"
+
+#: destination/models.py:121
+msgid ""
+"Saisir si la deuxième case à cocher est obligatoire sur le formulaire "
+"d'inscription"
+msgstr ""
+"Enter whether the second checkbox is mandatory on the registration form"
+
+#: destination/models.py:122
+msgid "Case à cocher obligatoire 3"
+msgstr "Required checkbox 3"
+
+#: destination/models.py:122
+msgid ""
+"Saisir si la troisième case à cocher est obligatoire sur le formulaire "
+"d'inscription"
+msgstr ""
+"Enter whether the third checkbox is mandatory on the registration form"
+
+#: destination/models.py:123
+#, fuzzy
+#| msgid "Raisons de non réponse du visiteur"
+msgid "Action suite à la non-réponse du visiteur"
+msgstr "Action following the visitor's non-response"
+
+#: destination/models.py:123
+#, fuzzy
+#| msgid "Raisons de non réponse du visiteur"
+msgid "Cocher l'action à effectuer suite à la non-réponse du visiteur"
+msgstr "Check the action to be taken if the visitor does not respond"
+
+#: destination/models.py:124
+#, fuzzy
+#| msgid "Saisir les raisons de non réponse du Greeter"
+msgid "Demander le motif de la non-réponse du Greeter"
+msgstr "Ask for the reason for the Greeter's non-response"
+
+#: destination/models.py:124
+msgid "Cocher si le motif de la non proposition du Greeter est obligatoire"
+msgstr "Check if the reason for not proposing the Greeter is mandatory"
+
+#: destination/models.py:125
+msgid "Avis de fermeture au visiteur"
+msgstr "Notice of closure to visitors"
+
+#: destination/models.py:125
+#, fuzzy
+#| msgid "Saisir le nom du référent de la destination"
+msgid "Cocher la case pour une fermeture de la destination "
+msgstr "Check the box to close the destination "
+
+#: destination/models.py:126
+msgid "Date de début de la fermeture"
+msgstr "Closure start date"
+
+#: destination/models.py:126
+#, fuzzy
+#| msgid "Saisir le code parent de la destination"
+msgid "Saisir la date de la fermeture de la destination"
+msgstr "Enter the date of closure of the destination"
+
+#: destination/models.py:127
+msgid "Date de fin de la fermeture"
+msgstr "Closure end date"
+
+#: destination/models.py:127
+#, fuzzy
+#| msgid "Saisir le code parent de la destination"
+msgid "Saisir la date de fin de la fermeture de la destination"
+msgstr "Enter the end date of the destination closure"
+
+#: destination/models.py:128
+msgid "Texte de l'avis de fermeture"
+msgstr "Text of the closure notice"
+
+#: destination/models.py:128
+#, fuzzy
+#| msgid "Saisir le code parent de la destination"
+msgid "Saisir le texte de l'avis de fermeture de la destination"
+msgstr "Enter the text of the notice of closure of the destination"
+
+#: destination/models.py:129
+#, fuzzy
+#| msgid "Le nombre maximum de participants est de {}."
+msgid "Nombre de participants en cours de fermeture"
+msgstr "Number of participants in the process of closing"
+
+#: destination/models.py:129
+msgid ""
+"Saisir le nombre de participants lors de la fermeture de la destination (0 "
+"fermeture totale)"
+msgstr ""
+"Enter the number of participants when closing the destination (0 total "
+"closure)"
+
+#: destination/models.py:130
+#, fuzzy
+#| msgid "Adresse  de sauvegarde des courriels"
+msgid "Nom pour la signature des courriels"
+msgstr "Name for email signature"
+
+#: destination/models.py:130
+#, fuzzy
+#| msgid "Saisir le libellé des courriels émetteurs de la destination"
+msgid ""
+"Saisir le nom pour la signature des courriels envoyés par la destination"
+msgstr "Enter the name for signing emails sent by the destination"
+
+#: destination/models.py:131
+msgid "Saisir l'URL pour la signature des courriels"
+msgstr "Enter the URL for email signatures"
+
+#: destination/models.py:131
+#, fuzzy
+#| msgid "Adresse  de sauvegarde des courriels"
+msgid "URL pour la signature des courriels"
+msgstr "URL for email signatures"
+
+#: destination/models.py:132
+#, fuzzy
+#| msgid "Libellé courriel émetteur "
+msgid "Libellé du premier réseau social"
+msgstr "Name of the first social network"
+
+#: destination/models.py:132
+#, fuzzy
+#| msgid "Saisir le libellé des courriels émetteurs de la destination"
+msgid "Saisir le libellé du premier réseau social pour la destination"
+msgstr "Enter the name of the first social network for the destination"
+
+#: destination/models.py:133
+msgid "Saisir l'URL du premier réseau social"
+msgstr "Enter the URL of the first social network"
+
+#: destination/models.py:133
+msgid "URL du premier réseau social"
+msgstr "URL of the first social network"
+
+#: destination/models.py:134
+msgid "Libellé du deuxième réseau social"
+msgstr "Name of the second social network"
+
+#: destination/models.py:134
+#, fuzzy
+#| msgid "Saisir le libellé des courriels émetteurs de la destination"
+msgid "Saisir le libellé du deuxième réseau social pour la destination"
+msgstr "Enter the name of the second social network for the destination"
+
+#: destination/models.py:135
+msgid "Saisir l'URL du deuxième réseau social"
+msgstr "Enter the URL of the second social network"
+
+#: destination/models.py:135
+msgid "URL du deuxième réseau social"
+msgstr "URL of the second social network"
+
+#: destination/models.py:136
+msgid "Tagline pour les courriels"
+msgstr "Tagline for emails"
+
+#: destination/models.py:136
+#, fuzzy
+#| msgid "Saisir le libellé des courriels émetteurs de la destination"
+msgid "Saisir le tagline pour les courriels envoyés par la destination"
+msgstr "Enter the tagline for emails sent by the destination"
+
+#: destination/models.py:137
+#, fuzzy
+#| msgid "Adresse  de sauvegarde des courriels"
+msgid "Titre de l'avis en pied des courriels"
+msgstr "Subject line of emails"
+
+#: destination/models.py:137
+#, fuzzy
+#| msgid "Saisir le libellé des courriels émetteurs de la destination"
+msgid ""
+"Saisir le titre de l'avis en pied des courriels envoyés par la destination"
+msgstr "Enter the subject line of the email sent by the destination"
+
+#: destination/models.py:138
+#, fuzzy
+#| msgid "Adresse  de sauvegarde des courriels"
+msgid "Texte de l'avis en pied des courriels"
+msgstr "Text of the notice at the bottom of emails"
+
+#: destination/models.py:138
+#, fuzzy
+#| msgid "Saisir le libellé des courriels émetteurs de la destination"
+msgid ""
+"Saisir le texte de l'avis en pied des courriels envoyés par la destination"
+msgstr ""
+"Enter the text of the notice at the bottom of emails sent by the destination"
+
+#: destination/models.py:139
+#, fuzzy
+#| msgid "Adresse  de sauvegarde des courriels"
+msgid "Date de début de l'avis en pied des courriels"
+msgstr "Start date of the notice at the bottom of emails"
+
+#: destination/models.py:139
+msgid "Saisir la date de début de l'avis en pied des courriels"
+msgstr "Enter the start date of the notice at the bottom of emails"
+
+#: destination/models.py:140
+#, fuzzy
+#| msgid "Adresse  de sauvegarde des courriels"
+msgid "Date de fin de l'avis en pied des courriels"
+msgstr "End date of the notice at the bottom of emails"
+
+#: destination/models.py:140
+msgid "Saisir la date de fin de l'avis en pied des courriels"
+msgstr "Enter the end date of the notice at the bottom of emails"
+
+#: destination/models.py:152
+msgid "Fréquence des mails précoces (en jours)"
+msgstr "Frequency of early emails (in days)"
+
+#: destination/models.py:152
+msgid "Saisir la fréquence des mails précoces en jours"
+msgstr "Enter the frequency of early emails in days"
+
+#: destination/models.py:153
+msgid ""
+"Nombre de jours avant le passage en mode Traitement pour l'envoi du courriel"
+" de demande de  confirmation par le visiteur"
+msgstr ""
+"Number of days before switching to Processing mode for sending the visitor "
+"confirmation request email"
+
+#: destination/models.py:153
+msgid ""
+"Saisir le nombre de jours avant le passage en mode Traitement pour l'envoi "
+"du courriel de demande de  confirmation par le visiteur"
+msgstr ""
+"Enter the number of days before switching to Processing mode for sending the"
+" email requesting confirmation from the visitor."
+
+#: destination/models.py:154
+msgid "Nombre de jours avant le passage en mode Traitement"
+msgstr "Number of days before switching to Processing mode"
+
+#: destination/models.py:154
+msgid "Saisir le nombre de jours avant le passage en mode Traitement"
+msgstr "Enter the number of days before switching to Processing mode"
+
+#: destination/models.py:155
+msgid "Nombre de jours avant le passage en mode Urgent"
+msgstr "Number of days before switching to Urgent mode"
+
+#: destination/models.py:155
+msgid "Saisir le nombre de jours avant le passage en mode Urgent"
+msgstr "Enter the number of days before switching to Urgent mode"
+
+#: destination/models.py:156
+msgid "Nombre de jours minimum avant la date de la balade"
+msgstr "Minimum number of days before the date of the trip"
+
+#: destination/models.py:156
+#, fuzzy
+#| msgid "Saisir le nom du manager de la destination"
+msgid "Saisir le nombre de jours minimum avant la date de la balade"
+msgstr "Enter the minimum number of days before the date of the trip"
+
+#: destination/models.py:157
+#, fuzzy
+#| msgid "Nombre maximun de visiteurs pour le cluster"
+msgid "Nombre de jours maximum pour le Greeter"
+msgstr "Maximum number of days for the Greeter"
+
+#: destination/models.py:157
+msgid ""
+"Saisir le nombre de jours maximum pour le Greeter pour répondre à une "
+"attribution"
+msgstr ""
+"Enter the maximum number of days for the Greeter to respond to an assignment"
+
+#: destination/models.py:158
+msgid "Fréquence de relance du Greeter"
+msgstr "Frequency of Greeter follow-ups"
+
+#: destination/models.py:158
+msgid ""
+"Saisir la fréquence pour l'envoi d'une relance au Greeter pour répondre à "
+"une attribution"
+msgstr ""
+"Enter the frequency for sending a reminder to the Greeter to respond to an "
+"assignment"
+
+#: destination/models.py:159
+#, fuzzy
+#| msgid "Nombre maximun de visiteurs pour le cluster"
+msgid "Nombre de jours maximum pour le visiteur"
+msgstr "Maximum number of days for visitors"
+
+#: destination/models.py:159
+msgid ""
+"Saisir le nombre de jours maximum pour le visiteur pour répondre à une "
+"proposition"
+msgstr ""
+"Enter the maximum number of days for the visitor to respond to a proposal"
+
+#: destination/models.py:160
+msgid "Fréquence de relance du visiteur"
+msgstr "Visitor follow-up frequency"
+
+#: destination/models.py:160
+msgid ""
+"Saisir la fréquence pour l'envoi d'une relance au visiteur pour répondre à "
+"une proposition"
+msgstr ""
+"Enter the frequency for sending a reminder to the visitor to respond to a "
+"proposal"
+
+#: destination/models.py:161
+msgid ""
+"Nombre de jours avant la balade pour l'envoi du courriel de rappel au "
+"Greeter et au visiteur"
+msgstr ""
+"Number of days before the tour to send the reminder email to the Greeter and"
+" the visitor"
+
+#: destination/models.py:161
+msgid ""
+"Saisir le nombre de jours avant la balade pour l'envoi du courriel de rappel"
+" au Greeter et au visiteur"
+msgstr ""
+"Enter the number of days before the tour for sending the reminder email to "
+"the Greeter and the visitor."
+
+#: destination/models.py:162
+msgid "Nombre de jours après la balade pour la saisie manuelle d'une balade"
+msgstr "Number of days after the trip for manual entry of a trip"
+
+#: destination/models.py:162
+#, fuzzy
+#| msgid "Saisir l'URL de retour après la validation d'une demande"
+msgid ""
+"Saisir le nombre de jours après la balade pour la saisie manuelle d'une "
+"balade"
+msgstr "Enter the number of days after the trip for manual entry of a trip"
+
+#: destination/models.py:163
+msgid "Nombre de jours pour l'envoi de la demande de compte-rendu au Greeter"
+msgstr "Number of days to send the report request to the Greeter"
+
+#: destination/models.py:163
+msgid ""
+"Saisir le nombre de jours après la balade pour l'envoi du courriel de "
+"demande de compte-rendu au Greeter"
+msgstr ""
+"Enter the number of days after the tour for sending the email requesting a "
+"report to the Greeter."
+
+#: destination/models.py:164
+msgid "Fréquence de relance pour le compte-rendu du Greeter"
+msgstr "Frequency of reminders for Greeter reports"
+
+#: destination/models.py:164
+msgid ""
+"Saisir la fréquence pour l'envoi d'une relance au Greeter pour le compte-"
+"rendu"
+msgstr ""
+"Enter the frequency for sending a reminder to the Greeter for the report"
+
+#: destination/models.py:165
+msgid ""
+"Nombre de jours après la balade pour l'envoi du courriel d'avis au visiteur"
+msgstr ""
+"Number of days after the tour for sending the notification email to the "
+"visitor"
+
+#: destination/models.py:165
+msgid ""
+"Saisir le nombre de jours après la balade pour l'envoi du courriel d'avis au"
+" visiteur"
+msgstr ""
+"Enter the number of days after the tour for sending the notification email "
+"to the visitor."
+
+#: destination/models.py:166
+msgid "Fréquence de relance pour l'avis du visiteur"
+msgstr "Frequency of reminders for visitor feedback"
+
+#: destination/models.py:166
+msgid "Saisir la fréquence pour l'envoi d'une relance au visiteur pour l'avis"
+msgstr ""
+"Enter the frequency for sending a reminder to the visitor for the notice"
+
+#: destination/models.py:167
+#, fuzzy
+#| msgid "Nombre maximun de visiteurs pour le cluster"
+msgid "Nombre de jours maximum pour le visiteur pour donner son avis"
+msgstr "Maximum number of days for visitors to give their opinion"
+
+#: destination/models.py:167
+#, fuzzy
+#| msgid "Saisir le nombre maximum de lieux ou thèmes par le visiteur"
+msgid ""
+"Saisir le nombre de jours maximum pour le visiteur pour donner son avis"
+msgstr ""
+"Enter the maximum number of days for the visitor to give their opinion"
+
+#: destination/models.py:168
+msgid "Nombre de jours avant l'anomysation des données"
+msgstr "Number of days before data anonymization"
+
+#: destination/models.py:168
+#, fuzzy
+#| msgid "Saisir les raisons de non réponse du visiteur"
+msgid "Saisir le nombre de jours avant l'anomysation des données du visiteur"
+msgstr "Enter the number of days before visitor data is anonymized"
+
+#: destination/views.py:56
+#, fuzzy
+#| msgid "Création d'un Greeter"
+msgid "Création d'une destination"
+msgstr "Creating a destination"
+
+#: destination/views.py:132
+#, fuzzy
+#| msgid "Le formulaire n'est pas valide"
+msgid "Le formulaire n'est pas valide. Veuillez vérifier les champs."
+msgstr "The form is invalid. Please check the fields."
+
+#: destination/views.py:231
+#, fuzzy
+#| msgid "La raison de non réalisation {} a été créée."
+msgid "La destination {} a été créée."
+msgstr "The destination {} has been created."
+
+#: destination/views.py:266
+#, fuzzy
+#| msgid ""
+#| "Vous n'avez pas les droits nécessaires pour consulter ce cluster."
+msgid ""
+"Vous n'avez pas les droits nécessaires pour consulter la liste des "
+"destinations."
+msgstr ""
+"You do not have the necessary rights to view the list of destinations."
+
+#: destination/views.py:268 templates/cluster/cluster_detail.html:49
+#: templates/destination/destinations_list.html:17
+#, fuzzy
+#| msgid "Liste des utilisateurs"
+msgid "Liste des destinations"
+msgstr "List of destinations"
+
+#: destination/views.py:294
+#, fuzzy
+#| msgid ""
+#| "Vous n'avez pas les droits nécessaires pour consulter ce cluster."
+msgid ""
+"Vous n'avez pas les droits nécessaires pour consulter cette destination."
+msgstr "You do not have the necessary permissions to view this destination."
+
+#: destination/views.py:451
+#, fuzzy
+#| msgid ""
+#| "Vous n'avez pas les droits nécessaires pour consulter ce cluster."
+msgid "Vous n'avez pas les droits nécessaires pour éditer cette destination."
+msgstr "You do not have the necessary rights to edit this destination."
+
+#: destination/views.py:562
+#, python-brace-format
+msgid ""
+"Les données générales de la destination {self.object.name_dest} ont été "
+"mises à jour."
+msgstr ""
+"The general data for the destination {self.object.name_dest} has been "
+"updated."
+
+#: destination/views.py:644
+#, python-brace-format
+msgid ""
+"Les données fonctionnelles de la destination "
+"{self.object.code_dest_data.name_dest} ont été mises à jour."
+msgstr ""
+"The functional data for the destination "
+"{self.object.code_dest_data.name_dest} has been updated."
+
+#: destination/views.py:673
+#, python-brace-format
+msgid ""
+"Les données de flux de la destination {self.object.code_dest_flux.name_dest}"
+" ont été mises à jour."
+msgstr ""
+"The flow data for the destination {self.object.code_dest_flux.name_dest} has"
+" been updated."
+
+#: greeters/forms.py:23 templates/users/greeter_list.html:16
+#: templates/users/user_list.html:16
+msgid "Email"
+msgstr "Email"
+
+#: greeters/forms.py:23
+#, fuzzy
+#| msgid "Saisir les expériences des Greeter"
+msgid "Saisir l'adresse courriel du Greeter"
+msgstr "Enter the Greeter's email address"
+
+#: greeters/forms.py:24 templates/users/greeter_list.html:15
+#: templates/users/user_list.html:15 users/models.py:43
+msgid "Prénom"
+msgstr "First name"
+
+#: greeters/forms.py:24
+#, fuzzy
+#| msgid "Saisir les expériences des Greeter"
+msgid "Saisir le prénom du Greeter"
+msgstr "Enter the Greeter's first name"
+
+#: greeters/forms.py:25
+#, fuzzy
+#| msgid "Saisir les expériences des Greeter"
+msgid "Saisir le nom du Greeter"
+msgstr "Enter the name of the Greeter"
+
+#: greeters/forms.py:26
+#, fuzzy
+#| msgid "Téléphone portable"
+msgid "Téléphone Mobile"
+msgstr "Cell Phone"
+
+#: greeters/forms.py:26
+#, fuzzy
+#| msgid "Saisir les raisons de non réponse du Greeter"
+msgid "Saisir le numéro de téléphone mobile du Greeter"
+msgstr "Enter the Greeter's cell phone number"
+
+#: greeters/forms.py:28 users/models.py:46
+msgid "Langue de communication"
+msgstr "Language of communication"
+
+#: greeters/forms.py:32
+#, fuzzy
+#| msgid "Sélectionner les langues de communication du cluster"
+msgid "Saisir la langue de communication du Greeter"
+msgstr "Enter the Greeter's communication language"
+
+#: greeters/forms.py:37
+#, fuzzy
+#| msgid "Sélectionner le cluster de la destination"
+msgid "Sélectionner le cluster associé au Greeter"
+msgstr "Select the cluster associated with the Greeter"
+
+#: greeters/forms.py:42
+#, fuzzy
+#| msgid "Sélectionner le pays de la destination"
+msgid "Sélectionner la destination associée au Greeter"
+msgstr "Select the destination associated with the Greeter"
+
+#: greeters/forms.py:103
+msgid "Informations de base"
+msgstr "Basic information"
+
+#: greeters/forms.py:141
+#, fuzzy
+#| msgid "Profession"
+msgid "Profil"
+msgstr "Profile"
+
+#: greeters/models.py:21
+msgid "Archivé"
+msgstr "Archived"
+
+#: greeters/models.py:25
+msgid "Masculin"
+msgstr "Male"
+
+#: greeters/models.py:26
+msgid "Féminin"
+msgstr "Feminine"
+
+#: greeters/models.py:27
+msgid "Autre"
+msgstr "Other"
+
+#: greeters/models.py:31
+msgid "Lundi"
+msgstr "Monday"
+
+#: greeters/models.py:32
+msgid "Mardi"
+msgstr "Tuesday"
+
+#: greeters/models.py:33
+msgid "Mercredi"
+msgstr "Wednesday"
+
+#: greeters/models.py:34
+msgid "Jeudi"
+msgstr "Thursday"
+
+#: greeters/models.py:35
+msgid "Vendredi"
+msgstr "Friday"
+
+#: greeters/models.py:36
+msgid "Samedi"
+msgstr "Saturday"
+
+#: greeters/models.py:37
+msgid "Dimanche"
+msgstr "Sunday"
+
+#: greeters/models.py:41
+#, fuzzy
+#| msgid "Saisir le statut du cluster"
+msgid "Saisir le statut du Greeter"
+msgstr "Enter the status of the Greeter"
+
+#: greeters/models.py:42
+msgid "Genre"
+msgstr "Gender"
+
+#: greeters/models.py:42
+#, fuzzy
+#| msgid "Saisir les expériences des Greeter"
+msgid "Saisir le genre du Greeter"
+msgstr "Enter the Greeter's gender"
+
+#: greeters/models.py:43
+#, fuzzy
+#| msgid "Adresse"
+msgid "Adresse 1"
+msgstr "Address 1"
+
+#: greeters/models.py:43
+#, fuzzy
+#| msgid "Saisir l'adresse de la destination"
+msgid "Saisir l'adresse du Greeter"
+msgstr "Enter the Greeter's address"
+
+#: greeters/models.py:44
+#, fuzzy
+#| msgid "Adresse"
+msgid "Adresse 2"
+msgstr "Address 2"
+
+#: greeters/models.py:44
+#, fuzzy
+#| msgid "Saisir les expériences des Greeter"
+msgid "Saisir l'adresse complémentaire du Greeter"
+msgstr "Enter the Greeter's additional address"
+
+#: greeters/models.py:45
+msgid "Code postal"
+msgstr "Postal code"
+
+#: greeters/models.py:45
+#, fuzzy
+#| msgid "Saisir les raisons de non réponse du Greeter"
+msgid "Saisir le code postal du Greeter"
+msgstr "Enter the Greeter's zip code"
+
+#: greeters/models.py:46
+msgid "Ville"
+msgstr "City"
+
+#: greeters/models.py:46
+#, fuzzy
+#| msgid "Saisir les expériences des Greeter"
+msgid "Saisir la ville du Greeter"
+msgstr "Enter the Greeter's city"
+
+#: greeters/models.py:47
+#, fuzzy
+#| msgid "Saisir les expériences des Greeter"
+msgid "Saisir le pays du Greeter"
+msgstr "Enter the Greeter's country"
+
+#: greeters/models.py:48
+#, fuzzy
+#| msgid "Téléphone fixe)"
+msgid "Téléphone fixe"
+msgstr "Landline phone"
+
+#: greeters/models.py:48
+#, fuzzy
+#| msgid "Saisir les raisons de non réponse du Greeter"
+msgid "Saisir le numéro de téléphone fixe du Greeter"
+msgstr "Enter the Greeter's landline number"
+
+#: greeters/models.py:49
+#, fuzzy
+#| msgid "Téléphone"
+msgid "Téléphone whatsapp"
+msgstr "WhatsApp phone"
+
+#: greeters/models.py:49
+#, fuzzy
+#| msgid "Saisir les raisons de non réponse du Greeter"
+msgid "Saisir le numéro de téléphone whatsapp du Greeter"
+msgstr "Enter the Greeter's WhatsApp phone number"
+
+#: greeters/models.py:50
+#, fuzzy
+#| msgid "Saisir les expériences des Greeter"
+msgid "Saisir la tranche d'âge du Greeter"
+msgstr "Enter the age range of the Greeter"
+
+#: greeters/models.py:51
+#, fuzzy
+#| msgid "Expériences des Greeters"
+msgid "Expériences de Greeter"
+msgstr "Greeter experiences"
+
+#: greeters/models.py:51
+#, fuzzy
+#| msgid "Saisir les expériences des Greeter"
+msgid "Saisir les expériences de Greeter"
+msgstr "Capture Greeter experiences"
+
+#: greeters/models.py:52 templates/users/greeter_list.html:27
+msgid "Photo de profil"
+msgstr "Photo de profil"
+
+#: greeters/models.py:52
+msgid "Taille : 200 px *200 px"
+msgstr "Size: 200 px *200 px"
+
+#: greeters/models.py:53
+msgid "Biographie"
+msgstr "Biography"
+
+#: greeters/models.py:53
+#, fuzzy
+#| msgid "Saisir les expériences des Greeter"
+msgid "Saisir la biographie du Greeter"
+msgstr "Enter the Greeter's biography"
+
+#: greeters/models.py:54
+msgid "Accepte des balades avec des personnes ayant un handicap"
+msgstr "Accepts rides with people with disabilities"
+
+#: greeters/models.py:54
+msgid ""
+"Saisir si le Greeter accepte des balades avec des personnes ayant un "
+"handicap"
+msgstr "Enter whether the Greeter accepts walks with people with disabilities"
+
+#: greeters/models.py:55
+msgid "Accepte que sa photo soit transmise au visiteur"
+msgstr "Agrees to have their photo shared with visitors"
+
+#: greeters/models.py:55
+msgid "Saisir si le Greeter accepte que sa photo soit transmise au visiteur"
+msgstr ""
+"Enter whether the Greeter agrees to have their photo sent to the visitor"
+
+#: greeters/models.py:56
+#, fuzzy
+#| msgid "Saisir les expériences des Greeter"
+msgid "Saisir les langues parlées du Greeter"
+msgstr "Enter the languages spoken by the Greeter"
+
+#: greeters/models.py:57
+#, fuzzy
+#| msgid "Nombre maximun de participants"
+msgid "Nombre maximum de participants"
+msgstr "Maximum number of participants"
+
+#: greeters/models.py:57
+#, fuzzy
+#| msgid ""
+#| "Saisir le nombre maximum de centres d'intérêts par le visiteur"
+msgid "Saisir le nombre maximum de participants accepté par le Greeter"
+msgstr "Enter the maximum number of participants accepted by the Greeter"
+
+#: greeters/models.py:58
+msgid "Jours de disponibilité"
+msgstr "Days of availability"
+
+#: greeters/models.py:58
+#, fuzzy
+#| msgid "Saisir les raisons de non réponse du Greeter"
+msgid "Saisir les jours de disponibilité du Greeter"
+msgstr "Enter the Greeter's availability days"
+
+#: greeters/models.py:59
+msgid "Disponibilité en journée"
+msgstr "Availability during the day"
+
+#: greeters/models.py:59
+#, fuzzy
+#| msgid "Saisir les raisons de non réponse du Greeter"
+msgid "Saisir les périodes de disponibilité en journée du Greeter"
+msgstr "Enter the Greeter's availability periods during the day"
+
+#: greeters/models.py:60
+msgid "Intervalle en jours entre deux balades"
+msgstr "Interval in days between two walks"
+
+#: greeters/models.py:60
+msgid "Saisir l'intervalle en jours entre deux balades"
+msgstr "Enter the interval in days between two walks"
+
+#: greeters/models.py:61 greeters/models.py:81
+#, fuzzy
+#| msgid "Complément d'adresse"
+msgid "Commentaires"
+msgstr "Comments"
+
+#: greeters/models.py:61
+#, fuzzy
+#| msgid "Saisir les expériences des Greeter"
+msgid "Saisir les commentaires du Greeter"
+msgstr "Enter the Greeter's comments"
+
+#: greeters/models.py:62
+msgid "Intérêts"
+msgstr "Interests"
+
+#: greeters/models.py:62
+#, fuzzy
+#| msgid "Saisir les centres d'intérêts des visiteurs et Greeter"
+msgid "Saisir les centres d'intérêts du Greeter"
+msgstr "Enter the Greeter's interests"
+
+#: greeters/models.py:63
+#, fuzzy
+#| msgid "Saisir les expériences des Greeter"
+msgid "Saisir les cethèmes ou lieux du Greeter"
+msgstr "Enter the Greeter's cethèmes or locations"
+
+#: greeters/models.py:64
+msgid "Date d'arrivée"
+msgstr "Arrival date"
+
+#: greeters/models.py:64
+#, fuzzy
+#| msgid "Saisir les raisons de non réponse du Greeter"
+msgid "Saisir la date d'arrivée du Greeter"
+msgstr "Enter the Greeter's arrival date"
+
+#: greeters/models.py:65
+#, fuzzy
+#| msgid "Dates du séjour"
+msgid "Date de départ"
+msgstr "Departure date"
+
+#: greeters/models.py:65
+#, fuzzy
+#| msgid "Saisir les raisons de non réponse du Greeter"
+msgid "Saisir la date de départ du Greeter"
+msgstr "Enter the Greeter's departure date"
+
+#: greeters/models.py:66
+#, fuzzy
+#| msgid "Email de notification"
+msgid "Date de dernière modification"
+msgstr "Date of last modification"
+
+#: greeters/models.py:66
+#, fuzzy
+#| msgid "Saisir les raisons de non réponse du Greeter"
+msgid "Saisir la date de dernière modification du Greeter"
+msgstr "Enter the date of the last modification of the Greeter"
+
+#: greeters/models.py:67
+#, fuzzy
+#| msgid "Nom du cluster"
+msgid "Nom du correcteur"
+msgstr "Name of the corrector"
+
+#: greeters/models.py:67
+#, fuzzy
+#| msgid "Saisir le statut du cluster"
+msgid "Saisir le nom du correcteur"
+msgstr "Enter the name of the proofreader"
+
+#: greeters/models.py:68
+#, fuzzy
+#| msgid "Modification de la fiche de  {} {}"
+msgid "Corrections de la fiche Greeter"
+msgstr "Corrections to the Greeter file"
+
+#: greeters/models.py:68
+#, fuzzy
+#| msgid "Saisir les raisons de non réponse du Greeter"
+msgid "Saisir les corrections de la fiche Greeter"
+msgstr "Enter corrections to the Greeter file"
+
+#: greeters/models.py:79
+#, fuzzy
+#| msgid "Dates du séjour"
+msgid "Date de début"
+msgstr "Start date"
+
+#: greeters/models.py:79
+msgid "Saisir la date de début de l'indisponibilité"
+msgstr "Enter the start date of the unavailability"
+
+#: greeters/models.py:80
+#, fuzzy
+#| msgid "Date de naissance"
+msgid "Date de fin"
+msgstr "End date"
+
+#: greeters/models.py:80
+#, fuzzy
+#| msgid "Saisir le code de la destination"
+msgid "Saisir la date de fin de l'indisponibilité"
+msgstr "Enter the end date of unavailability"
+
+#: greeters/models.py:81
+#, fuzzy
+#| msgid "Saisir le code parent de la destination"
+msgid "Saisir les commentaires de l'indisponibilité"
+msgstr "Enter comments regarding unavailability"
+
+#: greeters/models.py:84
+msgid "Indisponibilité"
+msgstr "Unavailability"
+
+#: greeters/models.py:85
+msgid "Indisponibilités"
+msgstr "Unavailability"
+
+#: greeters/models.py:96
+msgid "Langue du greet-type"
+msgstr "Greet-type language"
+
+#: greeters/models.py:96
+#, fuzzy
+#| msgid "Saisir les raisons de non réponse du Greeter"
+msgid "Saisir la langue parlée du greet-type"
+msgstr "Enter the spoken language of the greet-type"
+
+#: greeters/models.py:97
+msgid "Titre du greet-type"
+msgstr "Greet-type title"
+
+#: greeters/models.py:97
+msgid "Saisir le titre du greet-type dans la langue du greet-type"
+msgstr "Enter the title of the greet-type in the language of the greet-type"
+
+#: greeters/models.py:98
+msgid "Thèmes ou lieux"
+msgstr "Themes or locations"
+
+#: greeters/models.py:98
+#, fuzzy
+#| msgid "Saisir les lieux ou thèmes de la destination"
+msgid "Saisir les cethèmes ou lieux du greet-type"
+msgstr "Enter the cethèmes or locations of the greet-type"
+
+#: greeters/models.py:99
+msgid "Lieu du rendezz-vous"
+msgstr "Meeting place"
+
+#: greeters/models.py:99
+msgid "Saisir le lieu du rendezz-vous"
+msgstr "Enter the meeting place"
+
+#: greeters/models.py:100
+msgid "Lien Google Maps"
+msgstr "Google Maps link"
+
+#: greeters/models.py:100
+msgid "Saisir le lien Google Maps du lieu de rendez-vous"
+msgstr "Enter the Google Maps link for the meeting place"
+
+#: greeters/models.py:101
+#, fuzzy
+#| msgid "Saisir les raisons de non réponse du Greeter"
+msgid "Saisir la description du greet-type"
+msgstr "Enter the description of the greet-type"
+
+#: greeters/models.py:102
+msgid "Photo du greet-type"
+msgstr "Photo du greet-type"
+
+#: greeters/models.py:102
+#, fuzzy
+#| msgid "Taille : 200 px *200 px"
+msgid "Taille : 1200 px * 900 px"
+msgstr "Size: 1200 px * 900 px"
 
 #: templates/base.html:9 templates/base.html:25
 msgid "Gestion des balades"
@@ -718,6 +2118,86 @@ msgstr "Disconnect"
 #: templates/base.html:48
 msgid "Connexion"
 msgstr "Connection"
+
+#: templates/cluster/cluster_detail.html:4
+#, fuzzy
+#| msgid "Détail du cluster"
+msgid "Détails du Cluster"
+msgstr "Cluster Details"
+
+#: templates/cluster/cluster_detail.html:17
+msgid "Pays de l'administrateur"
+msgstr "Administrator's country"
+
+#: templates/cluster/cluster_detail.html:19
+#, fuzzy
+#| msgid "Administrateur alternatif"
+msgid "Pays de l'administrateur alternatif"
+msgstr "Country of the alternate administrator"
+
+#: templates/cluster/cluster_detail.html:20
+#, fuzzy
+#| msgid "Nombre maximun de participants"
+msgid "Nombre de participants"
+msgstr "Number of participants"
+
+#: templates/cluster/cluster_detail.html:25
+msgid "URL  Paypal"
+msgstr "Paypal URL"
+
+#: templates/cluster/cluster_detail.html:26
+#, fuzzy
+#| msgid "Adresse  de sauvegarde des courriels"
+msgid "Sauvegarde des courriels"
+msgstr "Email backup"
+
+#: templates/cluster/cluster_detail.html:27
+#, fuzzy
+#| msgid "URL de la bibliothèque Cluster des destinations"
+msgid "URL de la bibliothèque des destinations"
+msgstr "URL of the destination library"
+
+#: templates/cluster/cluster_detail.html:28
+#, fuzzy
+#| msgid "URL de la bibliothèque Cluster des Greeter"
+msgid "URL de la bibliothèque du greeter"
+msgstr "URL of the greeter library"
+
+#: templates/cluster/cluster_detail.html:29
+#, fuzzy
+#| msgid "Saisir les expériences des Greeter"
+msgid "Liste des expériences Greeter"
+msgstr "List of Greeter experiences"
+
+#: templates/cluster/cluster_detail.html:33
+#, fuzzy
+#| msgid "Liste des centres d'intérêt"
+msgid "Liste des centres d'intêrets"
+msgstr "List of points of interest"
+
+#: templates/cluster/cluster_detail.html:37
+#, fuzzy
+#| msgid "Raisons de non réponse du Greeter"
+msgid "Liste des non réponses du Greeter"
+msgstr "List of non-responses from the Greeter"
+
+#: templates/cluster/cluster_detail.html:41
+#, fuzzy
+#| msgid "Raisons de non réponse du visiteur"
+msgid "Liste des non réponses du visiteur"
+msgstr "List of visitor non-responses"
+
+#: templates/cluster/cluster_detail.html:45
+msgid "Liste des notoriétés"
+msgstr "List of notoriety"
+
+#: templates/cluster/cluster_detail.html:54
+msgid "Aucune destination associée"
+msgstr "No associated destination"
+
+#: templates/cluster/cluster_detail.html:61
+msgid "Retour à la liste"
+msgstr "Back to list"
 
 #: templates/cluster/clusters_list.html:4
 msgid "Gestion des clusters"
@@ -736,10 +2216,12 @@ msgid "Nom du cluster"
 msgstr "Cluster name"
 
 #: templates/cluster/clusters_list.html:25
+#: templates/destination/destination_detail.html:14
 msgid "Destination"
 msgstr "Destination"
 
 #: templates/cluster/clusters_list.html:36
+#: templates/destination/destinations_list.html:36
 msgid "Voir le détail"
 msgstr "See details"
 
@@ -751,6 +2233,7 @@ msgstr "See details"
 #: templates/core/no_show_list.html:20 templates/core/periode_list.html:20
 #: templates/core/tranche_age_list.html:20
 #: templates/core/types_handicap_list.html:20
+#: templates/destination/destinations_list.html:37
 #: templates/users/greeter_list.html:29 templates/users/user_list.html:26
 msgid "Modifier"
 msgstr "Edit"
@@ -871,18 +2354,684 @@ msgstr "List of disability types"
 msgid "Ajouter un type de handicap"
 msgstr "Add a disability type"
 
+#: templates/destination/destination_data_update.html:13
+#, fuzzy
+#| msgid "Saisir le nom du gestionnaire de la destination"
+msgid "Mise à jour des données fonctionnelles de la destination"
+msgstr "Updating the functional data for the destination"
+
+#: templates/destination/destination_data_update.html:27
+#: templates/destination/destination_flux_update.html:27
+#: templates/destination/destination_update.html:27
+#, fuzzy
+#| msgid "Voir le détail"
+msgid "Retour au détail"
+msgstr "Back to details"
+
+#: templates/destination/destination_detail.html:17
+msgid "Données Fonctionnelles"
+msgstr "Functional Data"
+
+#: templates/destination/destination_detail.html:20
+msgid "Données de flux"
+msgstr "Flow data"
+
+#: templates/destination/destination_detail.html:32
+msgid "Aucun logo disponible"
+msgstr "No logo available"
+
+#: templates/destination/destination_detail.html:36
+#, fuzzy
+#| msgid "Identification"
+msgid "Identité"
+msgstr "Identity"
+
+#: templates/destination/destination_detail.html:38
+#, fuzzy
+#| msgid "Statut"
+msgid "Statut:"
+msgstr "Status:"
+
+#: templates/destination/destination_detail.html:39
+#, fuzzy
+#| msgid "Destination"
+msgid "Destination Parent:"
+msgstr "Parent Destination:"
+
+#: templates/destination/destination_detail.html:40
+#, fuzzy
+#| msgid "Code IGA"
+msgid "Code IGA:"
+msgstr "Code IGA:"
+
+#: templates/destination/destination_detail.html:41
+#, fuzzy
+#| msgid "Adresse"
+msgid "Adresse:"
+msgstr "Address:"
+
+#: templates/destination/destination_detail.html:42
+#, fuzzy
+#| msgid "Région"
+msgid "Région:"
+msgstr "Region:"
+
+#: templates/destination/destination_detail.html:43
+#, fuzzy
+#| msgid "Pays"
+msgid "Pays:"
+msgstr "Country:"
+
+#: templates/destination/destination_detail.html:44
+#, fuzzy
+#| msgid "Description"
+msgid "Description:"
+msgstr "Description:"
+
+#: templates/destination/destination_detail.html:48
+msgid "Responsables"
+msgstr "Managers"
+
+#: templates/destination/destination_detail.html:50
+msgid "Manager:"
+msgstr "Manager:"
+
+#: templates/destination/destination_detail.html:50
+#: templates/destination/destination_detail.html:51
+#: templates/destination/destination_detail.html:52
+#: templates/destination/destination_detail.html:54
+#: templates/destination/destination_detail.html:56
+#: templates/destination/destination_detail.html:125
+#: templates/destination/destination_detail.html:131
+#: templates/destination/destination_detail.html:132
+#: templates/destination/destination_detail.html:140
+#: templates/destination/destination_detail.html:145
+#: templates/destination/destination_detail.html:153
+#: templates/destination/destination_detail.html:158
+#: templates/destination/destination_detail.html:166
+#: templates/destination/destination_detail.html:171
+#: templates/destination/destination_detail.html:197
+#: templates/destination/destination_detail.html:203
+#: templates/destination/destination_detail.html:211
+#: templates/destination/destination_detail.html:212
+#: templates/destination/destination_detail.html:213
+#: templates/destination/destination_detail.html:223
+#: templates/destination/destination_detail.html:224
+#: templates/destination/destination_detail.html:225
+#: templates/destination/destination_detail.html:235
+#: templates/destination/destination_detail.html:236
+#: templates/destination/destination_detail.html:237
+#: templates/destination/destination_detail.html:267
+#: templates/destination/destination_detail.html:268
+#: templates/destination/destination_detail.html:269
+#: templates/destination/destination_detail.html:274
+#: templates/destination/destination_detail.html:275
+#: templates/destination/destination_detail.html:276
+#: templates/destination/destination_detail.html:281
+#: templates/destination/destination_detail.html:286
+#: templates/destination/destination_detail.html:287
+#: templates/destination/destination_detail.html:292
+#: templates/destination/destination_detail.html:293
+msgid "Non défini"
+msgstr "Not defined"
+
+#: templates/destination/destination_detail.html:51
+#, fuzzy
+#| msgid "Nom du référent"
+msgid "Référent:"
+msgstr "Reference:"
+
+#: templates/destination/destination_detail.html:52
+#, fuzzy
+#| msgid "Nom du gestionnairer"
+msgid "Gestionnaire:"
+msgstr "Manager:"
+
+#: templates/destination/destination_detail.html:54
+#, fuzzy
+#| msgid "Nom du gestionnaire alternatif"
+msgid "Gestionnaire alternatif :"
+msgstr "Alternative manager:"
+
+#: templates/destination/destination_detail.html:56
+#, fuzzy
+#| msgid "Nom du gestionnaire financier"
+msgid "Responsable financier:"
+msgstr "Financial manager:"
+
+#: templates/destination/destination_detail.html:59
+#, fuzzy
+#| msgid "Courriel"
+msgid "Courriels"
+msgstr "Emails"
+
+#: templates/destination/destination_detail.html:61
+#, fuzzy
+#| msgid "Email de notification"
+msgid "Courriel de notification:"
+msgstr "Notification email:"
+
+#: templates/destination/destination_detail.html:62
+#, fuzzy
+#| msgid "Email de réponse"
+msgid "Courriel de réponse:"
+msgstr "Reply email:"
+
+#: templates/destination/destination_detail.html:68
+#, fuzzy
+#| msgid "Liste des lieux ou thèmes"
+msgid "Lieux ou Thèmes"
+msgstr "Places or Themes"
+
+#: templates/destination/destination_detail.html:70
+#, fuzzy
+#| msgid "Liste des lieux ou thèmes"
+msgid "Lieux ou thèmes:"
+msgstr "Places or themes:"
+
+#: templates/destination/destination_detail.html:74
+#, fuzzy
+#| msgid "Nombre minimum de lieux ou thèmes"
+msgid "Minimum choix de lieux/thèmes:"
+msgstr "Minimum choice of locations/themes:"
+
+#: templates/destination/destination_detail.html:75
+#, fuzzy
+#| msgid "Nombre maximum de lieux ou thèmes"
+msgid "Maximum choix de lieux/thèmes:"
+msgstr "Maximum choice of locations/themes:"
+
+#: templates/destination/destination_detail.html:79
+#, fuzzy
+#| msgid "Dates du séjour"
+msgid "Dates de séjour"
+msgstr "Dates of stay"
+
+#: templates/destination/destination_detail.html:82
+#: templates/destination/destination_detail.html:84
+#, fuzzy
+#| msgid "Dates du séjour"
+msgid "Dates de séjour demandées:"
+msgstr "Requested dates of stay:"
+
+#: templates/destination/destination_detail.html:82
+#: templates/destination/destination_detail.html:102
+#: templates/destination/destination_detail.html:177
+#: templates/destination/destination_detail.html:186
+#: templates/destination/destination_detail.html:302
+msgid "Oui"
+msgstr "Yes"
+
+#: templates/destination/destination_detail.html:84
+#: templates/destination/destination_detail.html:105
+#: templates/destination/destination_detail.html:179
+#: templates/destination/destination_detail.html:188
+#: templates/destination/destination_detail.html:217
+#: templates/destination/destination_detail.html:229
+#: templates/destination/destination_detail.html:241
+#: templates/destination/destination_detail.html:258
+#: templates/destination/destination_detail.html:308
+#, fuzzy
+#| msgid "Nom"
+msgid "Non"
+msgstr "Not"
+
+#: templates/destination/destination_detail.html:86
+#, fuzzy
+#| msgid "Dispersion des dates demandées"
+msgid "Dispersion des dates en jours:"
+msgstr "Dispersion of dates in days:"
+
+#: templates/destination/destination_detail.html:94
+#, fuzzy
+#| msgid "Nombre minimum de centres d'intérêts"
+msgid "Minimum choix de centres d'intérêt:"
+msgstr "Minimum selection of areas of interest:"
+
+#: templates/destination/destination_detail.html:95
+#, fuzzy
+#| msgid "Nombre maximum de centres d'intérêts"
+msgid "Maximum choix de centres d'intérêt:"
+msgstr "Maximum choice of areas of interest:"
+
+#: templates/destination/destination_detail.html:99
+msgid "Accessibilité"
+msgstr "Accessibility"
+
+#: templates/destination/destination_detail.html:102
+#: templates/destination/destination_detail.html:105
+msgid "Accessibilité:"
+msgstr "Accessibility:"
+
+#: templates/destination/destination_detail.html:103
+#, fuzzy
+#| msgid "Gestion des types de handicap"
+msgid "Gestion du handicap:"
+msgstr "Disability management:"
+
+#: templates/destination/destination_detail.html:113
+msgid "Mettre à jour les données générales"
+msgstr "Update general data"
+
+#: templates/destination/destination_detail.html:122
+#, fuzzy
+#| msgid "Destination"
+msgid "Donations"
+msgstr "Donations"
+
+#: templates/destination/destination_detail.html:125
+#, fuzzy
+#| msgid "Liste des bénéficiaires des dons"
+msgid "Bénéficiaire des dons :"
+msgstr "Recipient of donations:"
+
+#: templates/destination/destination_detail.html:126
+msgid "Proposition de don :"
+msgstr "Donation proposal:"
+
+#: templates/destination/destination_detail.html:131
+msgid "Texte de la demande de don :"
+msgstr "Text of the donation request:"
+
+#: templates/destination/destination_detail.html:132
+msgid "URL Paypal destination :"
+msgstr "PayPal destination URL:"
+
+#: templates/destination/destination_detail.html:137
+msgid "Réseaux sociaux"
+msgstr "Social media"
+
+#: templates/destination/destination_detail.html:140
+msgid "TripAdvisor :"
+msgstr "TripAdvisor:"
+
+#: templates/destination/destination_detail.html:145
+msgid "Google My Business : "
+msgstr "Google My Business : "
+
+#: templates/destination/destination_detail.html:153
+#, fuzzy
+#| msgid "Langue parlée"
+msgid "Langue principale :"
+msgstr "Primary language:"
+
+#: templates/destination/destination_detail.html:158
+#, fuzzy
+#| msgid "Langues de communication"
+msgid "Langues de communication :"
+msgstr "Languages of communication:"
+
+#: templates/destination/destination_detail.html:163
+#, fuzzy
+#| msgid "Dispersion des dates demandées"
+msgid "Modalités de gestion des demandes"
+msgstr "Procedures for handling requests"
+
+#: templates/destination/destination_detail.html:166
+msgid "Modalités de gestion :"
+msgstr "Management procedures:"
+
+#: templates/destination/destination_detail.html:171
+msgid "Périodicité des courriels en mode Greet & Greet :"
+msgstr "Frequency of emails in Greet & Greet mode:"
+
+#: templates/destination/destination_detail.html:177
+#: templates/destination/destination_detail.html:179
+msgid "Intégrer les demandes en traitement au Greet & Greet : "
+msgstr "Integrate requests being processed into Greet & Greet: "
+
+#: templates/destination/destination_detail.html:186
+#: templates/destination/destination_detail.html:188
+msgid "Intégrer les demandes en urgence au Greet & Greet : "
+msgstr "Integrate urgent requests into Greet & Greet: "
+
+#: templates/destination/destination_detail.html:194
+msgid "Personnalisation du formulaire de demande"
+msgstr "Customization of the application form"
+
+#: templates/destination/destination_detail.html:197
+msgid "Demande de commentaires pour le visiteur"
+msgstr "Request for comments from visitors"
+
+#: templates/destination/destination_detail.html:203
+msgid "Texte du commentaire pour le visiteur :"
+msgstr "Text of the comment for visitors:"
+
+#: templates/destination/destination_detail.html:211
+msgid "Texte du premier libellé :"
+msgstr "Text of the first wording:"
+
+#: templates/destination/destination_detail.html:212
+msgid "Nom de l'URL du premier libellé :"
+msgstr "URL name of the first label:"
+
+#: templates/destination/destination_detail.html:213
+msgid "URL du premier libellé :"
+msgstr "URL of the first label:"
+
+#: templates/destination/destination_detail.html:215
+#: templates/destination/destination_detail.html:217
+msgid "Premier libelle obligatoire :"
+msgstr "First mandatory label:"
+
+#: templates/destination/destination_detail.html:223
+msgid "Texte du deuxième libellé :"
+msgstr "Text of the second wording:"
+
+#: templates/destination/destination_detail.html:224
+msgid "Nom de l'URL du deuxième libellé :"
+msgstr "URL name of the second label:"
+
+#: templates/destination/destination_detail.html:225
+msgid "URL du deuxième libellé :"
+msgstr "URL of the second label:"
+
+#: templates/destination/destination_detail.html:227
+#: templates/destination/destination_detail.html:229
+msgid "Deuxième libelle obligatoire :"
+msgstr "Second mandatory label:"
+
+#: templates/destination/destination_detail.html:235
+msgid "Texte du troisième libellé :"
+msgstr "Text of the third wording:"
+
+#: templates/destination/destination_detail.html:236
+msgid "Nom de l'URL du troisième libellé :"
+msgstr "URL name of the third label:"
+
+#: templates/destination/destination_detail.html:237
+msgid "URL du troisième libellé :"
+msgstr "URL of the third label:"
+
+#: templates/destination/destination_detail.html:239
+#: templates/destination/destination_detail.html:241
+msgid "Troisième libelle obligatoire :"
+msgstr "Third mandatory label:"
+
+#: templates/destination/destination_detail.html:247
+#, fuzzy
+#| msgid "Raisons de non réponse du Greeter"
+msgid "Gestion des réponses visiteur et Greeter"
+msgstr "Visitor and Greeter Response Management"
+
+#: templates/destination/destination_detail.html:250
+#, fuzzy
+#| msgid "Raisons de non réponse du visiteur"
+msgid "En cas de non-réponse du visiteur :"
+msgstr "If the visitor does not respond:"
+
+#: templates/destination/destination_detail.html:256
+#: templates/destination/destination_detail.html:258
+#, fuzzy
+#| msgid "Saisir les raisons de non réponse du Greeter"
+msgid "Demander le motif de non-proposition du Greeter : "
+msgstr "Ask for the reason why the Greeter was not nominated: "
+
+#: templates/destination/destination_detail.html:267
+#, fuzzy
+#| msgid "Adresse  de sauvegarde des courriels"
+msgid "Nom de la signature des courriels :"
+msgstr "Email signature name:"
+
+#: templates/destination/destination_detail.html:268
+msgid "Nom du premier réseau social :"
+msgstr "Name of the first social network:"
+
+#: templates/destination/destination_detail.html:269
+msgid "Nom du deuxième réseau social :"
+msgstr "Name of the second social network:"
+
+#: templates/destination/destination_detail.html:274
+#, fuzzy
+#| msgid "Adresse  de sauvegarde des courriels"
+msgid "URl de la signature des courriels :"
+msgstr "Email signature URL:"
+
+#: templates/destination/destination_detail.html:275
+msgid "URL du premier réseau social :"
+msgstr "URL of the first social network:"
+
+#: templates/destination/destination_detail.html:276
+msgid "URL du deuxième réseau social :"
+msgstr "URL of the second social network:"
+
+#: templates/destination/destination_detail.html:281
+#, fuzzy
+#| msgid "Adresse  de sauvegarde des courriels"
+msgid "Tagline de la signature des courriels :"
+msgstr "Email signature tagline:"
+
+#: templates/destination/destination_detail.html:286
+#, fuzzy
+#| msgid "Adresse  de sauvegarde des courriels"
+msgid "Tire de l'avis du pied des courriels :"
+msgstr "Pull the email footer notice:"
+
+#: templates/destination/destination_detail.html:287
+msgid "Date du début de l'avis : "
+msgstr "Date of commencement of the notice: "
+
+#: templates/destination/destination_detail.html:292
+#, fuzzy
+#| msgid "Adresse  de sauvegarde des courriels"
+msgid "Texte de l'avis du pied des courriels :"
+msgstr "Text of the notice at the bottom of emails:"
+
+#: templates/destination/destination_detail.html:293
+msgid "Date de fin de l'avis : "
+msgstr "Notice end date: "
+
+#: templates/destination/destination_detail.html:298
+#, fuzzy
+#| msgid "Sélectionner le pays de la destination"
+msgid "Fermeture exceptionnelle de la destination"
+msgstr "Exceptional closure of the destination"
+
+#: templates/destination/destination_detail.html:302
+#: templates/destination/destination_detail.html:308
+msgid "Avis de fermeture exceptionnelle : "
+msgstr "Notice of exceptional closure: "
+
+#: templates/destination/destination_detail.html:303
+msgid "Texte de l'avis de fermeture : "
+msgstr "Text of the closure notice: "
+
+#: templates/destination/destination_detail.html:304
+msgid "Date de début de la fermeture : "
+msgstr "Closure start date: "
+
+#: templates/destination/destination_detail.html:305
+msgid "Date de fin de la fermeture : "
+msgstr "Closure end date: "
+
+#: templates/destination/destination_detail.html:306
+#, fuzzy
+#| msgid "Nombre maximun de participants"
+msgid "Nombre de participants acceptés : "
+msgstr "Number of participants accepted: "
+
+#: templates/destination/destination_detail.html:315
+msgid "Mettre à jour les données fonctionnelles"
+msgstr "Update functional data"
+
+#: templates/destination/destination_detail.html:319
+msgid "Aucune donnée fonctionnelle disponible."
+msgstr "No functional data available."
+
+#: templates/destination/destination_detail.html:320
+#: templates/destination/destination_detail.html:406
+msgid "Créer"
+msgstr "Create"
+
+#: templates/destination/destination_detail.html:329
+msgid "Demandes précoces"
+msgstr "Early applications"
+
+#: templates/destination/destination_detail.html:332
+msgid "Fréquence d'envoi des courriels de rappel : "
+msgstr "Frequency of reminder emails: "
+
+#: templates/destination/destination_detail.html:332
+#: templates/destination/destination_detail.html:337
+#: templates/destination/destination_detail.html:342
+#: templates/destination/destination_detail.html:347
+#: templates/destination/destination_detail.html:354
+#: templates/destination/destination_detail.html:355
+#: templates/destination/destination_detail.html:360
+#: templates/destination/destination_detail.html:361
+#: templates/destination/destination_detail.html:366
+#: templates/destination/destination_detail.html:374
+#: templates/destination/destination_detail.html:379
+#: templates/destination/destination_detail.html:380
+#: templates/destination/destination_detail.html:381
+#: templates/destination/destination_detail.html:386
+#: templates/destination/destination_detail.html:387
+#: templates/destination/destination_detail.html:395
+msgid "jours"
+msgstr "days"
+
+#: templates/destination/destination_detail.html:337
+msgid "Nombre de jours avannt le passage en mode Traitement : "
+msgstr "Number of days before switching to Treatment mode: "
+
+#: templates/destination/destination_detail.html:342
+msgid "Nombre de jours avant le passage en mode Urgence : "
+msgstr "Number of days before switching to Emergency mode: "
+
+#: templates/destination/destination_detail.html:347
+msgid "Nombre minimum de jours avant la date demandée : "
+msgstr "Minimum number of days before the requested date: "
+
+#: templates/destination/destination_detail.html:351
+#, fuzzy
+#| msgid "Gestion des clusters"
+msgid "Gestion de l'attribution"
+msgstr "Allocation management"
+
+#: templates/destination/destination_detail.html:354
+msgid "Nombre de jours pour répondre à une attribution : "
+msgstr "Number of days to respond to an assignment: "
+
+#: templates/destination/destination_detail.html:355
+msgid "Nombre de jours pour répondre à une Proposition  : "
+msgstr "Number of days to respond to a Proposal: "
+
+#: templates/destination/destination_detail.html:360
+msgid "Fréquence de relance du Greeter pour répondre : "
+msgstr "Frequency of reminders from the Greeter to respond: "
+
+#: templates/destination/destination_detail.html:361
+msgid "Fréquence de relance du visiteur pour répondre : "
+msgstr "Frequency of reminders to visitors to respond: "
+
+#: templates/destination/destination_detail.html:366
+msgid "Nombre de jours avant la balade pour envoyer le courriel de rappel : "
+msgstr "Number of days before the trip to send the reminder email: "
+
+#: templates/destination/destination_detail.html:371
+#, fuzzy
+#| msgid "Gestion des balades"
+msgid "Gestion de l'après-balade"
+msgstr "Post-trip management"
+
+#: templates/destination/destination_detail.html:374
+msgid "Nombre de jours après la balade pour saisir une balade manuelle : "
+msgstr "Number of days after the ride to enter a manual ride: "
+
+#: templates/destination/destination_detail.html:379
+msgid "Nombre de jours  pour demander le compte-rendu  au Greeter : "
+msgstr "Number of days to request the report from the Greeter: "
+
+#: templates/destination/destination_detail.html:380
+msgid "Nombre de jours  pour envoyer le courriel d'avis au visiteur : "
+msgstr "Number of days to send the notification email to the visitor: "
+
+#: templates/destination/destination_detail.html:381
+#, fuzzy
+#| msgid "Nombre maximun de visiteurs pour le cluster"
+msgid "Nombre maximun de jours pour la réponse d'avis du visiteur : "
+msgstr "Maximum number of days for visitor feedback response: "
+
+#: templates/destination/destination_detail.html:386
+msgid "Fréquence de relance du Greeter pour le compte-rendu : "
+msgstr "Frequency of reminders from the Greeter for the report: "
+
+#: templates/destination/destination_detail.html:387
+msgid "Fréquence de relance du visiteur pour l'avis : "
+msgstr "Frequency of visitor reminders for reviews: "
+
+#: templates/destination/destination_detail.html:392
+msgid "Protection des données personnelles"
+msgstr "Protection of personal data"
+
+#: templates/destination/destination_detail.html:395
+msgid "Nombre de jours avant anonymisation des données personnelles : "
+msgstr "Number of days before personal data is anonymized: "
+
+#: templates/destination/destination_detail.html:401
+msgid "Mettre à jour les données de flux"
+msgstr "Update flow data"
+
+#: templates/destination/destination_detail.html:405
+msgid "Aucun flux disponible."
+msgstr "No feeds available."
+
+#: templates/destination/destination_flux_update.html:13
+#, fuzzy
+#| msgid "Saisir le code de la destination"
+msgid "Mise à jour des donnée de flux de la destination"
+msgstr "Updating destination flow data"
+
+#: templates/destination/destination_update.html:13
+#, fuzzy
+#| msgid "Saisir le nom du référent de la destination"
+msgid "Mise à jour des données générales de la destination"
+msgstr "Updating general destination data"
+
+#: templates/destination/destinations_list.html:4
+#, fuzzy
+#| msgid "Gestion des Utilisateurs"
+msgid "Gestion des destinations"
+msgstr "Destination management"
+
+#: templates/destination/destinations_list.html:18
+#, fuzzy
+#| msgid "Ajouter un utilisateur"
+msgid "Ajouter une destination"
+msgstr "Add a destination"
+
+#: templates/destination/destinations_list.html:23
+#, fuzzy
+#| msgid "Nom du cluster"
+msgid "Code cluster"
+msgstr "Code cluster"
+
+#: templates/destination/destinations_list.html:24
+#, fuzzy
+#| msgid "Destination"
+msgid "Code destination"
+msgstr "Destination code"
+
+#: templates/greeters/greeter_form.html:12
+msgid "Création d'un Greeter"
+msgstr "Creating a Greeter"
+
 #: templates/registration/login.html:22
 #: templates/users/password_reset_complete.html:10
 msgid "Se connecter"
 msgstr "Se connecter"
 
 #: templates/registration/login.html:28
-msgid "Mot de passe oublié ?"
-msgstr "Forgot your password?"
+#, fuzzy
+#| msgid "Mot de passe oublié ?"
+msgid "Première connexion ou mot de passe oublié ?"
+msgstr "First time logging in or forgot your password?"
 
 #: templates/registration/login.html:30
-msgid "Renouveler mon mot de passe"
-msgstr "Renew my password"
+#, fuzzy
+#| msgid "Renouveler mon mot de passe"
+msgid "Demander un mot de passe"
+msgstr "Request a password"
 
 #: templates/registration/logout.html:4
 msgid "Vous êtes déconnecté"
@@ -903,19 +3052,6 @@ msgstr "List of greeters"
 #: templates/users/greeter_list.html:10
 msgid "Ajouter un Greeter"
 msgstr "Add a Greeter"
-
-#: templates/users/greeter_list.html:15 templates/users/user_list.html:15
-#: users/models.py:41
-msgid "Prénom"
-msgstr "First name"
-
-#: templates/users/greeter_list.html:16 templates/users/user_list.html:16
-msgid "Email"
-msgstr "Email"
-
-#: templates/users/greeter_list.html:27 users/models.py:68
-msgid "Photo de profil"
-msgstr "Photo de profil"
 
 #: templates/users/password_reset.html:4
 msgid "Réinitialisation du mot de passe"
@@ -995,83 +3131,149 @@ msgstr "User list"
 msgid "Ajouter un utilisateur"
 msgstr "Add a user"
 
-#: users/models.py:40
+#: users/models.py:42
 msgid "Courriel"
 msgstr "E-mail"
 
+#: users/models.py:42
+#, fuzzy
+#| msgid "Saisir l'adresse de la destination"
+msgid "Saisir l'adresse email"
+msgstr "Enter your email address"
+
 #: users/models.py:43
+msgid "Saisir le prénom"
+msgstr "Enter first name"
+
+#: users/models.py:44
+#, fuzzy
+#| msgid "Saisir le nom de la destination"
+msgid "Saisir le nom de famille"
+msgstr "Enter the last name"
+
+#: users/models.py:45
 msgid "Téléphone portable"
 msgstr "Cell phone"
 
-#: users/models.py:44
-msgid "Langue de communication"
-msgstr "Language of communication"
+#: users/models.py:45
+#, fuzzy
+#| msgid "Téléphone portable"
+msgid "Saisir le numéro de téléphone portable"
+msgstr "Enter your cell phone number"
 
-#: users/models.py:62
-msgid "Complément d'adresse"
-msgstr "Additional address"
+#: users/models.py:46
+#, fuzzy
+#| msgid "Langue de communication"
+msgid "Saisir la langue de communication"
+msgstr "Enter the language of communication"
 
-#: users/models.py:63
-msgid "Code postal"
-msgstr "Postal code"
+#: users/models.py:47
+#, fuzzy
+#| msgid "Nom du cluster"
+msgid "Code du cluster"
+msgstr "Cluster code"
 
-#: users/models.py:64
-msgid "Ville"
-msgstr "City"
+#: users/models.py:47
+#, fuzzy
+#| msgid "Saisir le statut du cluster"
+msgid "Saisir le code du cluster"
+msgstr "Enter the cluster code"
 
-#: users/models.py:65
-msgid "Téléphone fixe)"
-msgstr "Home phone)"
+#: users/models.py:48
+#, fuzzy
+#| msgid "Saisir le code de la destination"
+msgid "Code de la destination"
+msgstr "Destination code"
 
-#: users/models.py:66
-msgid "Date de naissance"
-msgstr "Date of birth"
-
-#: users/models.py:67
-msgid "Profession"
-msgstr "Profession"
-
-#: users/models.py:68
-msgid "Taille : 200 px *200 px"
-msgstr "Size: 200 px *200 px"
-
-#: users/views.py:24 users/views.py:37
+#: users/views.py:26 users/views.py:39
 msgid "Créer un utilisateur"
 msgstr "Create a user"
 
-#: users/views.py:35
+#: users/views.py:37
 msgid ""
 "L'utilisateur {} a été créé. Un email lui a été envoyé pour définir son mot "
 "de passe."
 msgstr "User {} has been created. An email has been sent to set his password."
 
-#: users/views.py:44 users/views.py:54 users/views.py:83
+#: users/views.py:46 users/views.py:56
 msgid "Modifier {}"
 msgstr "Edit {}"
 
-#: users/views.py:52
+#: users/views.py:54
 msgid "L'utilisateur {} a été mis à jour."
 msgstr "User {} has been updated."
 
-#: users/views.py:65
-msgid "Modification de la fiche de  {} {}"
-msgstr "Modifying the {} {} file"
-
-#: users/views.py:80
-msgid "Le Greeter {} a été mis à jour."
-msgstr "Greeter {} has been updated."
-
-#: users/views.py:117
+#: users/views.py:88
 msgid "L'adresse courriel {} n'existe pas dans la base de gestion"
 msgstr "Email address {} does not exist in the management database"
 
-#: users/views.py:129 users/views.py:151
-msgid "Création d'un Greeter"
-msgstr "Creating a Greeter"
+#~ msgid ""
+#~ "Saisir les raisons d'un visiteur de connaître  l'existence des Greeters"
+#~ msgstr "Understand why a visitor would want to know about Greeters"
 
-#: users/views.py:149
-msgid ""
-"Le Greeter {} a été créé. Un email lui a été envoyé pour définir son mot de "
-"passe."
-msgstr ""
-"Greeter {} has been created. An email has been sent to set his password."
+#~ msgid "Créer un centre d'intérêt"
+#~ msgstr "Create a point of interest"
+
+#~ msgid "Le centre d'intérêt {} a été créé."
+#~ msgstr "The interest center {} has been created."
+
+#~ msgid "Modifier un centre d'intérêt"
+#~ msgstr "Change an interest"
+
+#~ msgid "Le centre d'intérêt {} a été modifié."
+#~ msgstr "The center of interest {} has been modified."
+
+#~ msgid "Email du manager"
+#~ msgstr "Manager's email"
+
+#~ msgid "Saisir le téléphone du manager de la destination"
+#~ msgstr "Enter the phone number of the destination manager"
+
+#~ msgid "Email du référent"
+#~ msgstr "Email of the referrer"
+
+#~ msgid "Saisir l'email du référent de la destination"
+#~ msgstr "Enter the email address of the destination contact person"
+
+#~ msgid "Saisir le téléphone du référent de la destination"
+#~ msgstr "Enter the phone number of the destination contact person"
+
+#~ msgid "Email du gestionnaire"
+#~ msgstr "Manager's email"
+
+#~ msgid "Saisir l'email du gestionnaire de la destination"
+#~ msgstr "Enter the email address of the destination manager"
+
+#~ msgid "Saisir le téléphone du gestionnaire de la destination"
+#~ msgstr "Enter the destination manager's phone number"
+
+#~ msgid "Email du gestionnaire alternatif"
+#~ msgstr "Email of the alternate manager"
+
+#~ msgid "Saisir l'email du gestionnaire alternatif de la destination"
+#~ msgstr "Enter the email address of the alternate manager for the destination"
+
+#~ msgid "Saisir le téléphone du gestionnaire alternatif de la destination"
+#~ msgstr "Enter the phone number of the alternate manager for the destination"
+
+#~ msgid "Email du gestionnaire financier"
+#~ msgstr "Email from the financial manager"
+
+#~ msgid "Saisir l'email du gestionnaire financier de la destination"
+#~ msgstr "Enter the email address of the financial manager at the destination"
+
+#~ msgid "Saisir le téléphone du gestionnaire financier de la destination"
+#~ msgstr "Enter the phone number of the financial manager at the destination"
+
+#~ msgid "Saisir les dates du séjour (Oui/non)?"
+#~ msgstr "Enter the dates of your stay (Yes/No)?"
+
+#~ msgid "Le Greeter {} a été mis à jour."
+#~ msgstr "The Greeter {} has been updated."
+
+#~ msgid ""
+#~ "Le Greeter {} a été créé. Un email lui a été envoyé pour définir son mot de "
+#~ "passe."
+#~ msgstr ""
+#~ "The Greeter {} has been created. An email has been sent to them to set their"
+#~ " password."

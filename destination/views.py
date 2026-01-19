@@ -22,11 +22,12 @@ from django.db.models import Q
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from django.urls import reverse
+from django.db import transaction
 
 User=get_user_model()
 
 
-# Vue Création d'une destination
+# Vue Création d'une destination sauvegardé avec Sublime
 class SuperAdminRequiredMixin(UserPassesTestMixin):
     
     def test_func(self):
@@ -37,101 +38,82 @@ class SuperAdminRequiredMixin(UserPassesTestMixin):
         return redirect('clusters_list')
 
 class DestinationCreateView(LoginRequiredMixin, SuperAdminRequiredMixin, HelpTextTooltipMixin, RelatedModelsMixin, CreateView):
+    model = Destination
+    form_class = DestinationForm
     template_name = 'destination/destination_form.html'
-    # success_url est techniquement requis par CreateView, mais nous allons le surcharger dans form_valid
     success_url = reverse_lazy('destinations_list') 
-    permission_groups = ['SuperAdmin', 'Admin']
-    target_group_name = 'Referent'
-    app_name = 'destination'
     
-    # Configuration pour RelatedModelsMixin
+    app_name = 'destination'
     related_fields = {
         'list_places_dest': (List_places, 'list_places_dest', 'list_places_dest')
     }
-    form_class = DestinationForm # Il est préférable de définir form_class ici
 
     def get_context_data(self, **kwargs):
-        """Ajoute le titre ou d'autres variables au contexte"""
         context = super().get_context_data(**kwargs)
         context['title'] = _("Création d'une destination")
         return context
 
     def get_form_kwargs(self):
-        """Passe les arguments supplémentaires (user, code_cluster) au formulaire"""
         kwargs = super().get_form_kwargs()
-        code_cluster_user = getattr(self.request.user, 'code_cluster', None)
-        # On injecte les kwargs attendus par DestinationForm.__init__
         kwargs.update({
             'user': self.request.user,
-            'code_cluster_user': code_cluster_user
+            'code_cluster_user': getattr(self.request.user, 'code_cluster', None)
         })
         return kwargs
 
     def form_valid(self, form):
-            
-        # Appel du parent (CreateView + RelatedModelsMixin)
-        # Cela sauvegarde self.object et gère les champs related_fields du Mixin
-        response = super().form_valid(form)
-        
-        destination = self.object # L'objet est maintenant créé en base
+        try:
+            with transaction.atomic():
+                # A. Sauvegarde Destination
+                self.object = form.save(commit=False)
+                dest = self.object
+                
+                # Gestion code_cluster (depuis champ masqué ou form)
+                h_cluster = self.request.POST.get('code_cluster_hidden')
+                dest.code_cluster = h_cluster if h_cluster else form.cleaned_data.get('code_cluster')
+                dest.save()
 
-        
-        final_code_cluster = self.request.POST.get('code_cluster_hidden')
-        if not final_code_cluster:
-            final_code_cluster = form.cleaned_data.get('code_cluster')
-        
-        if final_code_cluster:
-            destination.code_cluster = final_code_cluster
-            
-        
-        if destination.manager_dest:
-            manager_group, _ = Group.objects.get_or_create(name='Manager')
-            destination.manager_dest.groups.add(manager_group)
-    
-        if destination.referent_dest:
-            referent_group, _ = Group.objects.get_or_create(name='Referent')
-            destination.referent_dest.groups.add(referent_group)
+                # B. Mixin (Tags/Lieux)
+                self.save_related_data(form)
 
-        if destination.matcher_dest:
-            matcher_group, _ = Group.objects.get_or_create(name='Gestionnaire')
-            destination.matcher_dest.groups.add(matcher_group)  
+                # C. Activation des Users "Pending" (AJAX)
+                user_roles = {
+                    'manager_dest': 'Manager', 'referent_dest': 'Referent',
+                    'matcher_dest': 'Gestionnaire', 'matcher_alt_dest': 'Gestionnaire',
+                    'finance_dest': 'Financier',
+                }
+                
+             
 
-        if destination.matcher_alt_dest:
-            matcher_alt_group, _ = Group.objects.get_or_create(name='Gestionnaire')
-            destination.matcher_alt_dest.groups.add(matcher_alt_group)
+                for field, group_name in user_roles.items():
+                    user_obj = form.cleaned_data.get(field)
+                    if user_obj:
+                        user_obj.is_active = True
+                        user_obj.code_cluster = dest.code_cluster
+                        user_obj.code_dest = dest
+                        user_obj.save()
+                        
+                        group, _ = Group.objects.get_or_create(name=group_name)
+                        user_obj.groups.add(group)
+                        
+                        # Email via Celery (on_commit)
+                        transaction.on_commit(
+                            lambda u_id=user_obj.id: envoyer_email_creation_utilisateur.delay(u_id, domain)
+                        )
 
-        if destination.finance_dest:
-            finance_group, _ = Group.objects.get_or_create(name='Financier')
-            destination.finance_dest.groups.add(finance_group)
+                # D. Image & Traduction
+                if dest.logo_dest: self.process_logo(dest)
+                if dest.disability_libelle_dest:
+                    transaction.on_commit(
+                        lambda: translation_content.delay("destination", "Destination", dest.id, "disability_libelle_dest")
+                    )
 
-       
-        if destination.logo_dest:
-            try:
-                img_path = os.path.join(settings.MEDIA_ROOT, str(destination.logo_dest.name))
-                if os.path.exists(img_path):
-                    img = Image.open(img_path)
-                    img.thumbnail((200, 200))
-                    img.save(img_path)
-            except Exception as e:
-                # Bonnes pratiques : logger l'erreur plutôt que de faire planter la vue
-                print(f"Erreur redimensionnement image: {e}")
+                django_messages.success(self.request, _("Destination créée et comptes activés."))
+                return redirect('create_related_data', destination_id=dest.id)
 
-        destination.save()
-        
-       
-        if destination.disability_libelle_dest:
-            translation_content.delay("destination", "Destination", destination.id, "disability_libelle_dest")
-       
-        return redirect('create_related_data', destination_id=destination.id)
-    
-    def form_invalid(self, form):
-        """
-        Exécuté quand le formulaire est INVALIDE.
-        C'est ici qu'on remet le message d'erreur global.
-        """
-        django_messages.error(self.request, _("Le formulaire n'est pas valide. Veuillez vérifier les champs."))
-        
-        return super().form_invalid(form)
+        except Exception as e:
+            django_messages.error(self.request, f"Erreur : {str(e)}")
+            return self.form_invalid(form)
 ###################################################################################################
 
 #Vue Création Destination_data
@@ -299,7 +281,6 @@ class DestinationDetailView(LoginRequiredMixin, AuthorizedRequiredReadDestinatio
     template_name = 'destination/destination_detail.html'
     context_object_name = 'destination'
     
-   
     
 
 
@@ -308,44 +289,73 @@ class DestinationDetailView(LoginRequiredMixin, AuthorizedRequiredReadDestinatio
 
 #Vue Ajax pour renvoyer les informations d'une destination sélectionnée
 
-# views.py
+from django.db.models import Q
 from django.http import JsonResponse
+from django.views import View
+from django.contrib.auth import get_user_model
+from django.utils.translation import gettext_lazy as _
+from django.db.models import Q
+from django.http import JsonResponse
+from django.views import View
+from django.contrib.auth import get_user_model
+from django.utils.translation import gettext_lazy as _
 
 User = get_user_model()
 
 class AjaxFilterUsersView(View):
-    
     def get(self, request, *args, **kwargs):
-        """
-        Gère les requêtes GET pour filtrer les utilisateurs par cluster et destination.
-        """
-        cluster_code = request.GET.get('cluster_code')
+        cluster_code = request.GET.get('code_cluster')
         code_dest = request.GET.get('code_dest')
-        
-        
-        # Si les codes ne sont pas fournis, on renvoie une liste vide
-        if not cluster_code or not code_dest:
+        print("Cluster code (AJAX):", cluster_code)
+        print("Code destination (AJAX):", code_dest)
+
+        if not cluster_code:
             return JsonResponse([], safe=False)
-            
-        # --- Logique de filtrage basée sur votre modèle CustomUser ---
-        # On filtre directement sur les champs du modèle CustomUser
-        users = User.objects.filter(
-            code_cluster=cluster_code,
-            code_dest=code_dest
-        ).distinct()
+
+        # Récupération du code parent (sécurité héritage)
+        parent_code = None
+        if code_dest:
+            from .models import Destination
+            dest_obj = Destination.objects.filter(code_dest=code_dest).first()
+            if dest_obj and dest_obj.code_parent_dest:
+                parent_code = dest_obj.code_parent_dest.code_dest
+
+        # CONSTRUCTION DE LA QUERY
+        # 1. Les Pendings : Critère de fiabilité absolue selon votre workflow
+        query_pending = Q(is_active=False)
+
+        # 2. Les Actifs autorisés : Doivent être dans le même Cluster
+        # ET (être dans la destination actuelle OU la destination parente)
+        query_authorized_active = Q(
+            is_active=True,
+            code_cluster__code_cluster=cluster_code
+        )
         
-        # Formattez les résultats pour le JSON
-        # Une représentation textuelle plus claire pour le champ <select>
+        dest_filter = Q(code_dest__code_dest=code_dest) | Q(code_dest__isnull=True)
+        if parent_code:
+            dest_filter |= Q(code_dest__code_dest=parent_code)
+            
+        query_authorized_active &= dest_filter
+
+        # Union des deux groupes
+        users = User.objects.filter(query_pending | query_authorized_active).distinct().order_by('last_name', 'first_name')
+        
         results = [
             {
                 "id": user.id, 
-                "text": f"{user.first_name} {user.last_name} ({user.email})"
-            }
+                "text": f"{user.last_name} {user.first_name}" + ("" if user.is_active else " (En attente)"),
+                "is_active": user.is_active
+            } 
             for user in users
         ]
         
         return JsonResponse(results, safe=False)
+
     
+
+
+
+
 ###################################################################################################
 
 

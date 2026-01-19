@@ -27,8 +27,7 @@ urlpatterns = [
     path('core/types_handicap/create/',core_views.Types_handicapCreationView.as_view(), name='create_types_handicap'),
     path('core/types_handicap/list/',core_views.Types_handicapListView.as_view(), name='types_handicap_list'),
     path('core/types_handicap/update/<int:pk>/',core_views.Types_handicapUpdateView.as_view(), name='types_handicap_update'),
-    path('core/users_create/',core_views.CreateUserView.as_view(), name='create_user'),
+    path('core/users_create/',core_views.CreateUserView.as_view(), name='create_user'), # Pour créer un utilisateur depuis un cluster
     path('core/get-languages/', get_languages, name='get-languages'),
-    path('core/get-users/', core_views.get_users_json, name='get-users'),
-
+    path('core/get-users/', core_views.AjaxUserHandlerView.as_view() , name='get-users'), # POur les users crées dans le cluster ou la destination
 ]

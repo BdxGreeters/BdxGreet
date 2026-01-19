@@ -4,7 +4,8 @@ from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager,
 from django.db import models
 from users.models import CustomUser
 from core.models import TrancheAge,LangueParlee, Pays, Periode
-from cluster.models import Experience_Greeter
+from cluster.models import Experience_Greeter, InterestCenter
+from destination.models import List_places
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
@@ -46,20 +47,20 @@ class Greeter(models.Model):
     country_greeter=models.ForeignKey(Pays, on_delete=models.PROTECT,max_length=50,default="",verbose_name=_('Pays'),help_text=_("Saisir le pays du Greeter"))
     landline_phone_greeter=models.CharField(max_length=20,default="",blank=True,null=True,verbose_name=_('Téléphone fixe'),help_text=_("Saisir le numéro de téléphone fixe du Greeter"))
     whatsapp_phone_greeter=models.CharField(max_length=20,default="",blank=True,null=True,verbose_name=_('Téléphone whatsapp'),help_text=_("Saisir le numéro de téléphone whatsapp du Greeter"))
-    age_greeter=models.ForeignKey(TrancheAge, on_delete=models.PROTECT,verbose_name=_("Tranche d'âge"),help_text=_("Saisir la tranche d'âge du Greeter"))
+    age_greeter=models.ForeignKey(TrancheAge, on_delete=models.PROTECT,limit_choices_to={'id__gt': 2},verbose_name=_("Tranche d'âge"),help_text=_("Saisir la tranche d'âge du Greeter"))
     experiences_greeters=models.ManyToManyField(Experience_Greeter, blank=True,verbose_name=_('Expériences de Greeter'),help_text=_("Saisir les expériences de Greeter"))
-    photo = models.ImageField (upload_to ='photos_profil/',default='photos_profil/default.jpg', verbose_name=_('Photo de profil'), help_text=_("Taille : 200 px *200 px"))
-    bio_greeter=models.TextField(max_length=1500,default="",verbose_name=_('Biographie'),help_text=_("Saisir la biographie du Greeter"))
+    photo = models.ImageField (upload_to ='photos_profil/',default='photos_profil/default.jpg',blank=True,null=True, verbose_name=_('Photo de profil'), help_text=_("Taille : 200 px *200 px"))
+    bio_greeter=models.TextField(max_length=1500,default="",verbose_name=_('Biographie'),blank=True,null=True, help_text=_("Saisir la biographie du Greeter"))
     handicap_greeter=models.BooleanField(default=False,verbose_name=_('Accepte des balades avec des personnes ayant un handicap'),help_text=_("Saisir si le Greeter accepte des balades avec des personnes ayant un handicap"))
     visibily_greeter=models.BooleanField(default=False,verbose_name=_('Accepte que sa photo soit transmise au visiteur'),help_text=_("Saisir si le Greeter accepte que sa photo soit transmise au visiteur"))
-    langues_parlées_greeter=models.ManyToManyField(LangueParlee, blank=True,max_length=100,default="",verbose_name=_('Langues parlées'),help_text=_("Saisir les langues parlées du Greeter"))
+    langues_parlées_greeter=models.ManyToManyField(LangueParlee,default="",verbose_name=_('Langues parlées'),help_text=_("Saisir les langues parlées du Greeter"))
     max_participants_greeter=models.IntegerField(default=6,verbose_name=_('Nombre maximum de participants'),help_text=_("Saisir le nombre maximum de participants accepté par le Greeter"))
     disponibility_day_greeter=models.CharField(choices=choices_day,max_length=100,default="Lundi, Mardi, Mercredi, Jeudi, Vendredi, Samedi, Dimanche",verbose_name=_('Jours de disponibilité'),help_text=_("Saisir les jours de disponibilité du Greeter")) # Lundi, Mardi, Mercredi, Jeudi, Vendredi, Samedi, Dimanche
-    disponibility_time_greeter=models.ManyToManyField(Periode,max_length=100,default="",blank=True,null=True,verbose_name=_('Disponibilité en journée'),help_text=_("Saisir les périodes de disponibilité en journée du Greeter"))
+    disponibility_time_greeter=models.ManyToManyField(Periode,max_length=100,default="",blank=True,verbose_name=_('Disponibilité en journée'),help_text=_("Saisir les périodes de disponibilité en journée du Greeter"))
     frequency_greeter=models.IntegerField(default=1, verbose_name=_('Intervalle en jours entre deux balades'),help_text=_("Saisir l'intervalle en jours entre deux balades"))
     comments_greeter=models.TextField(max_length=1500,default="",blank=True,null=True,verbose_name=_('Commentaires'),help_text=_("Saisir les commentaires du Greeter"))
-    interest_greeter=models.CharField(max_length=300,default="",verbose_name=_('Intérêts'),help_text=_("Saisir les centres d'intérêts du Greeter"))
-    list_places_greeter=models.CharField(max_length=300,default="",verbose_name=('Thèmes ou lieux'),help_text=_("Saisir les cethèmes ou lieux du Greeter"))
+    interest_greeter=models.ManyToManyField(InterestCenter,blank=True,verbose_name=_('Intérêts'),help_text=_("Saisir les centres d'intérêts du Greeter"))
+    list_places_greeter=models.ManyToManyField(List_places,blank=True,verbose_name=('Thèmes ou lieux'),help_text=_("Saisir les cethèmes ou lieux du Greeter"))
     arrival_greeter=models.DateField(verbose_name=_("Date d'arrivée"),help_text=_("Saisir la date d'arrivée du Greeter"))
     departure_greeter=models.DateField(verbose_name=_('Date de départ'),blank=True,null=True,help_text=_("Saisir la date de départ du Greeter"))
     modif_greeter=models.DateTimeField(auto_now=True,blank=True,null=True,verbose_name=_('Date de dernière modification'),help_text=_("Saisir la date de dernière modification du Greeter"))

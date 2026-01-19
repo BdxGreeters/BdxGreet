@@ -23,7 +23,9 @@ class ClusterForm(CommaSeparatedFieldMixin, HelpTextTooltipMixin, forms.ModelFor
     no_reply_greeter= forms.CharField(required=True, label=_("Raisons de non réponse du Greeter"), help_text=_("Saisissez les raisons de non réponse du Greeter en les validant par Entrée"))
     no_reply_visitor= forms.CharField(required=True, label=_("Raisons de non réponse du visiteur"), help_text=_("Saisissez les raisons de non réponse du visiteur en les validant par Entrée"))
     notoriety= forms.CharField(required=True, label=_("Notoriété"), help_text=_("Saisissez les motifs de notoriété en les validant par Entrée"))
-
+    pending_adm_id = forms.CharField(widget=forms.HiddenInput(), required=False)
+    pending_adm_alt_id = forms.CharField(widget=forms.HiddenInput(), required=False)
+    
 
     editable_fields = [
         'code_cluster', 'name_cluster', 'statut_cluster', 'adress_cluster', 'desc_cluster',
@@ -134,6 +136,8 @@ class ClusterForm(CommaSeparatedFieldMixin, HelpTextTooltipMixin, forms.ModelFor
         self.helper = FormHelper()
         self.helper.form_method = 'post'
         self.helper.layout = Layout(
+            'pending_adm_id',
+            'pending_adm_alt_id',
             TabHolder(
                 Tab(
                     _("Identification"),
@@ -156,7 +160,7 @@ class ClusterForm(CommaSeparatedFieldMixin, HelpTextTooltipMixin, forms.ModelFor
                         Row(
                             Column('admin_cluster', css_class='col-md-6'),
                             Column('can_edit_admin_cluster', css_class='col-md-1 d-flex align-items-center justify-content-center'),
-                            Column(HTML(f'<button type="button" class="btn btn-sm btn-primary ms-2" data-target-field="id_admin_cluster">{_("Nouvel utilisateur")}</button>'),
+                            Column(HTML(f'<button type="button" class="btn btn-sm btn-primary ms-2" data-target-field="id_adm", data-pending-field="id_pending_adm_id">{_("Nouvel utilisateur")}</button>'),
                                    css_class="d-flex align-items-center")
                         ),
                         Row(
@@ -170,7 +174,7 @@ class ClusterForm(CommaSeparatedFieldMixin, HelpTextTooltipMixin, forms.ModelFor
                         Row(
                             Column('admin_alt_cluster', css_class='col-md-6'),
                             Column('can_edit_admin_alt_cluster', css_class='col-md-1 d-flex align-items-center justify-content-center'),
-                            Column(HTML(f'<button type="button" class="btn btn-sm btn-primary ms-2" data-target-field="id_admin_alt_cluster">{_("Nouvel utilisateur")}</button>'),
+                            Column(HTML(f'<button type="button" class="btn btn-sm btn-primary ms-2" data-target-field="id_adm_alt",data-pending-field="id_pending_adm_alt_id">{_("Nouvel utilisateur")}</button>'),
                                    css_class="d-flex align-items-center")
                         ),
                         Row(
@@ -224,23 +228,4 @@ class ClusterForm(CommaSeparatedFieldMixin, HelpTextTooltipMixin, forms.ModelFor
             Submit('submit', _("Enregistrer"), css_class='btn-primary')
         )
 
-    def save(self, commit=True):
-        cluster = super().save(commit=False)
-
-        if commit:
-            cluster.save()
-            self.save_m2m()
-
-            # Mettre à jour le code_cluster pour admin_cluster
-            if self.cleaned_data.get('admin_cluster'):
-                admin_user = self.cleaned_data['admin_cluster']
-                admin_user.code_cluster = cluster.code_cluster
-                admin_user.save()
-
-            # Mettre à jour le code_cluster pour admin_alt_cluster
-            if self.cleaned_data.get('admin_alt_cluster'):
-                admin_alt_user = self.cleaned_data['admin_alt_cluster']
-                admin_alt_user.code_cluster = cluster.code_cluster
-                admin_alt_user.save()
-
-        return cluster
+    

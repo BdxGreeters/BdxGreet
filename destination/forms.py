@@ -19,63 +19,44 @@ from destination.models import Destination, Destination_data, Destination_flux
 User = get_user_model()
 
 class DestinationForm(HelpTextTooltipMixin, CommaSeparatedFieldMixin, forms.ModelForm):
-    list_places_dest = forms.CharField(required=True, label=_("Lieux ou thèmes"), help_text=_("Saisissez les lieux ou thèmes en les validant par Entrée"))
+    # Champs cachés pour les utilisateurs "en attente"
+    pending_manager_id = forms.CharField(widget=forms.HiddenInput(), required=False)
+    pending_referent_id = forms.CharField(widget=forms.HiddenInput(), required=False)
+    pending_matcher_id = forms.CharField(widget=forms.HiddenInput(), required=False)
+    pending_matcher_alt_id = forms.CharField(widget=forms.HiddenInput(), required=False)
+    pending_finance_id = forms.CharField(widget=forms.HiddenInput(), required=False)
 
-    # Champs modifiables par le matcher
-    gestionnaire_fields = [
-        'list_places_dest',
-        'mini_lp_dest',
-        'max_lp_dest',
-        'mini_interest_center_dest',
-        'max_interest_center_dest',
-        'flag_stay_dest',
-        'dispersion_param_dest'
-        ]
+    # Champ spécifique géré par CommaSeparatedFieldMixin
+    list_places_dest = forms.CharField(
+        required=True, 
+        label=_("Lieux ou thèmes"), 
+        help_text=_("Saisissez les lieux ou thèmes en les validant par Entrée")
+    )
 
-    # Champ pour sélectionner le cluster par son code quand un user a un cluster attribué
+    # Champ pour sélectionner le cluster par son code
     code_cluster = forms.ModelChoiceField(
-        queryset=Cluster.objects.all(), # Ou le queryset pertinent
-        # ⭐ LA CLÉ : utilise le champ 'code' du Cluster comme valeur dans le HTML
+        queryset=Cluster.objects.all(),
         to_field_name='code_cluster',
-        required=True,)
+        required=True,
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    
     code_cluster_hidden = forms.CharField(widget=forms.HiddenInput(), required=False)   
 
     class Meta:
         model = Destination
         fields = [
-            'code_cluster',
-            'code_dest',
-            'name_dest',
-            'code_parent_dest',
-            'code_IGA_dest',
-            'desc_dest',
-            'statut_dest',
-            'adress_dest',
-            'region_dest',
-            'country_dest',
-            'logo_dest',
-            'libelle_email_dest',
-            'URL_retry_dest',
-            'mail_notification_dest',
-            'mail_response_dest',
-            'manager_dest',
-            'referent_dest',
-            'matcher_dest',
-            'matcher_alt_dest',
-            'finance_dest',
-            'mini_lp_dest',
-            'max_lp_dest',
-            'mini_interest_center_dest',
-            'max_interest_center_dest',
-            'flag_stay_dest',
-            'dispersion_param_dest',
-            'disability_dest',
+            'code_cluster', 'code_dest', 'name_dest', 'code_parent_dest',
+            'code_IGA_dest', 'desc_dest', 'statut_dest', 'adress_dest',
+            'region_dest', 'country_dest', 'logo_dest', 'libelle_email_dest',
+            'URL_retry_dest', 'mail_notification_dest', 'mail_response_dest',
+            'manager_dest', 'referent_dest', 'matcher_dest', 'matcher_alt_dest',
+            'finance_dest', 'mini_lp_dest', 'max_lp_dest', 
+            'mini_interest_center_dest', 'max_interest_center_dest',
+            'flag_stay_dest', 'dispersion_param_dest', 'disability_dest',
             'disability_libelle_dest',
-
         ]
         widgets = {
-            'code_cluster': forms.Select(attrs={'class': 'form-select'}),
-            'pays_dest': forms.Select(),
             'statut_dest': forms.RadioSelect(),
             'desc_dest': forms.Textarea(attrs={'rows': 2}),
             'adress_dest': forms.Textarea(attrs={'rows': 2}),
@@ -83,74 +64,79 @@ class DestinationForm(HelpTextTooltipMixin, CommaSeparatedFieldMixin, forms.Mode
         }
 
     comma_fields_config = {
-        'list_places_dest': {'min':2, 'max':10},
-        }
+        'list_places_dest': {'min': 2, 'max': 10},
+    }
 
-    def __init__(self, *args,code_cluster_user=None, **kwargs):
-        self.helper = FormHelper()
-        self.helper.form_method = 'post'
-        user=kwargs.pop('user', None)
-        self.is_update=kwargs.pop('is_update', False)
+    def __init__(self, *args, **kwargs):
+        # Récupération des arguments passés par la vue (get_form_kwargs)
+        user = kwargs.pop('user', None)
+        code_cluster_user = kwargs.pop('code_cluster_user', None)
+        self.is_update = kwargs.pop('is_update', False)
         
         super().__init__(*args, **kwargs)
         
+        self.helper = FormHelper()
+        self.helper.form_method = 'post'
 
-        # Si on est en mode mise à jour et que l'instance a un cluster, pré-remplir et désactiver le champ code_cluster
-        if self.is_update and self.instance and self.instance.code_cluster:
-            self.initial['code_cluster'] = self.instance.code_cluster.code_cluster
-            self.fields['code_cluster'].disabled = True # Désactiver le champ pour empêcher la modification
-            self.fields['code_dest'].disabled = True # Désactiver le champ pour empêcher la modification      
+        # 1. LOGIQUE CLUSTER & ÉDITION
+        if self.is_update and self.instance and self.instance.pk:
+            if self.instance.code_cluster:
+                self.initial['code_cluster'] = self.instance.code_cluster
+                self.fields['code_cluster'].disabled = True
+            self.fields['code_dest'].disabled = True
         else:
-        # Si un code_cluster_user est fourni, filtrer les clusters disponibles
             if code_cluster_user:
-                self.fields['code_cluster'].queryset = Cluster.objects.filter(code_cluster=code_cluster_user)
-                self.fields['code_cluster'].initial = get_object_or_404(Cluster, code_cluster=code_cluster_user)
-                self.fields['code_cluster'].disabled = True # Désactiver le champ pour empêcher la modification
+                # Filtrage pour un Admin de Cluster
+                qs = Cluster.objects.filter(code_cluster=code_cluster_user)
+                self.fields['code_cluster'].queryset = qs
+                if qs.exists():
+                    self.fields['code_cluster'].initial = qs.first()
+                self.fields['code_cluster'].disabled = True
 
-        # Récupérer les codes des destinations existantes, sauf celle en cours d'édition
-        existing_destinations = Destination.objects.exclude(
-        pk=self.instance.pk  # Exclure la destination en cours d'édition
-        ).values_list('code_dest', flat=True)
+        # 2. LOGIQUE CODE PARENT
+        existing_destinations = Destination.objects.exclude(pk=self.instance.pk).values_list('code_dest', flat=True)
+        choices = [('', '---------')] + [(code, code) for code in existing_destinations]
+        self.fields['code_parent_dest'] = forms.ChoiceField(choices=choices, required=False, label=_("Code Parent"))
 
-        # Créer une liste de choix pour le champ code_parent_dest
-        choices = [(code, code) for code in existing_destinations]
-        # Ajouter une option vide pour permettre de ne pas choisir de parent
-        choices.insert(0, ('', '---------'))
-
-        # Mettre à jour le champ code_parent_dest
-        self.fields['code_parent_dest'] = forms.ChoiceField(
-        choices=choices,
-        required=False,
-        label="Code Parent",
-        )
-
-        # Lister les utilisateurs par ordre alphabétique membres de  la destination en cours d'édition
+        # 3. LOGIQUE UTILISATEURS (PENDING INCLUS)
+        # On autorise les utilisateurs inactifs pour l'AJAX
         user_queryset = User.objects.all().order_by('last_name', 'first_name')
-        self.fields['manager_dest'].queryset = user_queryset
-        self.fields['referent_dest'].queryset = user_queryset
-        self.fields['matcher_dest'].queryset = user_queryset
-        self.fields['matcher_alt_dest'].queryset = user_queryset
-        self.fields['finance_dest'].queryset = user_queryset
-       
-        self.apply_tooltips() #Appel du mixin HelpTooltipsMixin
         
+        # Si on veut limiter les users au cluster actuel + les nouveaux sans cluster (pending)
+        current_cluster_code = code_cluster_user or (self.instance.code_cluster.code_cluster if self.instance.pk and self.instance.code_cluster else None)
+        if current_cluster_code:
+            print("Filtrage des users pour le cluster :", current_cluster_code)
+            user_queryset = user_queryset.filter(
+                Q(code_cluster__code_cluster=current_cluster_code) | Q(code_cluster__isnull=True)
+            )
+
+        user_fields = ['manager_dest', 'referent_dest', 'matcher_dest', 'matcher_alt_dest', 'finance_dest']
+        for field in user_fields:
+            self.fields[field].queryset = user_queryset
+            # Personnalisation de l'affichage pour voir qui est "En attente"
+            self.fields[field].label_from_instance = lambda obj: f"{obj.last_name} {obj.first_name} ({_('Actif') if obj.is_active else _('En attente')})"
+        
+
+        self.apply_tooltips() # Mixin
+
+        # 4. LAYOUT CRISPY
         self.helper.layout = Layout(
+            'pending_manager_id',
+            'pending_referent_id',
+            'pending_matcher_id',
+            'pending_matcher_alt_id',
+            'pending_finance_id',
             TabHolder(
-                Tab(
-                    _("Informations générales"),
+                Tab(_("Informations générales"),
                     Row(
-                        Column('code_cluster', css_class='col-md-2 col-lg-2'),
+                        Column('code_cluster', css_class='col-md-2'),
                         Column('code_dest', css_class='col-md-2'),
                         Column('name_dest', css_class='col-md-4'),
                         Column('code_parent_dest', css_class='col-md-2'),
                         Column('code_IGA_dest', css_class='col-md-2'),
                     ),
-                    Row (
-                        Column(InlineCheckboxes('statut_dest', css_class='col-md-12')),
-                    ),
-                    Row(        
-                        Column('desc_dest', css_class='col-md-12'),
-                    ),
+                    Row(Column(InlineCheckboxes('statut_dest', css_class='col-md-12'))),
+                    Row(Column('desc_dest', css_class='col-md-12')),
                     Row(
                         Column('adress_dest', css_class='col-md-4'),
                         Column('region_dest', css_class='col-md-4'),
@@ -164,128 +150,57 @@ class DestinationForm(HelpTextTooltipMixin, CommaSeparatedFieldMixin, forms.Mode
                     Row(
                         Column('mail_notification_dest', css_class='col-md-6'),
                         Column('mail_response_dest', css_class='col-md-6'),
-                    ),          
-                    
-                    ),
-                Tab(
-                    _("Administration"),
-                    Row(
-                        Column('manager_dest', css_class='col-md-6'),
-                        Column(HTML(f'<button type="button" class="btn btn-sm btn-primary ms-2" data-target-field="id_manager_dest">{_("Nouvel utilisateur")}</button>'),
-                        css_class="d-flex align-items-center")
-                    ),
-                    Row(
-                        Column('referent_dest', css_class='col-md-6'),
-                        Column(HTML(f'<button type="button" class="btn btn-sm btn-primary ms-2" data-target-field="id_referent_dest">{_("Nouvel utilisateur")}</button>'),
-                        css_class="d-flex align-items-center")
-                    ),
-                    Row(
-                        Column('matcher_dest', css_class='col-md-6'),
-                        Column(HTML(f'<button type="button" class="btn btn-sm btn-primary ms-2" data-target-field="id_matcher_dest">{_("Nouvel utilisateur")}</button>'),
-                        css_class="d-flex align-items-center")
-                    ),
-                    Row(
-                        Column('matcher_alt_dest', css_class='col-md-6'),
-                        Column(HTML(f'<button type="button" class="btn btn-sm btn-primary ms-2" data-target-field="id_matcher_alt_dest">{_("Nouvel utilisateur")}</button>'),
-                               css_class="d-flex align-items-center")
-                    ),
-                    Row(
-                        Column('finance_dest', css_class='col-md-6'),
-                        Column(HTML(f'<button type="button" class="btn btn-sm btn-primary ms-2" data-target-field="id_finance_dest">{_("Nouvel utilisateur")}</button>'),
-                               css_class="d-flex align-items-center")
-                    ),
-                    ),
-                Tab(
-                    _("Lieux, centres d'intérêts,dates de séjour et accessibilité"),
-                    Row(
-                        Column('list_places_dest', css_class='col-md-12'),
-                    ),
-                    Row(
-                        Column('mini_lp_dest', css_class='col-md-3'),
-                        Column('max_lp_dest', css_class='col-md-3'),
-                        ),
-                    Row(
-                        Column('mini_interest_center_dest', css_class='col-md-3'),
-                        Column('max_interest_center_dest', css_class='col-md-3'),
-                        ),
-                    Row(    
-                        Column('flag_stay_dest', css_class='col-md-3'),
-                        Column('dispersion_param_dest', css_class='col-md-3'),
-                    ),
-                    Row(
-                        Column('disability_dest', css_class='col-md-2'),
-                        Column('disability_libelle_dest', css_class='col-md-10'),
                     ),
                 ),
+                Tab(_("Administration"),
+                    *[Row(
+                        Column(field, css_class='col-md-6'),
+                        Column(HTML(f'<button type="button" class="btn btn-sm btn-primary ms-2" data-target-field="id_{field}"><i class="fas fa-plus"></i> {_("Nouveau")}</button>'), css_class='col-md-2')
+                    ) for field in user_fields]
+                ),
+                Tab(_("Lieux & Paramètres"),
+                    Row(Column('list_places_dest', css_class='col-md-12')),
+                    Row(Column('mini_lp_dest', css_class='col-md-3'), Column('max_lp_dest', css_class='col-md-3')),
+                    Row(Column('mini_interest_center_dest', css_class='col-md-3'), Column('max_interest_center_dest', css_class='col-md-3')),
+                    Row(Column('flag_stay_dest', css_class='col-md-3'), Column('dispersion_param_dest', css_class='col-md-3')),
+                    Row(Column('disability_dest', css_class='col-md-2'), Column('disability_libelle_dest', css_class='col-md-10')),
+                ),
             ),
-            Submit('submit', _('Enregistrer')),
+            Submit('submit', _('Enregistrer'), css_class='btn-success mt-3'),
         )
 
     def clean(self):
-        cleaned_data = super().clean()  
-
-         #Vérification du nombre maximun de centres d'interêts sélectionnés
-
-        # 1. Récupérer le cluster sélectionné
-        cluster = cleaned_data.get('code_cluster')
-        print(type(cluster))
-        # 2. Récupérer la valeur de max_interest_center_dest
-        max_interest_center_dest = cleaned_data.get('max_interest_center_dest')
-
-        if cluster and max_interest_center_dest is not None:
-            # 3. Calculer le nombre d'items dans profil_interet_cluster du cluster
-            total_interets = cluster.interest_center.count()
-
-
-            # 4. Effectuer la comparaison
-            if max_interest_center_dest > total_interets:
-                # Si la validation échoue, lever une ValidationError pour le champ
-                msg = _(
-                    "Le nombre maximum de centres d'intérêts (%(max_ci)s) ne peut pas être supérieur au nombre total de centres d'intérêts du cluster sélectionné (%(total_ci)s)."
-                ) % {
-                    'max_ci': max_interest_center_dest, 
-                    'total_ci': total_interets
-                }
-                
-                # Ajoute l'erreur au champ max_interest_center_dest
-                self.add_error('max_interest_center_dest', msg)
-
-        #Vérification du nombre maximun de lieux ou thèmes sélectionnés
-        max_lp_dest = cleaned_data.get('max_lp_dest')
-        list_places_dest = cleaned_data.get('list_places_dest')
-
-        if list_places_dest and max_lp_dest is not None:
-            # Sépare les lieux par la virgule et filtre les chaînes vides
-            list_lieux = [
-                item.strip() 
-                for item in list_places_dest.split(',') 
-                if item.strip()
-            ]
-            
-            total_lieux = len(list_lieux)
-
-            # Effectuer la comparaison
-            if max_lp_dest > total_lieux:
-                # Si la validation échoue, lever une ValidationError pour le champ
-                msg = _(
-                    "Le nombre maximum de lieux ou thèmes (%(max_lp)s) ne peut pas être supérieur au nombre total de lieux ou thèmes sélectionnés (%(total_lp)s)."
-                ) % {
-                    'max_lp': max_lp_dest, 
-                    'total_lp': total_lieux
-                }
-                
-                # Ajoute l'erreur au champ max_lp_dest
-                self.add_error('max_lp_dest', msg)  
+        cleaned_data = super().clean()
         
-        # Vérification que les max sont supérieurs ou égaux aux min
-        mini_interest_center_dest = cleaned_data.get('mini_interest_center_dest')
-        mini_lp_dest = cleaned_data.get('mini_lp_dest')
-        if (max_interest_center_dest is not None and mini_interest_center_dest is not None and max_interest_center_dest < mini_interest_center_dest):
-            self.add_error('max_interest_center_dest', _("Le maximum de centres d'intérêt ne peut pas être inférieur au minimum."))     
-        if (max_lp_dest is not None and mini_lp_dest is not None and max_lp_dest < mini_lp_dest):
-            self.add_error('max_lp_dest', _("Le maximum de lieux ou thèmes ne peut pas être inférieur au minimum."))
-                
+        # --- Validation Croisée Cluster / Intérêts ---
+        cluster = cleaned_data.get('code_cluster')
+        max_ic = cleaned_data.get('max_interest_center_dest')
+        mini_ic = cleaned_data.get('mini_interest_center_dest')
+
+        if cluster and max_ic is not None:
+            total_interets = cluster.interest_center.count()
+            if max_ic > total_interets:
+                self.add_error('max_interest_center_dest', _("Le maximum ({}) dépasse le total du cluster ({})").format(max_ic, total_interets))
+        
+        if max_ic is not None and mini_ic is not None and max_ic < mini_ic:
+            self.add_error('max_interest_center_dest', _("Le maximum ne peut être inférieur au minimum."))
+
+        # --- Validation Lieux ---
+        max_lp = cleaned_data.get('max_lp_dest')
+        mini_lp = cleaned_data.get('mini_lp_dest')
+        list_p = cleaned_data.get('list_places_dest')
+
+        if list_p and max_lp is not None:
+            total_lp = len([i for i in list_p.split(',') if i.strip()])
+            if max_lp > total_lp:
+                self.add_error('max_lp_dest', _("Le maximum ({}) dépasse le nombre de lieux saisis ({})").format(max_lp, total_lp))
+        
+        if max_lp is not None and mini_lp is not None and max_lp < mini_lp:
+            self.add_error('max_lp_dest', _("Le maximum ne peut être inférieur au minimum."))
+
         return cleaned_data
+
+
     
 
 ###################################################################################################

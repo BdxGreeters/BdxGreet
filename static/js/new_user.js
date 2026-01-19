@@ -1,198 +1,174 @@
+/**
+ * Script de gestion dynamique des utilisateurs pour Cluster et Destination.
+ */
 document.addEventListener('DOMContentLoaded', function() {
+    const clusterField = document.getElementById('id_code_cluster');
+    const destField = document.getElementById('id_code_dest');
     const newUserButtons = document.querySelectorAll('[data-target-field]');
-   
-    // Fonction pour récupérer les langues disponibles
-    async function fetchLanguages(lang) {
-        const response = await fetch(`/${lang}/core/get-languages/`);
-        if (!response.ok) {
-            throw new Error('Failed to fetch languages');
+
+    /**
+     * Récupère le jeton CSRF de manière robuste.
+     * Priorité à l'input masqué (64 car.) généré par {% csrf_token %}
+     * Fallback sur le cookie (32 car.)
+     */
+    function getCsrfToken() {
+        // 1. Essayer de trouver l'input masqué de Django
+        const csrfInput = document.querySelector('[name=csrfmiddlewaretoken]');
+        if (csrfInput && csrfInput.value) {
+            return csrfInput.value;
         }
-        return await response.json();
-    }
-    async function refreshUserSelectFields(lang) {
-
-     // Récupérer les valeurs actuelles de code_cluster et code_dest
-        const codeCluster = document.getElementById('id_code_cluster')?.value??'';
-        const codeDest = document.getElementById('id_code_dest')?.value??'';
-        console.log("codecluster:", codeCluster);
-        console.log("codedest:", codeDest);
-
-    // Construire l'URL avec les paramètres de filtrage
-        const params = new URLSearchParams();
-        if (codeCluster) params.append('code_cluster', codeCluster);
-        if (codeDest) params.append('code_dest', codeDest);
-
-
-    // Fonction pour rafraîchir les listes des utilisateurs
-
-    
-        const response = await fetch(`/${lang}/core/get-users/?${params.toString()}`);
-        if (!response.ok) {
-            throw new Error('Failed to fetch users');
-        }
-        const users = await response.json();
-
-    // Liste des IDs des champs de sélection des utilisateurs
-    const userSelectFields = [
-        'id_manager_dest',
-        'id_referent_dest',
-        'id_matcher_dest',
-        'id_matcher_alt_dest',
-        'id_finance_dest'
-    ];
-
-    // Mettre à jour chaque champ de sélection s'il existe
-    userSelectFields.forEach(fieldId => {
-        const selectElement = document.getElementById(fieldId);
-        if (selectElement) {  // Vérifie si le champ existe
-            console.log(`Updating select field: ${fieldId}`);
-            const currentValue = selectElement.value;
-            selectElement.innerHTML = '';
-
-            // Ajouter une option vide
-            const emptyOption = document.createElement('option');
-            emptyOption.value = '';
-            emptyOption.textContent = '---------';
-            selectElement.appendChild(emptyOption);
-
-            // Ajouter les nouvelles options
-            users.forEach(user => {
-                const option = document.createElement('option');
-                option.value = user.id;
-                option.textContent = `${user.last_name} ${user.first_name}`;
-                selectElement.appendChild(option);
-            });
-
-            // Restaurer la valeur sélectionnée si elle existe
-            if (currentValue) {
-                selectElement.value = currentValue;
+        // 2. Fallback sur le cookie
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, 10) === ('csrftoken=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(10));
+                    break;
+                }
             }
         }
-    });
-    }   
+        return cookieValue;
+    }
 
-    // Événement au clic sur le bouton
+    /** 
+     * Récupère les paramètres de langue et l'URL de base
+     */
+    const getBaseUrl = () => {
+        const lang = document.documentElement.lang || 'fr';
+        return `/${lang}/core/get-users/`;
+    };
+
+    /**
+     * Rafraîchit tous les champs Select d'utilisateurs
+     */
+    async function refreshUserSelectFields() {
+        const clusterCode = clusterField?.value || '';
+        const destCode = destField?.value || '';
+        if (!clusterCode) return;
+
+        const params = new URLSearchParams({ code_cluster: clusterCode, code_dest: destCode });
+
+        try {
+            const response = await fetch(`${getBaseUrl()}?${params.toString()}`);
+            const users = await response.json();
+
+            // Liste de tous les IDs de Select possibles
+            const userSelectIds = [
+                'id_admin_cluster', 'id_admin_alt_cluster', 'id_manager_dest', 
+                'id_referent_dest', 'id_matcher_dest', 'id_matcher_alt_dest', 'id_finance_dest'
+            ];
+
+            userSelectIds.forEach(id => {
+                const select = document.getElementById(id);
+                if (select) {
+                    const currentVal = select.value;
+                    select.innerHTML = '<option value="">---------</option>';
+                    users.forEach(u => select.add(new Option(u.text, u.id)));
+                    select.value = currentVal;
+                }
+            });
+        } catch (err) { console.error("Erreur de rafraîchissement:", err); }
+    }
+
+    // Écouteurs sur les changements de code
+    [clusterField, destField].forEach(el => el?.addEventListener('change', refreshUserSelectFields));
+
+    /**
+     * Gestion de la création d'utilisateur
+     */
     newUserButtons.forEach(button => {
         button.addEventListener('click', async function() {
-            const targetField = this.getAttribute('data-target-field');
-            const pathParts = window.location.pathname.split('/');
-            const lang = pathParts[1];  // Exemple : 'fr' dans '/fr/cluster/...'
-            const url = `/${lang}/core/users_create/`;
+            const btn = this; // Référence au bouton pour accéder aux data-attributes
+            const targetFieldId = btn.getAttribute('data-target-field');
+            const pendingFieldId = btn.getAttribute('data-pending-field');
             
 
-            // Récupérer les langues disponibles
-            let languages = [];
+            // 1. Récupération des langues pour la modale
+            let langOptions = "";
             try {
-                languages = await fetchLanguages(lang);
-            } catch (error) {
-                console.error('Error fetching languages:', error);
-            }
+                const res = await fetch(`/${document.documentElement.lang || 'fr'}/core/get-languages/`);
+                const langs = await res.json();
+                langOptions = langs.map(l => `<option value="${l.code}">${l.name}</option>`).join('');
+            } catch (e) { console.error(e); }
 
-            // Générer les options de langue dynamiquement
-            let langOptions = '';
-            languages.forEach(lang => {
-                langOptions += `<option value="${lang.code}">${lang.name}</option>`;
-            });
-            codecluster = document.getElementById('id_code_cluster')?.value ?? '' ;
-            codedest = document.getElementById('id_code_dest')?.value?? '' ;
-            // Afficher le popup SweetAlert2
+            // 2. Ouverture de la modale SweetAlert2
             Swal.fire({
-                title: gettext('Créer un nouvel utilisateur'),
+                title: gettext('Créer un utilisateur'),
                 html: `
-                    <form id="newUserForm" class="swal2-form">
-                        <div class="form-group mb-2">
-                            <label for="email">${gettext('Email')}</label>
-                            <input type="email" id="email" class="form-control swal2-input" required autocomplete ="off">
-                        </div>
-                        <div class="form-group mb-2">
-                            <label for="first_name">${gettext('Prénom')}</label>
-                            <input type="text" id="first_name" class="form-control swal2-input" required autocomplete ="off">
-                        </div>
-                        <div class="form-group mb-2">
-                            <label for="last_name">${gettext('Nom')}</label>
-                            <input type="text" id="last_name" class="form-control swal2-input" required autocomplete ="off">
-                        </div>
-                        <div class="form-group mb-2">
-                            <label for="cellphone">${gettext('Téléphone')}</label>
-                            <input type="text" id="cellphone" class="form-control swal2-input">
-                        </div>
-                        <div class="form-group mb-2">
-                            <label for="lang_com">${gettext('Langue')}</label>
-                            <select id="lang_com" class="form-control swal2-input" required >
-                                ${langOptions}
-                            </select>
-                        </div>
-                        <div class="form-group mb-2">
-                            <input type="text" id="code_cluster" class="form-control swal2-input" value="${codecluster}" hidden>
-                        </div>
-                        <div class="form-group mb-2">
-                            <input type="text" id="code_dest" class="form-control swal2-input" value="${codedest}" hidden>
-                        </div>
-                    </form>
+                    <div class="text-start">
+                        <input type="email" id="swal-email" class="swal2-input" placeholder="${gettext('Email')}" required>
+                        <input type="text" id="swal-first" class="swal2-input" placeholder="${gettext('Prénom')}" required>
+                        <input type="text" id="swal-last" class="swal2-input" placeholder="${gettext('Nom')}" required>
+                        <input type="text" id="swal-phone" class="swal2-input" placeholder="${gettext('Téléphone')}">
+                        <select id="swal-lang" class="swal2-select" style="width:70%">${langOptions}</select>
+                    </div>
                 `,
                 showCancelButton: true,
                 confirmButtonText: gettext('Créer'),
-                cancelButtonText: gettext('Annuler'),
-                focusConfirm: false,
                 preConfirm: () => {
-                    // Récupérer les valeurs du formulaire
-                    const email = document.getElementById('email').value;
-                    const first_name = document.getElementById('first_name').value;
-                    const last_name = document.getElementById('last_name').value;
-                    const cellphone = document.getElementById('cellphone').value;
-                    const lang_com = document.getElementById('lang_com').value;
-                    const code_cluster = document.getElementById('code_cluster').value;
-                    const code_dest = document.getElementById('code_dest').value;
-                    // Validation simple
+
+                    const csrfToken = getCsrfToken();
+                    
+                    // Debug console pour vérifier la validité du token avant envoi
+                    console.log("Token CSRF envoyé :", csrfToken);
+                    console.log("Longueur du token :", csrfToken ? csrfToken.length : 0);
+                    console.log("Champ Pending");
+                    
+                    const payload = {
+                        email: document.getElementById('swal-email').value,
+                        first_name: document.getElementById('swal-first').value,
+                        last_name: document.getElementById('swal-last').value,
+                        cellphone: document.getElementById('swal-phone').value,
+                        lang_com: document.getElementById('swal-lang').value
+                    };
 
 
-                    if (!email || !first_name || !last_name || !lang_com) {
-                        Swal.showValidationMessage(gettext('Veuillez remplir tous les champs requis'));
+                    if (!csrfToken) {
+                        Swal.showValidationMessage(gettext('Erreur de sécurité : Jeton CSRF manquant.'));
                         return;
                     }
-                    // Envoyer les données au serveur via AJAX
-                    return fetch(url, {
+
+                    if (!payload.email || !payload.first_name || !payload.last_name) {
+                        Swal.showValidationMessage(gettext('Veuillez remplir les champs obligatoires'));
+                        return;
+                    }
+
+                    return fetch(getBaseUrl(), {
                         method: 'POST',
                         headers: {
-                            'Content-Type': 'application/json;charset=utf-8',
-                            'X-CSRFToken': '{{ csrf_token }}'
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrfToken
                         },
-                        body: JSON.stringify({
-                            email: email,
-                            first_name: first_name,
-                            last_name: last_name,
-                            cellphone: cellphone,
-                            lang_com: lang_com,
-                            code_cluster: code_cluster,
-                            code_dest: code_dest   
-                        })
+                        body: JSON.stringify(payload)
                     })
                     .then(response => {
-                        if (!response.ok) {
-                            return response.json().then(data => {
-                                // Extraire le message d'erreur de la réponse JSON
-                                const errorMessage = data.erreur;
-                                throw new Error(errorMessage);
-                            });
-                        }
+                        if (!response.ok) return response.json().then(err => { throw new Error(err.erreur); });
                         return response.json();
                     })
-                    .catch(error => {
-                        Swal.showValidationMessage(`Erreur: ${error.message.replace(/[\[\],' ]/g, '')}`);
-                    });
+                    .catch(error => Swal.showValidationMessage(error.message));
                 }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    // Mettre à jour le champ adm, adm_alt, manager, refeent, matcher, matcher_alt ou fimance avec le nouvel utilisateur
-                    const newUserId = result.value.id;
-                    const selectElement = document.getElementById(targetField);
-                    const newOption = new Option(result.value.text, newUserId, true, true);
-                    selectElement.append(newOption);
+            }).then(async (result) => {
+                if (result.isConfirmed && result.value) {
+                    const newUser = result.value;
 
-                    refreshUserSelectFields(lang);
-                    Swal.fire(gettext('Succès'), gettext('Utilisateur créé avec succès!'), 'success');
+                    // Mise à jour de toutes les listes
+                    await refreshUserSelectFields();
+
+                    // Sélection automatique dans le champ ciblé
+                    const selectEl = document.getElementById(targetFieldId);
+                    if (selectEl) selectEl.value = newUser.id;
+
+                    // Remplissage du champ caché SPÉCIFIQUE via l'attribut Data
+                    const hiddenEl = document.getElementById(pendingFieldId);
+                    if (hiddenEl) hiddenEl.value = newUser.id;
+
+                    Swal.fire(gettext('Succès'), gettext('Utilisateur saisi avec succès.'), 'success');
                 }
             });
         });
     });
+
+    window.refreshUserSelectFields = refreshUserSelectFields;
 });

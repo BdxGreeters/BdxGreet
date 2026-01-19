@@ -180,7 +180,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Configuration MailjetAnymail
 EMAIL_BACKEND ='anymail.backends.mailjet.EmailBackend'
-MILJET_API_URL='https://api.mailjet.com/v3.1/'
+MAILJET_API_URL='https://api.mailjet.com/v3.1/'
 MAILJET_API_KEY = env('MAILJET_API_KEY')
 MAILJET_SECRET_KEY = env('MAILJET_SECRET_KEY')
 MAILJET_SENDER_NAME = env('MAILJET_SENDER_NAME')

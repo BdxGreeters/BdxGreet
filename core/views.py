@@ -331,51 +331,78 @@ class Types_handicapUpdateView(View):
 ###################################################################################################                                                                                     
                                                                         
 
-# Vue Création d'un utilisateur
+# Vue AjaxCréation d'un utilisateur
 
 
-@method_decorator(csrf_exempt, name='dispatch')
+import json
+from django.views import View
+from django.http import JsonResponse
+from django.core.exceptions import ValidationError
+from django.contrib.auth import get_user_model
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_protect
+
+# On utilise csrf_protect au lieu de csrf_exempt pour la sécurité
+
 class CreateUserView(View):
     def post(self, request, *args, **kwargs):
         try:
             data = json.loads(request.body)
             User = get_user_model()
 
-            # Validation basique
-            if not all(key in data for key in ['email', 'first_name', 'last_name']):
-                raise ValidationError(_("Les champs email, first_name et last_name sont obligatoires."))
+            # 1. Validation des champs obligatoires
+            required_fields = ['email', 'first_name', 'last_name']
+            if not all(data.get(field) for field in required_fields):
+                return JsonResponse({
+                    'erreur': _("Les champs email, prénom et nom sont obligatoires.")
+                }, status=400)
 
+            # 2. Vérification de l'existence
             if User.objects.filter(email=data['email']).exists():
-                raise ValidationError(_("Un utilisateur avec cet email existe déjà."))
-            
+                return JsonResponse({
+                    'erreur': _("Un utilisateur avec cet email existe déjà.")
+                }, status=400)
 
-            print( data)
-            print("data code_cluster:", data.get('code_cluster', ''))
-            print("data code_dest:", data.get('code_dest', ''))
+            # 3. Préparation des ForeignKeys (Clés étrangères)
+            # IMPORTANT : Si le code est vide, on doit passer None et non ''
+            from cluster.models import Cluster
+            from destination.models import Destination
+
+            cluster_id = data.get('code_cluster')
+            dest_id = data.get('code_dest')
+
+            # On cherche les instances si les IDs sont fournis (cas d'une mise à jour)
+            # Dans le cas d'une création de Cluster, ces variables resteront None
+            cluster_obj = Cluster.objects.filter(id=cluster_id).first() if cluster_id else None
+            dest_obj = Destination.objects.filter(id=dest_id).first() if dest_id else None
+
+            # 4. Création de l'utilisateur
             user = User.objects.create(
                 email=data['email'],
                 first_name=data['first_name'],
                 last_name=data['last_name'],
                 cellphone=data.get('cellphone', ''),
                 lang_com=data.get('lang_com', 'fr'),
-                code_cluster=data.get('code_cluster', ''),
-                code_dest=data.get('code_dest', ''),
+                code_cluster=cluster_obj, # Instance ou None
+                code_dest=dest_obj,       # Instance ou None
+                is_active=False           # Approche Draft : inactif par défaut
             )
 
-            envoyer_email_creation_utilisateur(user, request)
+            # Optionnel : Ne pas envoyer l'email tout de suite si l'utilisateur est inactif
+            # ou si le cluster n'est pas encore totalement créé.
+            # envoyer_email_creation_utilisateur(user, request)
 
             return JsonResponse({
                 'id': user.id,
                 'text': f"{user.first_name} {user.last_name}"
             })
-        except ValidationError as e:
-            return JsonResponse({
-                'erreur': str(e)
-            }, status=400)
+
+        except json.JSONDecodeError:
+            return JsonResponse({'erreur': _("Données JSON invalides.")}, status=400)
         except Exception as e:
-            return JsonResponse({
-                'erreur': "Une erreur est survenue."
-            }, status=500)
+            # Log de l'erreur réelle pour le développeur
+            print(f"Erreur création user: {str(e)}")
+            return JsonResponse({'erreur': _("Une erreur est survenue lors de la création.")}, status=500)
 
 ###################################################################################################
  # Vue Récupérer les langues de communication
@@ -385,30 +412,73 @@ def get_languages(request):
     return JsonResponse(list(languages), safe=False)
 
 ###################################################################################################
- #Vue pour récuperer les utilisateurs existants pour les champs FK dans le formulaire de destination
+ #Vue pour récuperer les utilisateurs créés dans les clusters ou destinations
+
+import json
+from django.http import JsonResponse
+from django.views import View
+from django.db.models import Q
+from django.contrib.auth import get_user_model
+from django.utils.translation import gettext as _
+from destination.models import Destination
 
 User = get_user_model()
 
-def get_users_json(request):
-    code_cluster = request.GET.get('code_cluster', None)
-    code_dest = request.GET.get('code_dest', None)
-    print("code_cluster:", code_cluster)
-    print("code_dest:", code_dest)    
-    # Filtrer les utilisateurs en fonction des paramètres
-    users = User.objects.all().order_by('last_name', 'first_name')
+class AjaxUserHandlerView(View):
+    def get(self, request, *args, **kwargs):
+        """Filtrage des utilisateurs selon le contexte Cluster/Dest."""
+        cluster_code = request.GET.get('code_cluster')
+        code_dest = request.GET.get('code_dest')
+        
+        # 1. Inclure systématiquement les utilisateurs en attente
+        query = Q(is_active=False)
+        
+        # 2. Si un cluster est sélectionné, inclure les actifs du périmètre
+        if cluster_code:
+            active_filter = Q(is_active=True, code_cluster__code_cluster=cluster_code)
+            
+            # Logique de destination parente pour l'héritage
+            dest_restriction = Q(code_dest__code_dest=code_dest) | Q(code_dest__isnull=True)
+            if code_dest:
+                dest_obj = Destination.objects.filter(code_dest=code_dest).first()
+                if dest_obj and dest_obj.code_parent_dest:
+                    dest_restriction |= Q(code_dest__code_dest=dest_obj.code_parent_dest.code_dest)
+            
+            query |= (active_filter & dest_restriction)
 
-    # Appliquer les filtres si les paramètres sont présents
-    if code_cluster:
-        # Filtrer les utilisateurs liés à un cluster spécifique
-        users = users.filter(code_cluster=code_cluster)
-    if code_dest:
-        # Filtrer les utilisateurs liés à une destination spécifique
-        users = users.filter(code_dest=code_dest)
+        users = User.objects.filter(query).distinct().order_by('last_name', 'first_name')
+        results = [{
+            "id": user.id, 
+            "text": f"{user.last_name} {user.first_name}",
+            "is_active": user.is_active
+        } for user in users]
+        
+        return JsonResponse(results, safe=False)
 
+    def post(self, request, *args, **kwargs):
+        """Création d'un utilisateur 'Pending' avec téléphone."""
+        try:
+            data = json.loads(request.body)
+            email = data.get('email')
 
-    # Préparer les données pour la réponse JSON
-    users_data = users.values('id', 'first_name', 'last_name')
+            if User.objects.filter(email=email).exists():
+                return JsonResponse({"erreur": _("Cet email est déjà utilisé.")}, status=400)
 
-    return JsonResponse(list(users_data), safe=False)
+            user = User.objects.create(
+                email=email,
+                first_name=data.get('first_name'),
+                last_name=data.get('last_name'),
+                cellphone=data.get('cellphone', ''),
+                lang_com=data.get('lang_com', 'fr'),
+                is_active=False  # Reste inactif jusqu'au form_valid final
+            )
+
+            return JsonResponse({
+                "id": user.id,
+                "text": f"{user.last_name} {user.first_name} ({_('En attente')})"
+            }, status=201)
+        except Exception as e:
+            return JsonResponse({"erreur": str(e)}, status=400)
 
 ###################################################################################################
+

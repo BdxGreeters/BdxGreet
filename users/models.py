@@ -39,13 +39,14 @@ class CustomUserManager(BaseUserManager):
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     """Modèle utilisateur personnalisé utilisant l'email comme identifiant."""
-    email = models.EmailField(unique=True, verbose_name=_('Courriel'))
-    first_name = models.CharField(max_length=150, verbose_name=_("Prénom"))
-    last_name = models.CharField(max_length=150, verbose_name=_("Nom"))
+    email = models.EmailField(unique=True, verbose_name=_('Courriel'), help_text=_("Saisir l'adresse email"))
+    first_name = models.CharField(max_length=150, verbose_name=_("Prénom"),help_text=_("Saisir le prénom"))
+    last_name = models.CharField(max_length=150, verbose_name=_("Nom"), help_text=_("Saisir le nom de famille"))
     cellphone =models.CharField(max_length=15,blank=True, null=True,verbose_name=_('Téléphone portable'), help_text=_("Saisir le numéro de téléphone portable"))
     lang_com= models.CharField(max_length=10, choices=settings.LANGUAGES, default='fr', verbose_name=_("Langue de communication"), help_text=_("Saisir la langue de communication"))
-    code_cluster=models.CharField(max_length=5, default="",blank=True, null=True,verbose_name=_('Code du cluster'))
-    code_dest=models.CharField(max_length=5, default="",blank=True, null=True,verbose_name=_('Code de la destination'))
+    code_cluster=models.ForeignKey('cluster.Cluster',on_delete=models.SET_NULL, blank=True, null=True,verbose_name=_('Code du cluster'), help_text=_("Saisir le code du cluster"))
+    code_dest=models.ForeignKey('destination.Destination', on_delete=models.SET_NULL,blank=True, null=True,verbose_name=_('Code de la destination'), help_text=_("Saisir le code de la destination"))
+
     
     
     objects = CustomUserManager()
@@ -58,15 +59,6 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['first_name', 'last_name','cellphone','lang_com']
-
-    def save(self, *args, **kwargs):
-        if self.code_cluster:
-            self.code_cluster = self.code_cluster.upper()
-        
-        if self.code_dest:
-            self.code_dest = self.code_dest.upper()
-        
-        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"

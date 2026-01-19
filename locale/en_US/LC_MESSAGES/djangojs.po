@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-29 09:33+0100\n"
+"POT-Creation-Date: 2026-01-11 18:12+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,60 +17,60 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: static/js/new_user.js:38
+#: static/js/new_user.js:100
 msgid "Créer un nouvel utilisateur"
 msgstr "Create a new user"
 
-#: static/js/new_user.js:42
+#: static/js/new_user.js:104
 msgid "Email"
 msgstr "Email"
 
-#: static/js/new_user.js:46
+#: static/js/new_user.js:108
 msgid "Prénom"
 msgstr "First name"
 
-#: static/js/new_user.js:50
+#: static/js/new_user.js:112
 msgid "Nom"
 msgstr "Nom"
 
-#: static/js/new_user.js:54
+#: static/js/new_user.js:116
 msgid "Téléphone"
 msgstr "Phone"
 
-#: static/js/new_user.js:58
+#: static/js/new_user.js:120
 msgid "Langue"
 msgstr "Language"
 
-#: static/js/new_user.js:66
+#: static/js/new_user.js:134
 msgid "Créer"
 msgstr "Create"
 
-#: static/js/new_user.js:67
+#: static/js/new_user.js:135
 msgid "Annuler"
 msgstr "Cancel"
 
-#: static/js/new_user.js:77
+#: static/js/new_user.js:150
 msgid "Veuillez remplir tous les champs requis"
 msgstr "Please fill in all required fields"
 
-#: static/js/new_user.js:116
+#: static/js/new_user.js:193
 msgid "Succès"
 msgstr "Success"
 
-#: static/js/new_user.js:116
+#: static/js/new_user.js:193
 msgid "Utilisateur créé avec succès!"
 msgstr "User successfully created!"
 
-#: static/js/tag_input.js:21 static/js/tag_input.js:101
+#: static/js/tag_input.js:46 static/js/tag_input.js:128
 msgid "Ajouter un item"
 msgstr "Add an item"
 
-#: static/js/tag_input.js:39
+#: static/js/tag_input.js:66
 #, javascript-format
 msgid "Nombre minimum d'items %s non atteint !"
 msgstr "Minimum number of items %s not reached!"
 
-#: static/js/tag_input.js:100
+#: static/js/tag_input.js:127
 #, javascript-format
 msgid "Maximum %s éléments atteint!"
 msgstr "Maximum %s elements reached!"

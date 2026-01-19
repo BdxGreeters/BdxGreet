@@ -1,110 +1,65 @@
-document.addEventListener('DOMContentLoaded', function() {
-    
-    // --- 1. Définitions des champs ---
-    const clusterField = document.getElementById('id_code_cluster');
-    const destField = document.getElementById('id_code_dest');
-    
-    const fieldsToUpdate = [
-        'id_manager_dest',
-        'id_referent_dest',
-        'id_matcher_dest',
-        'id_matcher_alt_dest',
-        'id_finance_dest'
-    ];
+/**
+ * Gestionnaire de filtrage dynamique des utilisateurs par Cluster et Destination.
+ * Ce script synchronise plusieurs listes déroulantes suite à des changements
+ * de critères ou à des créations d'utilisateurs via modales.
+ */
+(function() {
+    'use strict';
 
-    // --- 2. Fonction de nettoyage ---
-    function clearSelects() {
-        fieldsToUpdate.forEach(function(fieldId) {
-            const select = document.getElementById(fieldId);
-            if (select) {
-                select.innerHTML = ''; // Vide toutes les options
-                const defaultOption = document.createElement('option');
-                defaultOption.value = '';
-                defaultOption.textContent = 'Veuillez d\'abord saisir les codes';
-                select.appendChild(defaultOption);
-            }
-        });
-    }
+    const CONFIG = {
+        triggers: ['id_code_cluster', 'id_code_dest'],
+        userFields: ['id_manager_dest', 'id_referent_dest', 'id_matcher_dest', 'id_matcher_alt_dest', 'id_finance_dest']
+    };
 
-    // --- 3. Fonction AJAX (Pure JS) pour la mise à jour ---
-    function updateUserSelects() {
-        const clusterCode = clusterField.value;
-        const codeDest = destField.value.toUpperCase();
-        
-        // Assurez-vous d'avoir l'URL correcte ici.
-        // Puisqu'on est en JS pur, vous ne pouvez pas utiliser {% url '...' %}
-        // Vous devez la générer côté serveur et la stocker dans une variable JS.
-        // Exemple (à adapter dans votre template Django) :
-        const url = window.AJAX_FILTER_USERS_URL; 
-        
-        if (!clusterCode || !codeDest) {
-            clearSelects();
+    async function refreshUserSelectFields() {
+        const codeCluster = document.getElementById('id_code_cluster')?.value || '';
+        const codeDest = document.getElementById('id_code_dest')?.value || '';
+
+        if (!codeCluster) {
+            updateDomSelects([]);
             return;
         }
 
-        // Création des paramètres de requête (Pure JS)
-        const params = new URLSearchParams({
-            cluster_code: clusterCode,
-            code_dest: codeDest
+        // URLSearchParams gère proprement l'encodage des paramètres
+        const params = new URLSearchParams({ 
+            code_cluster: codeCluster, 
+            code_dest: codeDest 
         });
 
-        // Utilisation de l'API native fetch() (Pure JS)
-        fetch(`${url}?${params.toString()}`)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(users => {
-                fieldsToUpdate.forEach(function(fieldId) {
-                    const select = document.getElementById(fieldId);
-                    if (!select) return;
+        try {
+            const response = await fetch(`${window.AJAX_FILTER_USERS_URL}?${params.toString()}`);
+            if (!response.ok) throw new Error('Erreur API');
+            const users = await response.json();
+            updateDomSelects(users);
+        } catch (err) {
+            console.error("Erreur refresh users:", err);
+        }
+    }
 
-                    const selectedValue = select.value;
-                    select.innerHTML = ''; // Vider
+    function updateDomSelects(users) {
+        CONFIG.userFields.forEach(fieldId => {
+            const select = document.getElementById(fieldId);
+            if (!select) return;
 
-                    // Option vide
-                    const initialOption = document.createElement('option');
-                    initialOption.value = '';
-                    initialOption.textContent = '---------';
-                    select.appendChild(initialOption);
-
-                    // Ajouter les nouveaux utilisateurs
-                    users.forEach(function(user) {
-                        const option = document.createElement('option');
-                        option.value = user.id;
-                        option.textContent = user.text;
-                        select.appendChild(option);
-                    });
-
-                    // Tenter de re-sélectionner l'ancienne valeur
-                    select.value = selectedValue;
-                });
-            })
-            .catch(error => {
-                console.error("Erreur lors du filtrage AJAX:", error);
-                // Optionnel: Afficher un message d'erreur à l'utilisateur
+            const currentVal = select.value;
+            select.innerHTML = '<option value="">---------</option>';
+            
+            users.forEach(u => {
+                const opt = new Option(u.text, u.id);
+                select.add(opt);
             });
+
+            // On ne restaure la valeur que si elle est toujours présente dans la liste filtrée
+            select.value = currentVal; 
+        });
     }
 
-    // --- 4. Attacher les écouteurs d'événements (Pure JS) ---
-    if (clusterField) {
-        clusterField.addEventListener('change', updateUserSelects);
-    }
-    if (destField) {
-        destField.addEventListener('change', updateUserSelects);
-    }
-    
-    // --- 5. Exécution initiale (Si le formulaire est pré-rempli) ---
-    updateUserSelects();
-});
+    document.addEventListener('DOMContentLoaded', () => {
+        CONFIG.triggers.forEach(id => {
+            document.getElementById(id)?.addEventListener('change', refreshUserSelectFields);
+        });
+        refreshUserSelectFields();
+    });
 
-// IMPORTANT : Pour que cela fonctionne, dans votre template Django,
-// vous devez définir la variable JS URL avant ce script :
-/*
-<script>
-    window.AJAX_FILTER_USERS_URL = "{% url 'ajax_filter_users' %}";
-</script>
-<script src="votre-script.js"></script>
-*/
+    window.refreshUserSelectFields = refreshUserSelectFields;
+})();
