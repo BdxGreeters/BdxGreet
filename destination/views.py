@@ -23,6 +23,7 @@ from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from django.urls import reverse
 from django.db import transaction
+from core.tasks import envoyer_email_creation_utilisateur
 
 User=get_user_model()
 
@@ -98,7 +99,7 @@ class DestinationCreateView(LoginRequiredMixin, SuperAdminRequiredMixin, HelpTex
                         
                         # Email via Celery (on_commit)
                         transaction.on_commit(
-                            lambda u_id=user_obj.id: envoyer_email_creation_utilisateur.delay(u_id, domain)
+                            lambda u_id=user_obj.id: envoyer_email_creation_utilisateur.delay(u_id, self.request)
                         )
 
                 # D. Image & Traduction

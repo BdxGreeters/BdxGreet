@@ -449,7 +449,7 @@ class AjaxUserHandlerView(View):
         users = User.objects.filter(query).distinct().order_by('last_name', 'first_name')
         results = [{
             "id": user.id, 
-            "text": f"{user.last_name} {user.first_name}",
+            "text": f"{user.first_name} {user.last_name}",
             "is_active": user.is_active
         } for user in users]
         
@@ -475,7 +475,7 @@ class AjaxUserHandlerView(View):
 
             return JsonResponse({
                 "id": user.id,
-                "text": f"{user.last_name} {user.first_name} ({_('En attente')})"
+                "text": f"{user.first_name} {user.last_name} ({_('En attente')})"
             }, status=201)
         except Exception as e:
             return JsonResponse({"erreur": str(e)}, status=400)

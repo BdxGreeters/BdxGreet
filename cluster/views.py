@@ -271,27 +271,26 @@ class ClusterUpdateView(LoginRequiredMixin, SuperAdminRequiredMixin, FormFieldPe
                 self.save_related_data(form)
 
                 # 5. Gestion des utilisateurs AJAX (Peding Admin et Pending Admin Alt)
-                pending_adm_id = form.cleaned_data.get('pending_adm_id')
-                pending_adm_alt_id = form.cleaned_data.get('pending_adm_alt_id')
-
-                for pending_id in [pending_adm_id, pending_adm_alt_id]: # This line was already indented correctly.
-                    if pending_id:
-                # S'assurer que pending_id est traité comme un entier/string valide
-                        print(f"DEBUG: Traitement de l'utilisateur ID {pending_id}")
+                pending_adm_id = self.request.POST.get('pending_adm_id')
+                pending_adm_alt_id = self.request.POST.get('pending_adm_alt_id')
+                pending_admins = [pending_adm_id, pending_adm_alt_id]
+                
+                for adm_id in pending_admins:
+                    if adm_id:
                         try:
-                    # On utilise select_for_update pour éviter les accès concurrents
-                            new_user = User.objects.select_for_update().get(id=pending_id)
-                            new_user.code_cluster = cluster # This line was already indented correctly.
+                            # Utilisation de select_for_update pour verrouiller la ligne
+                            new_user = User.objects.select_for_update().get(id=adm_id)
+                            new_user.code_cluster = cluster
                             new_user.is_active = True
-                    
-                    # Attribution du groupe Admin
-                            admin_group, _ = Group.objects.get_or_create(name='Admin')
+                            
+                            admin_group, creted = Group.objects.get_or_create(name='Admin')
                             new_user.groups.add(admin_group)
                             new_user.save()
+                            print(f"Utilisateur {new_user.id} lié au cluster {cluster.code_cluster} et activé.")
 
-                    # Envoi du courriel
+                            # Appel de la tâche : on passe l'ID pour la sécurité
+                            # La transaction.on_commit est gérée à l'intérieur de la fonction
                             envoyer_email_creation_utilisateur(new_user.id, self.request)
-                            print(f"DEBUG: Email envoyé à {new_user.email}")
                     
                         except User.DoesNotExist:
                             print(f"DEBUG: Utilisateur {pending_id} introuvable")

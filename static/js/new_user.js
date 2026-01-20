@@ -1,25 +1,23 @@
 /**
  * Script de gestion dynamique des utilisateurs pour Cluster et Destination.    
  * 
- * /**
- * Script de gestion dynamique des utilisateurs pour Cluster et Destination.
  */
+
 document.addEventListener('DOMContentLoaded', function() {
-    // --- 1. INITIALISATION ET RÉCUPÉRATION DES ÉLÉMENTS ---
+    // Initialisation des éléments globaux
     const clusterField = document.getElementById('id_code_cluster');
     const destField = document.getElementById('id_code_dest');
     const newUserButtons = document.querySelectorAll('[data-target-field]');
 
     console.log("--- Initialisation du script ---");
-    console.log("Nombre de boutons de création trouvés :", newUserButtons.length);
+    console.log("Boutons de création détectés :", newUserButtons.length);
 
     /**
      * Récupère le jeton CSRF de manière robuste.
-     */
+        */
     function getCsrfToken() {
         const csrfInput = document.querySelector('[name=csrfmiddlewaretoken]');
         if (csrfInput && csrfInput.value) return csrfInput.value;
-
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {
             const cookies = document.cookie.split(';');
@@ -40,21 +38,20 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     /**
-     * Rafraîchit tous les champs Select d'utilisateurs
+     * Rafraîchit les selects et force la sélection si un nouvel ID est fourni.
      */
-    async function refreshUserSelectFields() {
+    async function refreshUserSelectFields(forceValue, targetId) {
         const clusterCode = clusterField?.value || '';
         const destCode = destField?.value || '';
         
-        console.log(`Rafraîchissement des listes (Cluster: ${clusterCode}, Dest: ${destCode})`);
+        console.log(`[Refresh] Début du rafraîchissement (Cluster: ${clusterCode}, Dest: ${destCode})`);
         
         if (!clusterCode) {
-            console.warn("Pas de code cluster, abandon du rafraîchissement.");
-            return;
-        }
+        throw new Error("Opération annulée : le 'clusterCode' est obligatoire.");
+        };
 
         const params = new URLSearchParams({ code_cluster: clusterCode, code_dest: destCode });
-
+        console.log("[Fetch] Récupération des utilisateurs avec params :", params.toString());
         try {
             const response = await fetch(`${getBaseUrl()}?${params.toString()}`);
             const users = await response.json();
@@ -68,57 +65,60 @@ document.addEventListener('DOMContentLoaded', function() {
                 const select = document.getElementById(id);
                 if (select) {
                     const currentVal = select.value;
+                    console.log(`[A mettre à jour] Mise à jour du champ '${id}' (Valeur actuelle: ${forceValue})`);
                     select.innerHTML = '<option value="">---------</option>';
                     users.forEach(u => select.add(new Option(u.text, u.id)));
-                    select.value = currentVal;
+                    
+                    // Mise en avant si c'est le champ ciblé
+                    if (id === targetId && forceValue) {
+                        select.value = forceValue;
+                        console.log(`[Selection] Champ '${id}' mis à jour avec le nouvel utilisateur (ID: ${forceValue})`);
+                    } else {
+                        select.value = currentVal;
+                    }
                 }
             });
-            console.log("Mise à jour des listes Select réussie.");
-        } catch (err) { 
-            console.error("Erreur de rafraîchissement:", err); 
-        }
+        } catch (err) { console.error("Erreur rafraîchissement:", err); }
     }
 
     // Écouteurs sur les changements de code
     [clusterField, destField].forEach(el => {
         el?.addEventListener('change', () => {
-            console.log(`Changement détecté sur le champ : ${el.id}`);
+            console.log(`[Event] Changement sur ${el.id}`);
             refreshUserSelectFields();
         });
     });
 
     /**
-     * GESTION DE LA CRÉATION D'UTILISATEUR
+     * Gestion de la création d'utilisateur
      */
     newUserButtons.forEach(button => {
         button.addEventListener('click', async function() {
-            // Déclaration des cibles issues du bouton
+            // Déclaration des cibles
             const targetFieldId = this.getAttribute('data-target-field');
             const pendingFieldId = this.getAttribute('data-pending-field');
 
-            console.group("Action : Ouverture Modale Création");
-            console.log("Bouton cliqué :", this);
-            console.log("ID Target (Select) :", targetFieldId);
-            console.log("ID Pending (Hidden) :", pendingFieldId);
+            console.group("--- Création Utilisateur ---");
+            console.log("Cible (Select)  :", targetFieldId);
+            console.log("Cible (Pending) :", pendingFieldId);
             console.groupEnd();
 
-            // 1. Récupération des langues
+            // Récupération des langues pour la modale
             let langOptions = "";
             try {
                 const res = await fetch(`/${document.documentElement.lang || 'fr'}/core/get-languages/`);
                 const langs = await res.json();
                 langOptions = langs.map(l => `<option value="${l.code}">${l.name}</option>`).join('');
-            } catch (e) { console.error("Erreur fetch langues:", e); }
+            } catch (e) { console.error(e); }
 
-            // 2. Ouverture de la modale SweetAlert2
             Swal.fire({
                 title: gettext('Créer un utilisateur'),
                 html: `
                     <div class="text-start">
-                        <input type="email" id="swal-email" class="swal2-input" placeholder="${gettext('Email')}" required>
-                        <input type="text" id="swal-first" class="swal2-input" placeholder="${gettext('Prénom')}" required>
-                        <input type="text" id="swal-last" class="swal2-input" placeholder="${gettext('Nom')}" required>
-                        <input type="text" id="swal-phone" class="swal2-input" placeholder="${gettext('Téléphone')}">
+                        <input type="email" id="swal-email" class="swal2-input" placeholder="${gettext('Email')}" autocomplete="off" required>
+                        <input type="text" id="swal-first" class="swal2-input" placeholder="${gettext('Prénom')}" autocomplete="off" required>
+                        <input type="text" id="swal-last" class="swal2-input" placeholder="${gettext('Nom')}" autocomplete="off" required>
+                        <input type="text" id="swal-phone" class="swal2-input" placeholder="${gettext('Téléphone')}" autocomplete="off">
                         <select id="swal-lang" class="swal2-select" style="width:70%">${langOptions}</select>
                     </div>
                 `,
@@ -134,59 +134,42 @@ document.addEventListener('DOMContentLoaded', function() {
                         lang_com: document.getElementById('swal-lang').value
                     };
 
-                    console.log("Tentative d'envoi du payload :", payload);
-                    console.log("Jeton CSRF utilisé :", csrfToken);
+                    console.log("[POST] Envoi des données :", payload);
 
                     if (!csrfToken) {
-                        Swal.showValidationMessage(gettext('Erreur de sécurité : Jeton CSRF manquant.'));
-                        return;
-                    }
-
-                    if (!payload.email || !payload.first_name || !payload.last_name) {
-                        Swal.showValidationMessage(gettext('Veuillez remplir les champs obligatoires'));
+                        Swal.showValidationMessage(gettext('Jeton CSRF manquant.'));
                         return;
                     }
 
                     return fetch(getBaseUrl(), {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': csrfToken
-                        },
+                        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
                         body: JSON.stringify(payload)
                     })
                     .then(response => {
                         if (!response.ok) return response.json().then(err => { throw new Error(err.erreur); });
                         return response.json();
                     })
-                    .catch(error => {
-                        console.error("Erreur lors de l'appel POST :", error);
-                        Swal.showValidationMessage(error.message);
-                    });
+                    .catch(error => Swal.showValidationMessage(error.message));
                 }
             }).then(async (result) => {
                 if (result.isConfirmed && result.value) {
                     const newUser = result.value;
-                    console.log("Nouvel utilisateur créé avec succès :", newUser);
+                    console.log("[Succès] Utilisateur créé avec l'ID :", newUser.id);
+                    console.log("Détails du champ cible:", targetFieldId);
+                    // Mise à jour et pré-remplissage du Select
+                    await refreshUserSelectFields(newUser.id, targetFieldId);
 
-                    // Mise à jour de toutes les listes
-                    await refreshUserSelectFields();
-
-                    // Sélection automatique dans le champ ciblé
-                    const selectEl = document.getElementById(targetFieldId);
-                    if (selectEl) {
-                        selectEl.value = newUser.id;
-                        console.log(`Champ Select (${targetFieldId}) mis à jour.`);
-                    }
-
-                    // Remplissage du champ caché (pending)
+                    // Mise à jour du champ caché PENDING
                     const hiddenEl = document.getElementById(pendingFieldId);
                     if (hiddenEl) {
                         hiddenEl.value = newUser.id;
-                        console.log(`Champ Pending (${pendingFieldId}) mis à jour.`);
+                        console.log(`[Pending] Champ '${pendingFieldId}' mis à jour avec la valeur :`, hiddenEl.value);
+                    } else {
+                        console.warn(`[Pending] Le champ caché '${pendingFieldId}' est introuvable dans le DOM.`);
                     }
 
-                    Swal.fire(gettext('Succès'), gettext('Utilisateur saisi avec succès.'), 'success');
+                    Swal.fire(gettext('Succès'), gettext('Utilisateur créé et sélectionné.'), 'success');
                 }
             });
         });

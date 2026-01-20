@@ -20,11 +20,11 @@ User = get_user_model()
 
 class DestinationForm(HelpTextTooltipMixin, CommaSeparatedFieldMixin, forms.ModelForm):
     # Champs cachés pour les utilisateurs "en attente"
-    pending_manager_id = forms.CharField(widget=forms.HiddenInput(), required=False)
-    pending_referent_id = forms.CharField(widget=forms.HiddenInput(), required=False)
-    pending_matcher_id = forms.CharField(widget=forms.HiddenInput(), required=False)
-    pending_matcher_alt_id = forms.CharField(widget=forms.HiddenInput(), required=False)
-    pending_finance_id = forms.CharField(widget=forms.HiddenInput(), required=False)
+    pending_manager_dest_id = forms.CharField(widget=forms.HiddenInput(), required=False)
+    pending_referent_dest_id = forms.CharField(widget=forms.HiddenInput(), required=False)
+    pending_matcher_dest_id = forms.CharField(widget=forms.HiddenInput(), required=False)
+    pending_matcher_alt_dest_id = forms.CharField(widget=forms.HiddenInput(), required=False)
+    pending_finance_dest_id = forms.CharField(widget=forms.HiddenInput(), required=False)
 
     # Champ spécifique géré par CommaSeparatedFieldMixin
     list_places_dest = forms.CharField(
@@ -121,11 +121,11 @@ class DestinationForm(HelpTextTooltipMixin, CommaSeparatedFieldMixin, forms.Mode
 
         # 4. LAYOUT CRISPY
         self.helper.layout = Layout(
-            'pending_manager_id',
-            'pending_referent_id',
-            'pending_matcher_id',
-            'pending_matcher_alt_id',
-            'pending_finance_id',
+            'pending_manager_dest_id',
+            'pending_referent_dest_id',
+            'pending_matcher_dest_id',
+            'pending_matcher_dest_alt_id',
+            'pending_finance_dest_id',
             TabHolder(
                 Tab(_("Informations générales"),
                     Row(
@@ -155,7 +155,7 @@ class DestinationForm(HelpTextTooltipMixin, CommaSeparatedFieldMixin, forms.Mode
                 Tab(_("Administration"),
                     *[Row(
                         Column(field, css_class='col-md-6'),
-                        Column(HTML(f'<button type="button" class="btn btn-sm btn-primary ms-2" data-target-field="id_{field}"><i class="fas fa-plus"></i> {_("Nouveau")}</button>'), css_class='col-md-2')
+                        Column(HTML(f'<button type="button" class="btn btn-sm btn-primary ms-2" data-target-field="id_{field}" data-pending-field="id_pending_{field}_id"><i class="fas fa-plus"></i> {_("Nouvel utilisateur")}</button>'), css_class='col-md-2')
                     ) for field in user_fields]
                 ),
                 Tab(_("Lieux & Paramètres"),

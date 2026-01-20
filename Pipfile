@@ -50,7 +50,6 @@ django-extensions = "*"
 django-formtools = "*"
 isort = "*"
 django-environ = "*"
-django-browser-reload = "*"
 
 [dev-packages]
 
