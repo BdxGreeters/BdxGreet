@@ -71,15 +71,14 @@ class DestinationForm(HelpTextTooltipMixin, CommaSeparatedFieldMixin, forms.Mode
         # Récupération des arguments passés par la vue (get_form_kwargs)
         user = kwargs.pop('user', None)
         code_cluster_user = kwargs.pop('code_cluster_user', None)
-        self.is_update = kwargs.pop('is_update', False)
+        self.update_mode = kwargs.pop('is_update', False)
         
         super().__init__(*args, **kwargs)
         
-        self.helper = FormHelper()
-        self.helper.form_method = 'post'
+        
 
         # 1. LOGIQUE CLUSTER & ÉDITION
-        if self.is_update and self.instance and self.instance.pk:
+        if self.update_mode and self.instance and self.instance.pk:
             if self.instance.code_cluster:
                 self.initial['code_cluster'] = self.instance.code_cluster
                 self.fields['code_cluster'].disabled = True
@@ -120,11 +119,15 @@ class DestinationForm(HelpTextTooltipMixin, CommaSeparatedFieldMixin, forms.Mode
         self.apply_tooltips() # Mixin
 
         # 4. LAYOUT CRISPY
+        self.helper = FormHelper()
+        self.helper.form_attributes = {
+            'data-form-type': 'destination'}
+        self.helper.form_method = 'post'
         self.helper.layout = Layout(
             'pending_manager_dest_id',
             'pending_referent_dest_id',
             'pending_matcher_dest_id',
-            'pending_matcher_dest_alt_id',
+            'pending_matcher_alt_dest_id',
             'pending_finance_dest_id',
             TabHolder(
                 Tab(_("Informations générales"),

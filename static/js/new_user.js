@@ -1,20 +1,44 @@
 /**
- * Script de gestion dynamique des utilisateurs pour Cluster et Destination.    
- * 
+ * Script de gestion dynamique des utilisateurs pour Cluster et Destination.
  */
-
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialisation des éléments globaux
+    // 1. Initialisation des éléments et détection du contexte
     const clusterField = document.getElementById('id_code_cluster');
     const destField = document.getElementById('id_code_dest');
     const newUserButtons = document.querySelectorAll('[data-target-field]');
+    
+    // Détection du type de formulaire (défini via Crispy FormHelper)
+    let formElement = document.querySelector('form[data-form-type]');
+    let formType = 'default';
+
+    if (formElement) {
+        formType = formElement.getAttribute('data-form-type');
+    } else if (destField) {
+        formType = 'destination'; // Si le champ code_dest existe, on est forcément dans ce contexte
+    }
 
     console.log("--- Initialisation du script ---");
     console.log("Boutons de création détectés :", newUserButtons.length);
+    console.log("Contexte formulaire détecté :", formType);
 
     /**
-     * Récupère le jeton CSRF de manière robuste.
-        */
+     * Vide tous les sélecteurs d'utilisateurs
+     */
+    function clearUserSelects() {
+        const userSelectIds = [
+            'id_admin_cluster', 'id_admin_alt_cluster', 'id_manager_dest', 
+            'id_referent_dest', 'id_matcher_dest', 'id_matcher_alt_dest', 'id_finance_dest'
+        ];
+        console.log("[Clean] Vidage des sélecteurs d'utilisateurs.");
+        userSelectIds.forEach(id => {
+            const select = document.getElementById(id);
+            if (select) select.innerHTML = '<option value="">---------</option>';
+        });
+    }
+
+    /**
+     * Récupère le jeton CSRF
+     */
     function getCsrfToken() {
         const csrfInput = document.querySelector('[name=csrfmiddlewaretoken]');
         if (csrfInput && csrfInput.value) return csrfInput.value;
@@ -38,24 +62,40 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     /**
-     * Rafraîchit les selects et force la sélection si un nouvel ID est fourni.
+     * Rafraîchit les selects selon les codes Cluster et Destination
      */
     async function refreshUserSelectFields(forceValue, targetId) {
         const clusterCode = clusterField?.value || '';
         const destCode = destField?.value || '';
         
-        console.log(`[Refresh] Début du rafraîchissement (Cluster: ${clusterCode}, Dest: ${destCode})`);
+        console.log(`[Refresh] Début (Form: ${formType}, Cluster: ${clusterCode}, Dest: ${destCode})`);
         
-        if (!clusterCode) {
-        throw new Error("Opération annulée : le 'clusterCode' est obligatoire.");
-        };
+        // --- LOGIQUE DE FILTRAGE STRICTE ---
+        if (formType === 'destination') {
+            // Dans le formulaire Destination, les deux sont obligatoires
+            if (!clusterCode || !destCode) {
+                console.warn("[Refresh] Annulé : Cluster ou Destination manquant pour le mode 'destination'.");
+                clearUserSelects();
+                return;
+            }
+        } else {
+            // Dans le formulaire Cluster (ou autre), seul le cluster est obligatoire
+            if (!clusterCode) {
+                console.warn("[Refresh] Annulé : ClusterCode obligatoire.");
+                clearUserSelects();
+                return;
+            }
+        }
 
         const params = new URLSearchParams({ code_cluster: clusterCode, code_dest: destCode });
         console.log("[Fetch] Récupération des utilisateurs avec params :", params.toString());
+        
         try {
             const response = await fetch(`${getBaseUrl()}?${params.toString()}`);
+            if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
+            
             const users = await response.json();
-
+            console.log(`[Fetch] Utilisateurs reçus (${users.length}) :`, users);
             const userSelectIds = [
                 'id_admin_cluster', 'id_admin_alt_cluster', 'id_manager_dest', 
                 'id_referent_dest', 'id_matcher_dest', 'id_matcher_alt_dest', 'id_finance_dest'
@@ -65,20 +105,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 const select = document.getElementById(id);
                 if (select) {
                     const currentVal = select.value;
-                    console.log(`[A mettre à jour] Mise à jour du champ '${id}' (Valeur actuelle: ${forceValue})`);
+                    console.log(`[A mettre à jour] Champ '${id}' (Valeur forcée: ${forceValue || 'aucune'})`);
+                    
                     select.innerHTML = '<option value="">---------</option>';
                     users.forEach(u => select.add(new Option(u.text, u.id)));
                     
-                    // Mise en avant si c'est le champ ciblé
+                    // Mise à jour de la sélection
                     if (id === targetId && forceValue) {
                         select.value = forceValue;
-                        console.log(`[Selection] Champ '${id}' mis à jour avec le nouvel utilisateur (ID: ${forceValue})`);
+                        console.log(`[Selection] Champ '${id}' fixé sur le nouvel utilisateur ID: ${forceValue}`);
                     } else {
                         select.value = currentVal;
                     }
                 }
             });
-        } catch (err) { console.error("Erreur rafraîchissement:", err); }
+        } catch (err) { 
+            console.error("Erreur rafraîchissement:", err);
+            clearUserSelects(); 
+        }
     }
 
     // Écouteurs sur les changements de code
@@ -90,11 +134,10 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     /**
-     * Gestion de la création d'utilisateur
+     * Gestion de la création d'utilisateur via SweetAlert2
      */
     newUserButtons.forEach(button => {
         button.addEventListener('click', async function() {
-            // Déclaration des cibles
             const targetFieldId = this.getAttribute('data-target-field');
             const pendingFieldId = this.getAttribute('data-pending-field');
 
@@ -103,13 +146,12 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log("Cible (Pending) :", pendingFieldId);
             console.groupEnd();
 
-            // Récupération des langues pour la modale
             let langOptions = "";
             try {
                 const res = await fetch(`/${document.documentElement.lang || 'fr'}/core/get-languages/`);
                 const langs = await res.json();
                 langOptions = langs.map(l => `<option value="${l.code}">${l.name}</option>`).join('');
-            } catch (e) { console.error(e); }
+            } catch (e) { console.error("Erreur langues:", e); }
 
             Swal.fire({
                 title: gettext('Créer un utilisateur'),
@@ -155,18 +197,14 @@ document.addEventListener('DOMContentLoaded', function() {
             }).then(async (result) => {
                 if (result.isConfirmed && result.value) {
                     const newUser = result.value;
-                    console.log("[Succès] Utilisateur créé avec l'ID :", newUser.id);
-                    console.log("Détails du champ cible:", targetFieldId);
-                    // Mise à jour et pré-remplissage du Select
+                    console.log("[Succès] Utilisateur créé :", newUser.id);
+                    
                     await refreshUserSelectFields(newUser.id, targetFieldId);
 
-                    // Mise à jour du champ caché PENDING
                     const hiddenEl = document.getElementById(pendingFieldId);
                     if (hiddenEl) {
                         hiddenEl.value = newUser.id;
-                        console.log(`[Pending] Champ '${pendingFieldId}' mis à jour avec la valeur :`, hiddenEl.value);
-                    } else {
-                        console.warn(`[Pending] Le champ caché '${pendingFieldId}' est introuvable dans le DOM.`);
+                        console.log(`[Pending] '${pendingFieldId}' mis à jour.`);
                     }
 
                     Swal.fire(gettext('Succès'), gettext('Utilisateur créé et sélectionné.'), 'success');

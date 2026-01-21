@@ -430,33 +430,57 @@ class AjaxUserHandlerView(View):
         cluster_code = request.GET.get('code_cluster')
         code_dest = request.GET.get('code_dest')
         
-        # 1. Inclure systématiquement les utilisateurs en attente
+        # On récupère le type de formulaire si envoyé, sinon on le déduit
+        # Si code_dest est présent, on considère qu'on est en mode "destination"
+        is_dest_mode = bool(code_dest)
+
+        # 1. Base : Inclure systématiquement les utilisateurs "Pending" (inactifs)
+        # pour qu'ils apparaissent dès qu'ils sont créés via la modale
         query = Q(is_active=False)
         
-        # 2. Si un cluster est sélectionné, inclure les actifs du périmètre
+        # 2. Gestion des utilisateurs actifs selon le périmètre
         if cluster_code:
-            active_filter = Q(is_active=True, code_cluster__code_cluster=cluster_code)
-            
-            # Logique de destination parente pour l'héritage
-            dest_restriction = Q(code_dest__code_dest=code_dest) | Q(code_dest__isnull=True)
-            if code_dest:
+            if is_dest_mode:
+                # LOGIQUE STRICTE DESTINATION :
+                # On veut les actifs qui ont EXACTEMENT ce cluster ET cette destination
+                # On exclut ceux qui ont une destination vide ou nulle
+                active_filter = Q(
+                    is_active=True, 
+                    code_cluster__code_cluster=cluster_code,
+                    code_dest__code_dest=code_dest
+                )
+                
+                # Optionnel : Gestion de l'héritage (Parent) si nécessaire
                 dest_obj = Destination.objects.filter(code_dest=code_dest).first()
                 if dest_obj and dest_obj.code_parent_dest:
-                    dest_restriction |= Q(code_dest__code_dest=dest_obj.code_parent_dest.code_dest)
+                    active_filter |= Q(
+                        is_active=True,
+                        code_cluster__code_cluster=cluster_code,
+                        code_dest__code_dest=dest_obj.code_parent_dest.code_dest
+                    )
+            else:
+                # LOGIQUE CLUSTER (Si pas de code_dest fourni) :
+                # On prend les actifs du cluster qui n'ont PAS de destination
+                active_filter = Q(
+                    is_active=True, 
+                    code_cluster__code_cluster=cluster_code
+                ) & (Q(code_dest__isnull=True) | Q(code_dest__code_dest=''))
             
-            query |= (active_filter & dest_restriction)
+            query |= active_filter
 
-        users = User.objects.filter(query).distinct().order_by('last_name', 'first_name')
+        # Exécution de la requête
+        users = User.objects.filter(query).distinct().order_by('first_name', 'last_name')
+        
         results = [{
             "id": user.id, 
-            "text": f"{user.first_name} {user.last_name}",
+            "text": f"{user.first_name} {user.last_name} ({_('Actif') if user.is_active else _('En attente')})",
             "is_active": user.is_active
         } for user in users]
         
         return JsonResponse(results, safe=False)
 
     def post(self, request, *args, **kwargs):
-        """Création d'un utilisateur 'Pending' avec téléphone."""
+        """Création d'un utilisateur 'Pending'."""
         try:
             data = json.loads(request.body)
             email = data.get('email')
@@ -470,7 +494,7 @@ class AjaxUserHandlerView(View):
                 last_name=data.get('last_name'),
                 cellphone=data.get('cellphone', ''),
                 lang_com=data.get('lang_com', 'fr'),
-                is_active=False  # Reste inactif jusqu'au form_valid final
+                is_active=False 
             )
 
             return JsonResponse({

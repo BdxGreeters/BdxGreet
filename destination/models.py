@@ -10,6 +10,7 @@ from cluster.models import Cluster, InterestCenter
 from core.models import (Beneficiaire,  Language_communication,
                          LangueDeepL, LangueParlee, No_show, Pays, Periode,
                          TrancheAge, Types_handicap)
+from core.tasks import resize_image_field
 
 User=get_user_model()
 
@@ -52,8 +53,19 @@ class Destination(models.Model):
     disability_dest=models.BooleanField(default=False,verbose_name=_("Handicap accepté"),help_text=_("Cocher la case si des visteurs ayant un handicap sont acceptés"))
     disability_libelle_dest=models.TextField(max_length=500,default=" ",blank=True,null=True,verbose_name=_("Présentation de la gestion du handicap"),help_text=_("Saisir la présentation de la gestion du handicap"))
 
+    #def __init__(self, *args, **kwargs):
+        #super().__init__(*args, **kwargs)
+        # On garde une trace du logo au moment du chargement de l'objet
+        #self._old_logo = self.logo_dest.name if self.logo_dest else None
 
     def save(self, *args, **kwargs):
+        # On compare le nom actuel avec l'ancien nom stocké
+        #current_logo_name = self.logo_dest.name if self.logo_dest else None
+        #if current_logo_name != self._old_logo:
+           # On ne lance le redimensionnement que s'il y a vraiment une image
+        #    if self.logo_dest:
+        #        resize_image_field(self.logo_dest, size=(300, 300))
+        
         if self.code_dest:            
             self.code_dest=self.code_dest.upper()
         if self.code_parent_dest:

@@ -88,22 +88,22 @@ class DestinationCreateView(LoginRequiredMixin, SuperAdminRequiredMixin, HelpTex
 
                 for field, group_name in user_roles.items():
                     user_obj = form.cleaned_data.get(field)
+                    print(f"Traitement de l'utilisateur pour le champ {field}: {user_obj}")
                     if user_obj:
                         user_obj.is_active = True
                         user_obj.code_cluster = dest.code_cluster
                         user_obj.code_dest = dest
                         user_obj.save()
                         
-                        group, _ = Group.objects.get_or_create(name=group_name)
+                        group,created= Group.objects.get_or_create(name=group_name)
                         user_obj.groups.add(group)
                         
                         # Email via Celery (on_commit)
-                        transaction.on_commit(
-                            lambda u_id=user_obj.id: envoyer_email_creation_utilisateur.delay(u_id, self.request)
-                        )
+                        envoyer_email_creation_utilisateur(user_obj.id, self.request)
+                        
 
-                # D. Image & Traduction
-                if dest.logo_dest: self.process_logo(dest)
+                # D. Traduction
+              
                 if dest.disability_libelle_dest:
                     transaction.on_commit(
                         lambda: translation_content.delay("destination", "Destination", dest.id, "disability_libelle_dest")
@@ -113,6 +113,7 @@ class DestinationCreateView(LoginRequiredMixin, SuperAdminRequiredMixin, HelpTex
                 return redirect('create_related_data', destination_id=dest.id)
 
         except Exception as e:
+            print("Erreur lors de la création de la destination :", str(e))
             django_messages.error(self.request, f"Erreur : {str(e)}")
             return self.form_invalid(form)
 ###################################################################################################

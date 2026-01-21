@@ -204,3 +204,47 @@ def reset_password(user_id, domain, template_mailjet_id):
     send_email_mailjet.delay(recipient_email, recipient_name, template_mailjet_id, vars)
 ###################################################################################################
 
+#Vue Redimensionnement des imagesœ
+
+import os
+from PIL import Image
+from io import BytesIO
+from django.core.files.base import ContentFile
+
+def resize_image_field(image_field, size=(300, 300), quality=85):
+    """
+    Redimensionne un ImageField en place.
+    Usage: resize_image_field(self.logo_dest, size=(400, 400))
+    """
+    if not image_field:
+        return
+
+    # 1. Ouvrir l'image
+    img = Image.open(image_field)
+    
+    # 2. Vérifier si un redimensionnement est nécessaire
+    if img.height > size[1] or img.width > size[0]:
+        # Garder le format d'origine
+        img_format = img.format if img.format else 'PNG'
+        
+        # Redimensionnement (Thumbnail préserve le ratio)
+        img.thumbnail(size, Image.Resampling.LANCZOS)
+        
+        # 3. Sauvegarde en mémoire (BytesIO)
+        temp_handle = BytesIO()
+        
+        # Gestion spécifique des formats
+        if img_format == 'JPEG':
+            img.save(temp_handle, format='JPEG', quality=quality, optimize=True)
+        else:
+            img.save(temp_handle, format=img_format, optimize=True)
+        
+        temp_handle.seek(0)
+        
+        # 4. Remplacement du fichier dans le champ
+        file_name = os.path.basename(image_field.name)
+        image_field.save(
+            file_name,
+            ContentFile(temp_handle.read()),
+            save=False  # Important : ne pas déclencher un .save() infini du modèle
+        )

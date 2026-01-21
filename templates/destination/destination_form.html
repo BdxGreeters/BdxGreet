@@ -4,7 +4,7 @@
 {% load static %}
 
 {% block styles %}
-<link rel="stylesheet" href="/static/css/comma_field..css">
+<link rel="stylesheet" href="/static/css/comma_field.css">
 <link rel="stylesheet" href="/static/css/popup_sweetAlert.css">
 <link rel="stylesheet" href="/static/css/checkbox.css">
 {% endblock %}
@@ -21,10 +21,8 @@
 
 {% block script %}
 <script src="{% url 'javascript-catalog' %}"></script>
-<script> window.AJAX_FILTER_USERS_URL = "{% url 'ajax_filter_users' %}";</script>
 <script src="{% static 'js/tag_input.js' %}?v=1.0.0"></script>
 <script src="{% static '/js/script_tooltit.js' %}?v=1.0.0"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="{% static '/js/new_user.js' %}?v={% now 'U' %}"> </script>
-<script src="{% static '/js/insert_users_destinations.js' %}"> </script>
 {% endblock %}

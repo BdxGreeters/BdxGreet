@@ -134,6 +134,8 @@ class ClusterForm(CommaSeparatedFieldMixin, HelpTextTooltipMixin, forms.ModelFor
 
         # Configuration du layout avec crispy_forms
         self.helper = FormHelper()
+        self.helper.form_attributes = {
+            'data-form-type': 'cluster'}
         self.helper.form_method = 'post'
         self.helper.layout = Layout(
             'pending_adm_id',
