@@ -10,38 +10,49 @@ from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext_lazy as _
-
+from django.core.validators import FileExtensionValidator
 from cluster.models import Cluster
 from core.mixins import CommaSeparatedFieldMixin, HelpTextTooltipMixin
 from core.models import FieldPermission, Language_communication, Pays
 from destination.models import Destination, Destination_data, Destination_flux
 
+from django.utils.safestring import mark_safe
+
+class ImagePreviewWidget(forms.ClearableFileInput):
+    def render(self, name, value, attrs=None, renderer=None):
+        output = super().render(name, value, attrs, renderer)
+        if value and hasattr(value, 'url'):
+            preview_html = f'''
+                <div class="mb-2">
+                    <img src="{value.url}" alt="Logo actuel" 
+                         style="max-height: 100px; border: 1px solid #ddd; border-radius: 4px; padding: 5px;">
+                </div>
+            '''
+            return mark_safe(preview_html + output)
+        return output
+    
 User = get_user_model()
 
 class DestinationForm(HelpTextTooltipMixin, CommaSeparatedFieldMixin, forms.ModelForm):
-    # Champs cachés pour les utilisateurs "en attente"
+    # Champs cachés pour l'AJAX
     pending_manager_dest_id = forms.CharField(widget=forms.HiddenInput(), required=False)
     pending_referent_dest_id = forms.CharField(widget=forms.HiddenInput(), required=False)
     pending_matcher_dest_id = forms.CharField(widget=forms.HiddenInput(), required=False)
     pending_matcher_alt_dest_id = forms.CharField(widget=forms.HiddenInput(), required=False)
     pending_finance_dest_id = forms.CharField(widget=forms.HiddenInput(), required=False)
 
-    # Champ spécifique géré par CommaSeparatedFieldMixin
     list_places_dest = forms.CharField(
         required=True, 
         label=_("Lieux ou thèmes"), 
         help_text=_("Saisissez les lieux ou thèmes en les validant par Entrée")
     )
 
-    # Champ pour sélectionner le cluster par son code
     code_cluster = forms.ModelChoiceField(
         queryset=Cluster.objects.all(),
         to_field_name='code_cluster',
         required=True,
-        widget=forms.Select(attrs={'class': 'form-select'})
+        label=_("Cluster")
     )
-    
-    code_cluster_hidden = forms.CharField(widget=forms.HiddenInput(), required=False)   
 
     class Meta:
         model = Destination
@@ -61,6 +72,7 @@ class DestinationForm(HelpTextTooltipMixin, CommaSeparatedFieldMixin, forms.Mode
             'desc_dest': forms.Textarea(attrs={'rows': 2}),
             'adress_dest': forms.Textarea(attrs={'rows': 2}),
             'disability_libelle_dest': forms.Textarea(attrs={'rows': 3}),
+            'logo_dest': ImagePreviewWidget(),
         }
 
     comma_fields_config = {
@@ -68,24 +80,32 @@ class DestinationForm(HelpTextTooltipMixin, CommaSeparatedFieldMixin, forms.Mode
     }
 
     def __init__(self, *args, **kwargs):
-        # Récupération des arguments passés par la vue (get_form_kwargs)
         user = kwargs.pop('user', None)
         code_cluster_user = kwargs.pop('code_cluster_user', None)
-        self.update_mode = kwargs.pop('is_update', False)
-        
+        is_update_arg= kwargs.pop('is_update', False)
+        # Détection automatique du mode Update
         super().__init__(*args, **kwargs)
-        
-        
 
-        # 1. LOGIQUE CLUSTER & ÉDITION
-        if self.update_mode and self.instance and self.instance.pk:
-            if self.instance.code_cluster:
-                self.initial['code_cluster'] = self.instance.code_cluster
+        self.is_updating = is_update_arg or (self.instance and self.instance.pk)    
+
+        # 1. LOGIQUE CLUSTER & ÉDITION (Sécurisée)
+        if self.is_updating:
+            # On applique le widget de prévisualisation
+            if 'logo_dest' in self.fields:
+                self.fields['logo_dest'].widget = ImagePreviewWidget()
+
+            # Verrouillage des champs code_cluster et code_dest en édition
+            if 'code_cluster' in self.fields:
+                self.fields['code_cluster'].widget = forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'})
+                self.initial['code_cluster'] = str(self.instance.code_cluster)
                 self.fields['code_cluster'].disabled = True
-            self.fields['code_dest'].disabled = True
+                self.fields['code_cluster'].required = False
+
+            if 'code_dest' in self.fields:
+                self.fields['code_dest'].disabled = True
+                self.fields['code_dest'].widget.attrs['readonly'] = True
         else:
             if code_cluster_user:
-                # Filtrage pour un Admin de Cluster
                 qs = Cluster.objects.filter(code_cluster=code_cluster_user)
                 self.fields['code_cluster'].queryset = qs
                 if qs.exists():
@@ -93,42 +113,36 @@ class DestinationForm(HelpTextTooltipMixin, CommaSeparatedFieldMixin, forms.Mode
                 self.fields['code_cluster'].disabled = True
 
         # 2. LOGIQUE CODE PARENT
-        existing_destinations = Destination.objects.exclude(pk=self.instance.pk).values_list('code_dest', flat=True)
-        choices = [('', '---------')] + [(code, code) for code in existing_destinations]
-        self.fields['code_parent_dest'] = forms.ChoiceField(choices=choices, required=False, label=_("Code Parent"))
+        current_pk = self.instance.pk if self.is_updating else None
+        existing_destinations = Destination.objects.exclude(pk=current_pk).values_list('code_dest', flat=True)
+        self.fields['code_parent_dest'] = forms.ChoiceField(
+            choices=[('', '---------')] + [(c, c) for c in existing_destinations],
+            required=False, label=_("Code Parent")
+        )
 
-        # 3. LOGIQUE UTILISATEURS (PENDING INCLUS)
-        # On autorise les utilisateurs inactifs pour l'AJAX
-        user_queryset = User.objects.all().order_by('last_name', 'first_name')
-        
-        # Si on veut limiter les users au cluster actuel + les nouveaux sans cluster (pending)
-        current_cluster_code = code_cluster_user or (self.instance.code_cluster.code_cluster if self.instance.pk and self.instance.code_cluster else None)
-        if current_cluster_code:
-            print("Filtrage des users pour le cluster :", current_cluster_code)
-            user_queryset = user_queryset.filter(
-                Q(code_cluster__code_cluster=current_cluster_code) | Q(code_cluster__isnull=True)
-            )
+        # 3. LOGIQUE UTILISATEURS
+        current_cluster = code_cluster_user
+        if not current_cluster and self.is_updating and self.instance.code_cluster:
+            current_cluster = self.instance.code_cluster.code_cluster
+
+        user_qs = User.objects.all().order_by('last_name', 'first_name')
+        if current_cluster:
+            user_qs = user_qs.filter(Q(code_cluster__code_cluster=current_cluster) | Q(code_cluster__isnull=True))
 
         user_fields = ['manager_dest', 'referent_dest', 'matcher_dest', 'matcher_alt_dest', 'finance_dest']
         for field in user_fields:
-            self.fields[field].queryset = user_queryset
-            # Personnalisation de l'affichage pour voir qui est "En attente"
-            self.fields[field].label_from_instance = lambda obj: f"{obj.last_name} {obj.first_name} ({_('Actif') if obj.is_active else _('En attente')})"
-        
-
-        self.apply_tooltips() # Mixin
-
-        # 4. LAYOUT CRISPY
+            if field in self.fields:
+                self.fields[field].queryset = user_qs
+                self.fields[field].label_from_instance = lambda obj: f"{obj.first_name} {obj.last_name}"
+        # 4. CRISPY LAYOUT
         self.helper = FormHelper()
-        self.helper.form_attributes = {
-            'data-form-type': 'destination'}
         self.helper.form_method = 'post'
         self.helper.layout = Layout(
-            'pending_manager_dest_id',
-            'pending_referent_dest_id',
-            'pending_matcher_dest_id',
-            'pending_matcher_alt_dest_id',
-            'pending_finance_dest_id',
+            Hidden('pending_manager_dest_id', ''),
+            Hidden('pending_referent_dest_id', ''),
+            Hidden('pending_matcher_dest_id', ''),
+            Hidden('pending_matcher_alt_dest_id', ''),
+            Hidden('pending_finance_dest_id', ''),
             TabHolder(
                 Tab(_("Informations générales"),
                     Row(
@@ -138,28 +152,17 @@ class DestinationForm(HelpTextTooltipMixin, CommaSeparatedFieldMixin, forms.Mode
                         Column('code_parent_dest', css_class='col-md-2'),
                         Column('code_IGA_dest', css_class='col-md-2'),
                     ),
-                    Row(Column(InlineCheckboxes('statut_dest', css_class='col-md-12'))),
+                    Row(Column(InlineRadios('statut_dest', css_class='col-md-12'))),
                     Row(Column('desc_dest', css_class='col-md-12')),
-                    Row(
-                        Column('adress_dest', css_class='col-md-4'),
-                        Column('region_dest', css_class='col-md-4'),
-                        Column('country_dest', css_class='col-md-4'),
-                    ),
-                    Row(
-                        Column('logo_dest', css_class='col-md-4'),
-                        Column('libelle_email_dest', css_class='col-md-4'),
-                        Column('URL_retry_dest', css_class='col-md-4'),
-                    ),
-                    Row(
-                        Column('mail_notification_dest', css_class='col-md-6'),
-                        Column('mail_response_dest', css_class='col-md-6'),
-                    ),
+                    Row(Column('adress_dest', css_class='col-md-4'), Column('region_dest', css_class='col-md-4'), Column('country_dest', css_class='col-md-4')),
+                    Row(Column('logo_dest', css_class='col-md-4'), Column('libelle_email_dest', css_class='col-md-4'), Column('URL_retry_dest', css_class='col-md-4')),
+                    Row(Column('mail_notification_dest', css_class='col-md-6'), Column('mail_response_dest', css_class='col-md-6')),
                 ),
                 Tab(_("Administration"),
                     *[Row(
-                        Column(field, css_class='col-md-6'),
-                        Column(HTML(f'<button type="button" class="btn btn-sm btn-primary ms-2" data-target-field="id_{field}" data-pending-field="id_pending_{field}_id"><i class="fas fa-plus"></i> {_("Nouvel utilisateur")}</button>'), css_class='col-md-2')
-                    ) for field in user_fields]
+                        Column(f, css_class='col-md-8'),
+                        Column(HTML(f'<button type="button" class="btn btn-sm btn-primary ms-2" data-target-field="id_{f}"><i class="fas fa-plus"></i>{_("Nouvel utilisateur")}</button>'), css_class='col-md-4')
+                    ) for f in user_fields]
                 ),
                 Tab(_("Lieux & Paramètres"),
                     Row(Column('list_places_dest', css_class='col-md-12')),
@@ -169,39 +172,37 @@ class DestinationForm(HelpTextTooltipMixin, CommaSeparatedFieldMixin, forms.Mode
                     Row(Column('disability_dest', css_class='col-md-2'), Column('disability_libelle_dest', css_class='col-md-10')),
                 ),
             ),
-            Submit('submit', _('Enregistrer'), css_class='btn-success mt-3'),
+            Submit('submit', _('Enregistrer'), css_class='btn-primary mt-3'),
         )
 
+        if hasattr(self, 'apply_tooltips'):
+            self.apply_tooltips()
+
     def clean(self):
-        cleaned_data = super().clean()
+        cd = super().clean()
         
-        # --- Validation Croisée Cluster / Intérêts ---
-        cluster = cleaned_data.get('code_cluster')
-        max_ic = cleaned_data.get('max_interest_center_dest')
-        mini_ic = cleaned_data.get('mini_interest_center_dest')
-
-        if cluster and max_ic is not None:
-            total_interets = cluster.interest_center.count()
-            if max_ic > total_interets:
-                self.add_error('max_interest_center_dest', _("Le maximum ({}) dépasse le total du cluster ({})").format(max_ic, total_interets))
+        # Validation Centres d'intérêt
+        cluster = cd.get('code_cluster')
+        mx_ic, mi_ic = cd.get('max_interest_center_dest'), cd.get('mini_interest_center_dest')
         
-        if max_ic is not None and mini_ic is not None and max_ic < mini_ic:
-            self.add_error('max_interest_center_dest', _("Le maximum ne peut être inférieur au minimum."))
-
-        # --- Validation Lieux ---
-        max_lp = cleaned_data.get('max_lp_dest')
-        mini_lp = cleaned_data.get('mini_lp_dest')
-        list_p = cleaned_data.get('list_places_dest')
-
-        if list_p and max_lp is not None:
-            total_lp = len([i for i in list_p.split(',') if i.strip()])
-            if max_lp > total_lp:
-                self.add_error('max_lp_dest', _("Le maximum ({}) dépasse le nombre de lieux saisis ({})").format(max_lp, total_lp))
+        if cluster and mx_ic:
+            total_ic = cluster.interest_center.count()
+            if mx_ic > total_ic:
+                self.add_error('max_interest_center_dest', _("Max ({}) > Total cluster ({})").format(mx_ic, total_ic))
         
-        if max_lp is not None and mini_lp is not None and max_lp < mini_lp:
-            self.add_error('max_lp_dest', _("Le maximum ne peut être inférieur au minimum."))
+        if mx_ic and mi_ic and mx_ic < mi_ic:
+            self.add_error('max_interest_center_dest', _("Le maximum doit être supérieur au minimum."))
 
-        return cleaned_data
+        # Validation Lieux (list_places_dest)
+        mx_lp, mi_lp = cd.get('max_lp_dest'), cd.get('mini_lp_dest')
+        list_p = cd.get('list_places_dest', '')
+        
+        if list_p and mx_lp:
+            count_p = len([p for p in list_p.split(',') if p.strip()])
+            if mx_lp > count_p:
+                self.add_error('max_lp_dest', _("Max ({}) > Nombre de lieux saisis ({})").format(mx_lp, count_p))
+
+        return cd
 
 
     

@@ -23,12 +23,13 @@ from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from django.urls import reverse
 from django.db import transaction
-from core.tasks import envoyer_email_creation_utilisateur
+from core.tasks import envoyer_email_creation_utilisateur, resize_image_task
+from destination.mixins import OnlyGestionnaireMixin
 
 User=get_user_model()
 
 
-# Vue Création d'une destination sauvegardé avec Sublime
+# Vue Création d'une destination
 class SuperAdminRequiredMixin(UserPassesTestMixin):
     
     def test_func(self):
@@ -68,6 +69,14 @@ class DestinationCreateView(LoginRequiredMixin, SuperAdminRequiredMixin, HelpTex
                 # A. Sauvegarde Destination
                 self.object = form.save(commit=False)
                 dest = self.object
+
+                # --- LOGIQUE PARENT ---
+                parent_dest = form.cleaned_data.get('code_parent_dest')
+                if parent_dest:
+                # On force les valeurs du parent si elles existent
+                    dest.manager_dest = parent_dest.manager_dest
+                    dest.referent_dest = parent_dest.referent_dest
+                
                 
                 # Gestion code_cluster (depuis champ masqué ou form)
                 h_cluster = self.request.POST.get('code_cluster_hidden')
@@ -84,7 +93,7 @@ class DestinationCreateView(LoginRequiredMixin, SuperAdminRequiredMixin, HelpTex
                     'finance_dest': 'Financier',
                 }
                 
-             
+                users_to_notify = set()
 
                 for field, group_name in user_roles.items():
                     user_obj = form.cleaned_data.get(field)
@@ -97,18 +106,37 @@ class DestinationCreateView(LoginRequiredMixin, SuperAdminRequiredMixin, HelpTex
                         
                         group,created= Group.objects.get_or_create(name=group_name)
                         user_obj.groups.add(group)
+
+                        users_to_notify.add(user_obj)
+
                         
-                        # Email via Celery (on_commit)
-                        envoyer_email_creation_utilisateur(user_obj.id, self.request)
+                for user_obj in users_to_notify:
+                    # Email via Celery (on_commit est préférable pour éviter les Race Conditions)
+                    transaction.on_commit(
+                        lambda u_id=user_obj.id: envoyer_email_creation_utilisateur(u_id, self.request)
+                    )        
+                        
                         
 
-                # D. Traduction
+                # D. Traduction des types de handicap et logo
               
                 if dest.disability_libelle_dest:
                     transaction.on_commit(
                         lambda: translation_content.delay("destination", "Destination", dest.id, "disability_libelle_dest")
                     )
-
+                if dest.logo_dest:
+                    transaction.on_commit(lambda: 
+                        resize_image_task.delay(
+                            app_label='destination', 
+                            model_name='Destination', 
+                            object_id=dest.id, 
+                            field_name='logo_dest', 
+                            width=200, 
+                            height=200
+                        )
+                    )       
+                
+                # E. Message & Redirection
                 django_messages.success(self.request, _("Destination créée et comptes activés."))
                 return redirect('create_related_data', destination_id=dest.id)
 
@@ -345,7 +373,7 @@ class AjaxFilterUsersView(View):
         results = [
             {
                 "id": user.id, 
-                "text": f"{user.last_name} {user.first_name}" + ("" if user.is_active else " (En attente)"),
+                "text": f"{user.first_name} {user.last_name}",
                 "is_active": user.is_active
             } 
             for user in users
@@ -353,83 +381,24 @@ class AjaxFilterUsersView(View):
         
         return JsonResponse(results, safe=False)
 
-    
+###################################################################################################
+# AJAX pour récuperer les managers et référents de la destination parent pour une destination donnée
 
-
-
+from django.http import JsonResponse
+@LoginRequiredMixin
+def get_parent_destination_info(request):
+    parent_id = request.GET.get('parent_id')
+    try:
+        parent = Destination.objects.get(pk=parent_id)
+        return JsonResponse({
+            'manager_id': parent.manager_dest.id if parent.manager_dest else '',
+            'referent_id': parent.referent_dest.id if parent.referent_dest else '',
+        })
+    except Destination.DoesNotExist:
+        return JsonResponse({'error': 'Not found'}, status=404)
 
 ###################################################################################################
-
-
-
-
-# Vue Mixin pour les permissions de champ pour le gestionnaire de destination
-
-from django.contrib.auth.mixins import AccessMixin
-from django.core.exceptions import PermissionDenied
-
-
-class OnlyGestionnaireMixin(AccessMixin):
-    """
-    Mixin pour restreindre la modification des champs.
-    Il vérifie si l'utilisateur est STRICTEMENT 'Gestionnaire', 
-    c'est-à-dire qu'il n'appartient à aucun des groupes à privilège supérieur.
-    """
-    
-    # 🚨 DOIT ÊTRE DÉFINI DANS LA VUE QUI UTILISE LE MIXIN
-    gestionnaire_fields = []
-    
-    # Les groupes qui accordent des privilèges supérieurs à 'Gestionnaire'
-    higher_privilege_groups = ['SuperAdmin', 'Admin','Referent']
-    
-    
-    def _is_only_gestionnaire(self, user):
-        """ Logique interne de vérification des groupes. """
-        if not user.is_authenticated:
-            return False
-
-        user_groups = user.groups.all().values_list('name', flat=True)
-
-        is_gestionnaire = 'Gestionnaire' in user_groups
-        has_higher_privilege = any(group in user_groups for group in self.higher_privilege_groups)
-
-        # L'utilisateur est 'Gestionnaire' ET n'a AUCUN privilège supérieur.
-        return is_gestionnaire and not has_higher_privilege
-
-    
-    def get_form(self, form_class=None):
-        """ Modifie le formulaire en désactivant les champs non autorisés. """
-        form = super().get_form(form_class)
-
-        if form is None:
-            return None
-        
-        user = self.request.user
-        
-        # Appliquer la désactivation SEULEMENT si l'utilisateur est un 'Gestionnaire' simple
-        if self._is_only_gestionnaire(user):
-            if not self.gestionnaire_fields:
-                # Cela empêche une erreur si la liste n'est pas définie dans la vue
-                raise AttributeError(
-                    "Le Mixin OnlyGestionnaireMixin nécessite que la liste 'gestionnaire_fields' soit définie dans la vue."
-                )
-                
-            all_fields = list(form.fields.keys())
-            
-            # Déterminer les champs à désactiver
-            fields_to_disable = [
-                field for field in all_fields 
-                if field not in self.gestionnaire_fields
-            ]
-
-            # Désactiver les champs dans le formulaire
-            for field_name in fields_to_disable:
-                if field_name in form.fields:
-                    form.fields[field_name].disabled = True
-                    
-        return form
-###################################################################################################
-#Vue Mise à jour d'une destination
+# Vue Mise à jour d'une destination
 
 class AuthorizedRequiredUpdateDestinationMixin(UserPassesTestMixin):
     
@@ -465,16 +434,29 @@ class AuthorizedRequiredUpdateDestinationMixin(UserPassesTestMixin):
         return redirect('destinations_list')
 
 
-class DestinationUpdateView(LoginRequiredMixin, AuthorizedRequiredUpdateDestinationMixin, OnlyGestionnaireMixin , RelatedModelsMixin,UpdateView):
-    
+class DestinationUpdateView(LoginRequiredMixin, AuthorizedRequiredUpdateDestinationMixin, OnlyGestionnaireMixin,HelpTextTooltipMixin, RelatedModelsMixin, UpdateView):
     model = Destination
     form_class = DestinationForm
-    template_name = 'destination/destination_update.html'
-    context_object_name = 'destination'
-    # Configuration pour RelatedModelsMixin
+    template_name = 'destination/destination_form.html'
+    success_url = reverse_lazy('destinations_list')
+    
+    app_name = 'destination'
+
     related_fields = {
         'list_places_dest': (List_places, 'list_places_dest', 'list_places_dest')
     }
+    
+
+    def get_initial(self):
+        initial = super().get_initial()
+        destination = self.get_object()
+        
+        # Pré-remplissage des champs texte (tags) à partir des relations M2M
+        for form_field, (model, m2m_field, model_attr) in self.related_fields.items():
+            existing_values = getattr(destination, m2m_field).values_list(model_attr, flat=True)
+            initial[form_field] = ', '.join(existing_values)
+        return initial
+
     gestionnaire_fields = [
         'list_places_dest',
         'mini_lp_dest',
@@ -505,97 +487,131 @@ class DestinationUpdateView(LoginRequiredMixin, AuthorizedRequiredUpdateDestinat
         if not can_edit_statut:
             if 'statut_dest' in form.fields:
                 form.fields['statut_dest'].disabled = True
+                form.fields['code_IGA_dest'].disabled = True
+    
+        if destination.code_parent_dest:
+            if 'code_parent_dest' in form.fields:
+                form.fields['code_parent_dest'].disabled = True
+                form.fields['manager_dest'].disabled = True
+                form.fields['referent_dest'].disabled = True
+
 
         return form
 
-    def get_initial(self):
-        initial = super().get_initial()
-        destination= self.object
-        for form_field,(model,m2m_field,model_attr) in self.related_fields.items():
-            existing_values = getattr(destination, m2m_field).values_list(model_attr, flat=True)
-            initial[form_field] = ', '.join(existing_values)
-        return initial   
+        
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs['is_update'] = True  # Indique que c'est une mise à jour
         return kwargs
 
+
+
+
     def form_valid(self, form):
-        # Récuperer l'instance de la destinataion avant la sauvegarde
-        old_destination = self.get_object()
-        # Sauvegarder la destination
-        destination = form.save(commit=False)
-        destination.code_cluster = old_destination.code_cluster # 
-        # 1. Définition des sets d'utilisateurs (Anciens vs Nouveaux)
-        # On utilise l'idiome {user} - {None} pour exclure les champs vides proprement
-    
-        # Managers & Référents (Groupe Manager)
-        old_mgrs = {old_destination.manager_dest, old_destination.referent_dest} - {None}
-        new_mgrs = {destination.manager_dest} - {None}
-        self.sync_user_groups(old_mgrs, new_mgrs, 'Manager')
 
-        # Référents uniquement (Groupe Referent)
-        old_refs = {old_destination.referent_dest} - {None}
-        new_refs = {destination.referent_dest} - {None}
-        self.sync_user_groups(old_refs, new_refs, 'Referent')
+        user_roles_map = {
+            'manager_dest': 'Manager', 
+            'referent_dest': 'Referent',
+            'matcher_dest': 'Gestionnaire', 
+            'matcher_alt_dest': 'Gestionnaire',
+            'finance_dest': 'Financier',
+        }
 
-        # Matchers (Groupe Gestionnaire)
-        old_matchers = {old_destination.matcher_dest, old_destination.matcher_alt_dest} - {None}
-        new_matchers = {destination.matcher_dest, destination.matcher_alt_dest} - {None}
-        self.sync_user_groups(old_matchers, new_matchers, 'Gestionnaire')
+        try:
+            with transaction.atomic():
+                # 1. Instance avant modification
+                old_instance = Destination.objects.get(pk=self.object.pk)
+                
+                # 2. Sauvegarde de l'instance actuelle
+                dest = form.save()
+                
+                h_cluster = self.request.POST.get('code_cluster_hidden')
+                dest.code_cluster = h_cluster if h_cluster else form.cleaned_data.get('code_cluster')
+                dest.save()
 
-        # Financiers (Groupe Financier)
-        old_fin = {old_destination.finance_dest} - {None}
-        new_fin = {destination.finance_dest} - {None}
-        self.sync_user_groups(old_fin, new_fin, 'Financier')
+                # 3. Données liées
+                self.save_related_data(form)
 
-        # 2. Mise à jour du code_dest pour les nouveaux utilisateurs
-        all_old = old_mgrs | old_refs | old_matchers | old_fin
-        all_new = new_mgrs | new_refs | new_matchers | new_fin
-    
-        for user in (all_new - all_old):
-            user.code_dest = destination.code_dest
-            user.save()
-        
-        img_path=os.path.join(settings.MEDIA_ROOT, str(destination.logo_dest.name))
-        img = Image.open(img_path)
-        img.thumbnail ((200,200))
-        img.save(img_path)
+                # 4. GESTION DES ROLES AVEC VÉRIFICATION
+                for field, group_name in user_roles_map.items():
+                    print(f"Vérification du champ {field} pour les modifications de rôle.") 
+                    if field in form.changed_data:
+                        old_user = getattr(old_instance, field)
+                        print(f"Ancien utilisateur pour le champ {field}: {old_user}")
+                        new_user = form.cleaned_data.get(field)
+                        print(f"Nouveau utilisateur pour le champ {field}: {new_user}")
 
-        response = super().form_valid(form)
-        
-        #form.save_m2m()  # Sauvegarder les relations ManyToMany si nécessaire
+                        # --- A. NETTOYAGE DE L'ANCIEN UTILISATEUR ---
+                        if old_user and old_user != new_user:
+                            print(f"Nettoyage de l'ancien utilisateur pour le champ {field}: {old_user}")
+                            group=Group.objects.filter(name=group_name).first()
+                            print(f"Vérification du groupe {group_name}")
+                            print(f"Groupe trouvé : {group}")
+                            if group:
+                                still_has_role_for_his_group=False
+                                for f, g_name in user_roles_map.items():
+                                    print(f"Vérification du champ {f} avec le groupe {g_name}")
+                                    if g_name == group_name :
+                                        if getattr(dest, f) == old_user:
+                                            still_has_role_for_his_group=True
+                                            break
+                                if not still_has_role_for_his_group:
+                                    old_user.groups.remove(group)
+                                
+                                is_completely_unassigned = not any(
+                                    getattr(old_instance, f) == old_user for f in user_roles_map.keys()
+                                )
+                                if is_completely_unassigned:
+                                    old_user.is_active = False
+                                    old_user.code_cluster = None
+                                    old_user.code_dest = None
+                                    old_user.save()
+                                            
+                                
 
-            
-        # Traduction des types de handicap
-        if destination.disability_libelle_dest:
-            translation_content.delay("destination","Destination", destination.id, "disability_libelle_dest")
+                        # --- B. CONFIGURATION DU NOUVEL UTILISATEUR ---
+                        if new_user:
+                            new_user.is_active = True
+                            new_user.code_cluster = dest.code_cluster
+                            new_user.code_dest = dest
+                            new_user.save()
+                            
+                            group, created = Group.objects.get_or_create(name=group_name)
+                            new_user.groups.add(group)
+                            
+                            # On n'envoie l'email que s'il n'était pas déjà là dans un autre rôle
+                            # (Optionnel : selon si vous voulez notifier à chaque nouveau rôle)
+                            was_already_in_dest = any(
+                                getattr(old_instance, f) == new_user for f in user_roles_map.keys()
+                            )
+                            if not was_already_in_dest:
+                                envoyer_email_creation_utilisateur(new_user.id, self.request)
 
-        django_messages.success(self.request, _(f"Les données générales de la destination {self.object.name_dest} ont été mises à jour."))
-        return response
- 
-    def form_invalid(self, form):
-        django_messages.error(self.request, _("Le formulaire n'est pas valide."))
-        return super().form_invalid(form)
+                # 5. IMAGE ET TRADUCTION
+                if 'logo_dest' in form.changed_data and dest.logo_dest:
+                    transaction.on_commit(lambda: 
+                        resize_image_task.delay(
+                            app_label='destination', 
+                            model_name='Destination', 
+                            object_id=dest.id, 
+                            field_name='logo_dest', 
+                            width=200, 
+                            height=200
+                        )
+                    )
 
-    def get_success_url(self):
-        return redirect('destination_detail', pk=self.object.pk).url
-    
-    def sync_user_groups(self, old_users, new_users, group_name):
-        """
-        Synchronise les groupes Django pour une liste d'utilisateurs.
-        old_users / new_users : sets d'objets User
-        """
-        group, _ = Group.objects.get_or_create(name=group_name)
-    
-        # Retirer le groupe à ceux qui ne sont plus dans la liste
-        for user in (old_users - new_users):
-            user.groups.remove(group)
-    
-    # Ajouter le groupe aux nouveaux arrivants
-        for user in (new_users - old_users):
-            user.groups.add(group)
+                if 'disability_libelle_dest' in form.changed_data and dest.disability_libelle_dest:
+                    transaction.on_commit(
+                        lambda: translation_content.delay("destination", "Destination", dest.id, "disability_libelle_dest")
+                    )
+
+                django_messages.success(self.request, _("Destination mise à jour avec succès."))
+                return redirect(self.success_url)
+
+        except Exception as e:
+            django_messages.error(self.request, f"Erreur : {str(e)}")
+            return self.form_invalid(form)
 
 ###################################################################################################
 

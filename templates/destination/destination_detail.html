@@ -25,7 +25,7 @@
                 <!-- Onglet Destination -->
                 <div class="tab-pane fade show active" id="destination" role="tabpanel">
                     <div class="row mb-3">
-                        <div class="col-md-1">
+                        <div class="col-md-1 d-flex align-items-center justify-content-center">
                             {% if destination.logo_dest %}
                                 <img src="{{ destination.logo_dest.url }}" alt="{% trans 'Logo' %}" class="img-fluid rounded" style="max-height: 200px;">
                             {% else %}
@@ -34,7 +34,7 @@
                         </div>
                         <div class="col-md-5">
                             <h4>{% trans "Identité" %}</h4>
-                            <ul class="list-group list-group-flush">
+                            <ul class="list-group list-group-flush form-group-encadre">
                                 <li class="list-group-item"><strong>{% trans "Statut:" %}</strong> {{ destination.get_statut_dest_display }}</li>
                                 <li class="list-group-item"><strong>{% trans "Destination Parent:" %}</strong> {{destination.code_parent}}</li>
                                 <li class="list-group-item"><strong>{% trans "Code IGA:" %}</strong> {{ destination.code_IGA_dest }}</li>
@@ -46,7 +46,7 @@
                         </div>
                         <div class="col-md-5">
                             <h4>{% trans "Responsables" %}</h4>
-                            <ul class="list-group list-group-flush">
+                            <ul class="list-group list-group-flush form-group-encadre">
                                 <li class="list-group-item"><strong>{% trans "Manager:" %}</strong> {{ destination.manager_dest|default:_("Non défini") }}</li>
                                 <li class="list-group-item"><strong>{% trans "Référent:" %}</strong> {{ destination.referent_dest|default:_("Non défini") }}</li>
                                 <li class="list-group-item"><strong>{% trans "Gestionnaire:" %}</strong> {{ destination.matcher_dest|default:_("Non défini") }}</li>
@@ -57,7 +57,7 @@
                             </ul>
                             <ul></ul>
                             <h4>{% trans "Courriels" %}</h4>
-                            <ul class="list-group list-group-flush">
+                            <ul class="list-group list-group-flush form-group-encadre">
                                 <li class="list-group-item"><strong>{% trans "Courriel de notification:" %}</strong> {{ destination.mail_notification_dest }}</li>
                                 <li class="list-group-item"><strong>{% trans "Courriel de réponse:" %}</strong> {{destination.mail_response_dest}}</li>
                             </ul>
@@ -66,7 +66,7 @@
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <h4>{% trans "Lieux ou Thèmes" %}</h4>
-                            <ul class="list-group list-group-flush">
+                            <ul class="list-group list-group-flush form-group-encadre">
                                 <li class="list-group-item"><strong>{% trans "Lieux ou thèmes:" %}</strong>
                                    {% for list in destination.list_places_dest.all %}
                                     {{ list }}{% if not forloop.last %}, {% endif %}  
@@ -77,7 +77,7 @@
                         </div>
                         <div class="col-md-6">
                             <h4>{% trans "Dates de séjour" %}</h4>
-                            <ul class="list-group list-group-flush">
+                            <ul class="list-group list-group-flush form-group-encadre">
                                 {% if destination.flag_stay_dest %}
                                 <li class="list-group-item"><strong>{% trans "Dates de séjour demandées:" %}</strong> {% trans "Oui" %}</li>
                                 {% else %}
@@ -90,14 +90,14 @@
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <h4>{% trans "Centres d'intérêt" %}</h4>
-                            <ul class="list-group list-group-flush">
+                            <ul class="list-group list-group-flush form-group-encadre">
                                 <li class="list-group-item"><strong>{% trans "Minimum choix de centres d'intérêt:" %}</strong> {{ destination.mini_interest_center_dest }}</li>
                                 <li class="list-group-item"><strong>{% trans "Maximum choix de centres d'intérêt:" %}</strong> {{ destination.max_interest_center_dest }}</li>
                             </ul>
                         </div>
                         <div class="col-md-6">
                             <h4>{% trans "Accessibilité" %}</h4>
-                            <ul class="list-group list-group-flush">
+                            <ul class="list-group list-group-flush form-group-encadre">
                                 {% if destination.disability_dest %}
                                 <li class="list-group-item"><strong>{% trans "Accessibilité:" %}</strong> {% trans "Oui" %}</li>
                                 <li class="list-group-item"><strong>{% trans "Gestion du handicap:" %}</strong> {{destination.disability_libelle_dest}}</li>
@@ -110,8 +110,11 @@
                     </div>
                     <div class="row mb-3">
                         <div class="col-md-12 d-flex justify-content-end">
-                            <a href="{% url 'destination_update' destination.pk %}" class="btn btn-warning me-2">{% trans "Mettre à jour les données générales" %}</a>
+                            <a href="{% url 'destination_update' destination.pk %}" class="btn btn-primary me-2">{% trans "Mettre à jour les données générales" %}</a>
                         </div>
+                        <div class="col-md-12 d-flex justify-content-end">
+                            <a href="{% url 'destinations_list' %}" >{% trans "Retour à la liste des destinations" %}</a>
+                         </div>
                     </div>
                 </div>
                 <!-- Onglet Données Fonctionnelles -->
@@ -133,7 +136,7 @@
                                     </ul>
                                 </div>
                             </div>
-                            <div class="row mb-3">
+                            <div class="row mb-3 form-group-encadre">
                                 <h4>{% trans "Réseaux sociaux" %}</h4>
                                 <div class="col-md-6">
                                     <ul class="list-group list-group-flush">
@@ -146,7 +149,7 @@
                                     </ul>
                                 </div>
                             </div>
-                            <div class="row mb-3">
+                            <div class="row mb-3 form-group-encadre">
                                 <h4>{% trans "Langues de communication" %}</h4>
                                 <div class="col-md-6">                                  
                                     <ul class="list-group list-group-flush">
@@ -159,7 +162,7 @@
                                     </ul>
                                 </div>    
                             </div>
-                            <div class="row mb-3">
+                            <div class="row mb-3 form-group-encadre">
                                 <h4 >{% trans "Modalités de gestion des demandes" %}</h4>
                                 <div class="col-md-6">
                                     <ul class="list-group list-group-flush">
@@ -190,11 +193,11 @@
                                     </ul>
                                 </div>
                             </div>
-                            <div class="row mb-3">
+                            <div class="row mb-3 form-group-encadre">
                                 <h4>{% trans "Personnalisation du formulaire de demande" %}</h4>
                                 <div class="col-md-6">
                                     <ul class="list-group list-group-flush">
-                                        <li class="list-group-item"><strong>{% trans "Demande de commentaires pour le visiteur" %}</strong> {{ data.flag_comment_visitor_dest|default:_("Non défini") }}</li>
+                                        <li class="list-group-item"><strong>{% trans "Demande de commentaires pour le visiteur :" %}</strong> {{ data.flag_comment_visitor_dest|default:_("Non défini") }}</li>
                                     </ul>
                                 </div>
                                 <div class="col-md-6">
@@ -204,15 +207,13 @@
                                     </ul>
                                     {% endif %}
                                 </div>
-                            </div>
-                            <div class="row mb-3">
                                 <div class="col-md-4">
                                     <ul class="list-group list-group-flush">
                                         <li class="list-group-item"><strong>{% trans "Texte du premier libellé :" %}</strong> {{ data.libelle_form_coche1_dest|default:_("Non défini") }}</li>
                                         <li class="list-group-item"><strong>{% trans "Nom de l'URL du premier libellé :" %}</strong> {{ data.lib_url_form_coche1_dest|default:_("Non défini") }}</li>
                                         <li class="list-group-item"><strong>{% trans "URL du premier libellé :" %}</strong> {{ data.url_form_coche1_dest|default:_("Non défini") }}</li>
                                         {% if data.flag_request_coche1_dest %}
-                                        <li class="list-group-item"><strong>{% trans "Premier libelle obligatoire :" %}</strong> {% trans "Oui" }</li>
+                                        <li class="list-group-item"><strong>{% trans "Premier libelle obligatoire :" %}</strong> {% trans "Oui" %}</li>
                                         {% else %}
                                         <li class="list-group-item"><strong>{% trans "Premier libelle obligatoire :" %}</strong> {% trans "Non" %}</li>
                                         {% endif %}   
@@ -224,7 +225,7 @@
                                         <li class="list-group-item"><strong>{% trans "Nom de l'URL du deuxième libellé :" %}</strong> {{ data.lib_url_form_coche2_dest|default:_("Non défini") }}</li>
                                         <li class="list-group-item"><strong>{% trans "URL du deuxième libellé :" %}</strong> {{ data.url_form_coche2_dest|default:_("Non défini") }}</li>
                                         {% if data.flag_request_coche2_dest %}
-                                        <li class="list-group-item"><strong>{% trans "Deuxième libelle obligatoire :" %}</strong> {% trans "Oui" }</li>
+                                        <li class="list-group-item"><strong>{% trans "Deuxième libelle obligatoire :" %}</strong> {% trans "Oui" % }</li>
                                         {% else %}
                                         <li class="list-group-item"><strong>{% trans "Deuxième libelle obligatoire :" %}</strong> {% trans "Non" %}</li>
                                         {% endif %}   
@@ -236,14 +237,14 @@
                                         <li class="list-group-item"><strong>{% trans "Nom de l'URL du troisième libellé :" %}</strong> {{ data.lib_url_form_coche3_dest|default:_("Non défini") }}</li>
                                         <li class="list-group-item"><strong>{% trans "URL du troisième libellé :" %}</strong> {{ data.url_form_coche3_dest|default:_("Non défini") }}</li>
                                         {% if data.flag_request_coche3_dest %}
-                                        <li class="list-group-item"><strong>{% trans "Troisième libelle obligatoire :" %}</strong> {% trans "Oui" }</li>
+                                        <li class="list-group-item"><strong>{% trans "Troisième libelle obligatoire :" %}</strong> {% trans "Oui" % }</li>
                                         {% else %}
                                         <li class="list-group-item"><strong>{% trans "Troisième libelle obligatoire :" %}</strong> {% trans "Non" %}</li>
                                         {% endif %}   
                                     </ul>
                                 </div>
                             </div>
-                            <div class="row mb-3">
+                            <div class="row mb-3 form-group-encadre">
                                 <h4>{% trans "Gestion des réponses visiteur et Greeter" %}</h4>
                                 <div class="col-md-6">
                                     <ul class="list-group list-group-flush">
@@ -253,14 +254,14 @@
                                 <div class="col-md-6">
                                     <ul class="list-group list-group-flush">
                                         {% if data.flag_reason_NoAnswer_greeter_dest  %}
-                                        <li class="list-group-item"><strong>{% trans "Demander le motif de non-proposition du Greeter : " %}</strong> {% trans "Oui"}</li>
+                                        <li class="list-group-item"><strong>{% trans "Demander le motif de non-proposition du Greeter : " %}</strong> {% trans "Oui" %}</li>
                                         {% else %}
                                         <li class="list-group-item"><strong>{% trans "Demander le motif de non-proposition du Greeter : " %}</strong> {% trans "Non" %}</li>
                                         {% endif %}     
                                     </ul>
                                 </div>
                             </div>
-                            <div class="row mb-3">
+                            <div class="row mb-3 form-group-encadre">
                                 <h4>{% trans "Signature des courriels" %}</h4>
                                 <div class="col-md-6">
                                     <ul class="list-group list-group-flush">
@@ -294,7 +295,7 @@
                                     </ul>
                                 </div>
                             </div>
-                            <div class="row mb-3">
+                            <div class="row mb-3 form-group-encadre">
                                 <h4>{% trans "Fermeture exceptionnelle de la destination" %}</h4>
                                 <div class="col-md-12">
                                     <ul class="list-group list-group-flush">
@@ -312,12 +313,15 @@
                             </div>     
                             <div class="row mb-3">
                                 <div class="col-md-12 d-flex justify-content-end">
-                                    <a href="{% url 'destination_data_update' data.pk %}" class="btn btn-warning">{% trans "Mettre à jour les données fonctionnelles" %}</a>
+                                    <a href="{% url 'destination_data_update' data.pk %}" class="btn btn-primary">{% trans "Mettre à jour les données fonctionnelles" %}</a>
+                                </div>
+                                <div class="col-md-12 d-flex justify-content-end">
+                                    <a href="{% url 'destinations_list' %}" >{% trans "Retour à la liste des destinations" %}</a>
                                 </div>
                             </div>
                         {% else %}
                             <p>{% trans "Aucune donnée fonctionnelle disponible." %}</p>
-                            <a href="#" class="btn btn-success">{% trans "Créer" %}</a>
+                            <a href="#" class="btn btn-primary">{% trans "Créer" %}</a>
                         {% endif %}
                     {% endwith %}
                 </div>
@@ -325,8 +329,8 @@
                 <div class="tab-pane fade" id="destination-flux" role="tabpanel">
                     {% with flux=destination.destination_flux %}
                         {% if flux %}
-                            <div class="row mb-3">
-                            <h4>{% trans "Demandes précoces" %}</h4>
+                            <div class="row mb-3 form-group-encadre">
+                                <h4>{% trans "Demandes précoces" %}</h4>
                                 <div class="col-md-6">
                                     <ul class="list-group list-group-flush">
                                         <li class="list-group-item"><strong>{% trans "Fréquence d'envoi des courriels de rappel : " %}</strong> {{ flux.frequence_mail_precoce }} {% trans "jours" %} </li>
@@ -345,9 +349,11 @@
                                 <div class="col-md-6">
                                     <ul class="list-group list-group-flush">
                                         <li class="list-group-item"><strong>{% trans "Nombre minimum de jours avant la date demandée : " %}</strong> {{ flux.flux_delai_organisation}} {% trans "jours" %}</li>
-                                    </ul>  
+                                    </ul>
+                                </div>  
                             </div>
-                            <div class="row mb-3">
+                        
+                            <div class="row mb-3 form-group-encadre">
                                 <h4>{% trans "Gestion de l'attribution" %}</h4>
                                 <div class="col-md-6">
                                     <ul class="list-group list-group-flush">
@@ -367,7 +373,7 @@
                                     </ul>
                                 </div>
                             </div>
-                            <div class="row mb-3">
+                            <div class="row mb-3 form-group-encadre">
                                 <h4>{% trans "Gestion de l'après-balade" %}</h4>
                                 <div class="col-md-12">
                                     <ul class="list-group list-group-flush">
@@ -388,7 +394,7 @@
                                     </ul>
                                 </div>
                             </div>
-                            <div class="row mb-3">
+                            <div class="row mb-3 form-group-encadre">
                                 <h4>{% trans "Protection des données personnelles" %}</h4>
                                 <div class="col-md-12">
                                     <ul class="list-group list-group-flush">
@@ -398,12 +404,15 @@
                             </div>
                             <div class="row mb-3">
                                 <div class="col-md-12 d-flex justify-content-end">
-                                    <a href="{% url 'destination_flux_update' flux.pk %}" class="btn btn-warning">{% trans "Mettre à jour les données de flux" %}</a>
+                                    <a href="{% url 'destination_flux_update' flux.pk %}" class="btn btn-primary">{% trans "Mettre à jour les données de flux" %}</a>
+                                </div>
+                                <div class="col-md-12 d-flex justify-content-end">
+                                    <a href="{% url 'destinations_list' %}">{% trans "Retour à la liste des destinations" %}</a>
                                 </div>
                             </div>
                         {% else %}
                             <p>{% trans "Aucun flux disponible." %}</p>
-                            <a href="#" class="btn btn-success">{% trans "Créer" %}</a>
+                            <a href="#" class="btn btn-primary">{% trans "Créer" %}</a>
                         {% endif %}
                     {% endwith %}
                 </div>

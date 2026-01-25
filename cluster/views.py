@@ -74,7 +74,7 @@ class ClusterCreateView(LoginRequiredMixin, SuperAdminRequiredMixin, FormFieldPe
                             new_user.code_cluster = cluster
                             new_user.is_active = True
                             
-                            admin_group, creted = Group.objects.get_or_create(name='Admin')
+                            admin_group, created = Group.objects.get_or_create(name='Admin')
                             new_user.groups.add(admin_group)
                             new_user.save()
                             print(f"Utilisateur {new_user.id} lié au cluster {cluster.code_cluster} et activé.")

@@ -206,45 +206,50 @@ def reset_password(user_id, domain, template_mailjet_id):
 
 #Vue Redimensionnement des imagesœ
 
+from celery import shared_task
+from django.conf import settings
+from PIL import Image, UnidentifiedImageError
 import os
-from PIL import Image
-from io import BytesIO
-from django.core.files.base import ContentFile
 
-def resize_image_field(image_field, size=(300, 300), quality=85):
-    """
-    Redimensionne un ImageField en place.
-    Usage: resize_image_field(self.logo_dest, size=(400, 400))
-    """
-    if not image_field:
-        return
+@shared_task
+def resize_image_task(app_label, model_name, object_id, field_name, width, height):
+    try:
+        Model = apps.get_model(app_label, model_name)
+        obj = Model.objects.get(pk=object_id)
+        image_field = getattr(obj, field_name)
+        
+        if not image_field or not os.path.exists(image_field.path):
+            return "File not found"
 
-    # 1. Ouvrir l'image
-    img = Image.open(image_field)
+        img_path = image_field.path
+        
+        try:
+            with Image.open(img_path) as img:
+                # 1. Vérification de l'intégrité (détecte les fichiers tronqués ou corrompus)
+                img.verify() 
+        except (UnidentifiedImageError, IOError, SyntaxError) as e:
+            # Si le fichier n'est pas une image, on peut décider de supprimer le fichier
+            # ou simplement loguer l'erreur.
+            return f"Invalid image file: {img_path}. Error: {e}"
+
+        # Note: img.verify() ferme le descripteur de fichier, on doit donc réouvrir
+        with Image.open(img_path) as img:
+            original_width, original_height = img.size
+            
+            # 2. Test de taille
+            if original_width <= width and original_height <= height:
+                return f"Skipped: {original_width}x{original_height} fits in {width}x{height}"
+
+            # 3. Traitement
+            if img.mode in ("RGBA", "P"):
+                img = img.convert("RGB")
+            
+            img.thumbnail((width, height))
+            img.save(img_path, quality=85, optimize=True)
+            
+        return f"Success: Resized {model_name} (ID: {object_id})"
+        
+    except Exception as e:
+        return f"System Error: {str(e)}"
     
-    # 2. Vérifier si un redimensionnement est nécessaire
-    if img.height > size[1] or img.width > size[0]:
-        # Garder le format d'origine
-        img_format = img.format if img.format else 'PNG'
-        
-        # Redimensionnement (Thumbnail préserve le ratio)
-        img.thumbnail(size, Image.Resampling.LANCZOS)
-        
-        # 3. Sauvegarde en mémoire (BytesIO)
-        temp_handle = BytesIO()
-        
-        # Gestion spécifique des formats
-        if img_format == 'JPEG':
-            img.save(temp_handle, format='JPEG', quality=quality, optimize=True)
-        else:
-            img.save(temp_handle, format=img_format, optimize=True)
-        
-        temp_handle.seek(0)
-        
-        # 4. Remplacement du fichier dans le champ
-        file_name = os.path.basename(image_field.name)
-        image_field.save(
-            file_name,
-            ContentFile(temp_handle.read()),
-            save=False  # Important : ne pas déclencher un .save() infini du modèle
-        )
+###################################################################################################

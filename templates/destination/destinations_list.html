@@ -24,7 +24,6 @@
           <th class="col-2">{% trans "Code destination" %}</th>
           <th class="col-4">{% trans "Nom" %}</th>
           <th class="col-1"></th>
-          <th class="col-1"></th>
         </tr>
       </thead>
       <tbody>
@@ -34,7 +33,6 @@
           <td>{{destination.code_dest}}</td>
           <td>{{destination.name_dest}}</td>
           <td><a href="{% url 'destination_detail' destination.pk %}">{% trans "Voir le détail" %} </a></td> 
-          <td><a href="#">{% trans "Modifier" %} </a></td> 
         </tr>
         {% endfor %}
       </tbody>

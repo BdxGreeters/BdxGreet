@@ -10,7 +10,7 @@ from cluster.models import Cluster, InterestCenter
 from core.models import (Beneficiaire,  Language_communication,
                          LangueDeepL, LangueParlee, No_show, Pays, Periode,
                          TrancheAge, Types_handicap)
-from core.tasks import resize_image_field
+from core.utils import get_file_path
 
 User=get_user_model()
 
@@ -32,7 +32,7 @@ class Destination(models.Model):
     adress_dest=models.CharField(max_length=250, default=" ", verbose_name=_("Adresse"),help_text=_("Saisir l'adresse de la destination"))
     region_dest=models.CharField(max_length=50, default=" ",blank=True,null= True, verbose_name=_("Région"),help_text=_("Saisir la région de la destination"))
     country_dest=models.ForeignKey(Pays, on_delete=models.PROTECT, verbose_name=_("Pays"),help_text=_("Sélectionner le pays de la destination"))
-    logo_dest=models.ImageField(upload_to='logos/',default='logos/default.jpg',verbose_name=_('Logo'),blank=True, null=True,help_text=_("Taille : 250 px *250 px"))
+    logo_dest=models.ImageField(upload_to=get_file_path,default='logos/default.jpg',verbose_name=_('Logo'),blank=True, null=True,help_text=_("Taille : 250 px *250 px"))
     libelle_email_dest=models.CharField(max_length=50, default=" ", verbose_name=_("Libellé courriel émetteur "),help_text=_("Saisir le libellé des courriels émetteurs de la destination"))
     statut_dest=models.CharField(max_length=15, choices=choices, default="Drafts",help_text=_("Saisir le statut dela destination"),verbose_name=_("Statut"))
     manager_dest=models.ForeignKey(User,on_delete=models.SET_NULL,related_name="manager_name_dest",null=True, verbose_name=_("Nom du manager"),help_text=_("Saisir le nom du manager de la destination"))
@@ -53,18 +53,8 @@ class Destination(models.Model):
     disability_dest=models.BooleanField(default=False,verbose_name=_("Handicap accepté"),help_text=_("Cocher la case si des visteurs ayant un handicap sont acceptés"))
     disability_libelle_dest=models.TextField(max_length=500,default=" ",blank=True,null=True,verbose_name=_("Présentation de la gestion du handicap"),help_text=_("Saisir la présentation de la gestion du handicap"))
 
-    #def __init__(self, *args, **kwargs):
-        #super().__init__(*args, **kwargs)
-        # On garde une trace du logo au moment du chargement de l'objet
-        #self._old_logo = self.logo_dest.name if self.logo_dest else None
 
     def save(self, *args, **kwargs):
-        # On compare le nom actuel avec l'ancien nom stocké
-        #current_logo_name = self.logo_dest.name if self.logo_dest else None
-        #if current_logo_name != self._old_logo:
-           # On ne lance le redimensionnement que s'il y a vraiment une image
-        #    if self.logo_dest:
-        #        resize_image_field(self.logo_dest, size=(300, 300))
         
         if self.code_dest:            
             self.code_dest=self.code_dest.upper()
