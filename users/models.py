@@ -60,6 +60,15 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['first_name', 'last_name','cellphone','lang_com']
 
+    def get_full_name(self):
+        """Retourne le prénom et le nom avec un espace entre les deux."""
+        full_name = f"{self.first_name} {self.last_name}"
+        return full_name.strip()
+
+    def get_short_name(self):
+        """Retourne le prénom."""
+        return self.first_name
+    
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
 

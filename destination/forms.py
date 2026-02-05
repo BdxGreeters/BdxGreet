@@ -11,6 +11,7 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext_lazy as _
 from django.core.validators import FileExtensionValidator
+from django.urls import reverse
 from cluster.models import Cluster
 from core.mixins import CommaSeparatedFieldMixin, HelpTextTooltipMixin
 from core.models import FieldPermission, Language_communication, Pays
@@ -20,12 +21,14 @@ from django.utils.safestring import mark_safe
 
 class ImagePreviewWidget(forms.ClearableFileInput):
     def render(self, name, value, attrs=None, renderer=None):
+        print(f"Rendering widget for {name} with value {value}")
         output = super().render(name, value, attrs, renderer)
         if value and hasattr(value, 'url'):
             preview_html = f'''
-                <div class="mb-2">
+                <div class="mb-3">
+                    <p style="margin-bottom: 5px; font-weight: bold;">Aperçu du logo :</p>
                     <img src="{value.url}" alt="Logo actuel" 
-                         style="max-height: 100px; border: 1px solid #ddd; border-radius: 4px; padding: 5px;">
+                         style="max-height: 120px; border: 2px solid #eee; border-radius: 8px; shadow: 2px 2px 5px rgba(0,0,0,0.1);">
                 </div>
             '''
             return mark_safe(preview_html + output)
@@ -85,15 +88,11 @@ class DestinationForm(HelpTextTooltipMixin, CommaSeparatedFieldMixin, forms.Mode
         is_update_arg= kwargs.pop('is_update', False)
         # Détection automatique du mode Update
         super().__init__(*args, **kwargs)
-
+        self.fields['logo_dest'].widget = ImagePreviewWidget()
         self.is_updating = is_update_arg or (self.instance and self.instance.pk)    
 
         # 1. LOGIQUE CLUSTER & ÉDITION (Sécurisée)
         if self.is_updating:
-            # On applique le widget de prévisualisation
-            if 'logo_dest' in self.fields:
-                self.fields['logo_dest'].widget = ImagePreviewWidget()
-
             # Verrouillage des champs code_cluster et code_dest en édition
             if 'code_cluster' in self.fields:
                 self.fields['code_cluster'].widget = forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'})
@@ -117,7 +116,11 @@ class DestinationForm(HelpTextTooltipMixin, CommaSeparatedFieldMixin, forms.Mode
         existing_destinations = Destination.objects.exclude(pk=current_pk).values_list('code_dest', flat=True)
         self.fields['code_parent_dest'] = forms.ChoiceField(
             choices=[('', '---------')] + [(c, c) for c in existing_destinations],
-            required=False, label=_("Code Parent")
+            required=False, label=_("Code Parent"),
+            widget=forms.Select(attrs={
+            'data-ajax-url': reverse('get_parent_info'),
+            'class': 'form-select' # ou 'form-control' selon votre version de Bootstrap
+            })
         )
 
         # 3. LOGIQUE UTILISATEURS

@@ -16,6 +16,7 @@ from core.mixins import CommaSeparatedFieldMixin, HelpTextTooltipMixin
 from crispy_forms.bootstrap import TabHolder, Tab
 from cluster.models import Cluster
 from destination.models import Destination
+
 User=get_user_model()
 
 class GreeterCombinedForm(HelpTextTooltipMixin, forms.ModelForm):
@@ -65,6 +66,9 @@ class GreeterCombinedForm(HelpTextTooltipMixin, forms.ModelForm):
             'max_participants_greeter',
             'disponibility_day_greeter',
             'disponibility_time_greeter',
+            'indisponibilty',
+            'begin_indisponibility',
+            'end_indisponibility',
             'frequency_greeter',
             'comments_greeter',
             'interest_greeter',
@@ -82,13 +86,34 @@ class GreeterCombinedForm(HelpTextTooltipMixin, forms.ModelForm):
         'experiences_greeters': forms.CheckboxSelectMultiple(),
         'disponibility_day_greeter': forms.CheckboxSelectMultiple(),    
         'disponibility_time_greeter': forms.CheckboxSelectMultiple(),
+        'indisponibilty': forms.CheckboxInput(),
+        'begin_indisponibility': forms.DateInput(attrs={'type': 'date'}),
+        'end_indisponibility': forms.DateInput(attrs={'type': 'date'}),
         'list_places_greeter': forms.CheckboxSelectMultiple(),
         'interest_greeter': forms.CheckboxSelectMultiple(),
         'handicap_greeter': forms.CheckboxInput(),
         'visibily_greeter': forms.CheckboxInput(),
         'langues_parlées_greeter': forms.SelectMultiple(),
+        'arrival_greeter': forms.DateInput(attrs={'type': 'date'}),
+        'departure_greeter': forms.DateInput(attrs={'type': 'date'}),
         }
-
+    
+    
+    def clean_email(self):
+        email = self.cleaned_data.get('email').lower()
+    
+    # On cherche si un utilisateur utilise déjà cet email
+        users_with_same_email = User.objects.filter(email=email)
+    
+    # Si c'est une modification (instance existe déjà)
+        if self.instance and self.instance.pk:
+            # On exclut l'utilisateur lié à ce Greeter de la recherche
+            users_with_same_email = users_with_same_email.exclude(pk=self.instance.user.pk)
+    
+        if users_with_same_email.exists():
+            raise forms.ValidationError(_("Cette adresse email est déjà utilisée par un autre utilisateur."))
+    
+        return email
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -158,6 +183,11 @@ class GreeterCombinedForm(HelpTextTooltipMixin, forms.ModelForm):
                         Column(InlineCheckboxes('disponibility_day_greeter'), css_class='col-md-6'),
                         Column(InlineCheckboxes('disponibility_time_greeter'), css_class='col-md-6'),
                     ),
+                    Row(
+                        Column('indisponibilty', css_class='col-md-3'),
+                        Column('begin_indisponibility', css_class='col-md-3'),
+                        Column('end_indisponibility', css_class='col-md-3'),
+                    ),   
                     Row(
                         Column('frequency_greeter', css_class='col-md-4'),
                         Column('handicap_greeter', css_class='col-md-4'),

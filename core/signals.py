@@ -31,14 +31,14 @@ def afficher_domaine_actuel(sender, instance, created, **kwargs):
 
 # Signal permettant de connaitre les champs modifiés lors d'une mise à jour d'un Greeter
 
-@receiver(pre_save,sender=Greeter)
+#@receiver(pre_save,sender=Greeter)
 def capture_etat_initial(sender,instance,**kwargs):
     if instance.pk:
         try:
             instance._original_state=Greeter.objects.get(pk=instance.pk)
         except Greeter.DoesNotExist:
             instance._original_state =None
-@receiver(post_save, sender=Greeter)
+#@receiver(post_save, sender=Greeter)
 def notifier_modified_fields( sender, instance,created,**kwargs):
     if created or not hasattr(instance, '_original_state') or instance._original_state is None:
         return
@@ -59,7 +59,7 @@ def notifier_modified_fields( sender, instance,created,**kwargs):
         recipient_email= instance.user.email
         recipient_name= instance.user.first_name + ' ' + instance.user.last_name
         code_email="MODFI"
-        id_template_mailjet= Email_Mailjet.objects.get(code_email=code_email, lang_email=instance.lang_com).id_mailjet_email
+        id_template_mailjet= Email_Mailjet.objects.get(code_email=code_email, lang_email=instance.user.lang_com).id_mailjet_email
         user_first_name = instance.user.first_name    
         vars ={'fields':fields ,'user_first_name':user_first_name}
         send_email_mailjet.delay(recipient_email, recipient_name,  id_template_mailjet, vars)

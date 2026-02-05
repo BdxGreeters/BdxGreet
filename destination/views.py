@@ -76,7 +76,8 @@ class DestinationCreateView(LoginRequiredMixin, SuperAdminRequiredMixin, HelpTex
                 # On force les valeurs du parent si elles existent
                     dest.manager_dest = parent_dest.manager_dest
                     dest.referent_dest = parent_dest.referent_dest
-                
+                    dest.finance_dest = parent_dest.finance_dest
+    
                 
                 # Gestion code_cluster (depuis champ masqué ou form)
                 h_cluster = self.request.POST.get('code_cluster_hidden')
@@ -382,20 +383,32 @@ class AjaxFilterUsersView(View):
         return JsonResponse(results, safe=False)
 
 ###################################################################################################
-# AJAX pour récuperer les managers et référents de la destination parent pour une destination donnée
-
+# AJAX pour récuperer les manager, référent et finance de la destination parent pour une destination donnée
 from django.http import JsonResponse
-@LoginRequiredMixin
-def get_parent_destination_info(request):
-    parent_id = request.GET.get('parent_id')
-    try:
-        parent = Destination.objects.get(pk=parent_id)
-        return JsonResponse({
-            'manager_id': parent.manager_dest.id if parent.manager_dest else '',
-            'referent_id': parent.referent_dest.id if parent.referent_dest else '',
-        })
-    except Destination.DoesNotExist:
-        return JsonResponse({'error': 'Not found'}, status=404)
+from django.views import View
+from django.contrib.auth.mixins import LoginRequiredMixin
+from .models import Destination
+
+class GetParentDestinationInfoView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        parent_id = request.GET.get('parent_id')
+        try:
+            # On cherche par le code_dest qui est la valeur du select
+            parent = Destination.objects.get(code_dest=parent_id)
+            
+            return JsonResponse({
+                'manager_id': parent.manager_dest.id if parent.manager_dest else None,
+                'manager_name': parent.manager_dest.get_full_name() if parent.manager_dest else '',
+                
+                'referent_id': parent.referent_dest.id if parent.referent_dest else None,
+                'referent_name': parent.referent_dest.get_full_name() if parent.referent_dest else '',
+                
+                'finance_id': parent.finance_dest.id if parent.finance_dest else None,
+                'finance_name': parent.finance_dest.get_full_name() if parent.finance_dest else '',
+            })
+        except Destination.DoesNotExist:
+            return JsonResponse({'error': 'Not found'}, status=404)
+
 
 ###################################################################################################
 # Vue Mise à jour d'une destination
@@ -503,6 +516,8 @@ class DestinationUpdateView(LoginRequiredMixin, AuthorizedRequiredUpdateDestinat
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs['is_update'] = True  # Indique que c'est une mise à jour
+        kwargs['user'] = self.request.user
+        kwargs['code_cluster_user'] = getattr(self.request.user, 'code_cluster', None)
         return kwargs
 
 
@@ -535,23 +550,16 @@ class DestinationUpdateView(LoginRequiredMixin, AuthorizedRequiredUpdateDestinat
 
                 # 4. GESTION DES ROLES AVEC VÉRIFICATION
                 for field, group_name in user_roles_map.items():
-                    print(f"Vérification du champ {field} pour les modifications de rôle.") 
                     if field in form.changed_data:
                         old_user = getattr(old_instance, field)
-                        print(f"Ancien utilisateur pour le champ {field}: {old_user}")
                         new_user = form.cleaned_data.get(field)
-                        print(f"Nouveau utilisateur pour le champ {field}: {new_user}")
 
                         # --- A. NETTOYAGE DE L'ANCIEN UTILISATEUR ---
                         if old_user and old_user != new_user:
-                            print(f"Nettoyage de l'ancien utilisateur pour le champ {field}: {old_user}")
                             group=Group.objects.filter(name=group_name).first()
-                            print(f"Vérification du groupe {group_name}")
-                            print(f"Groupe trouvé : {group}")
                             if group:
                                 still_has_role_for_his_group=False
                                 for f, g_name in user_roles_map.items():
-                                    print(f"Vérification du champ {f} avec le groupe {g_name}")
                                     if g_name == group_name :
                                         if getattr(dest, f) == old_user:
                                             still_has_role_for_his_group=True
@@ -560,7 +568,7 @@ class DestinationUpdateView(LoginRequiredMixin, AuthorizedRequiredUpdateDestinat
                                     old_user.groups.remove(group)
                                 
                                 is_completely_unassigned = not any(
-                                    getattr(old_instance, f) == old_user for f in user_roles_map.keys()
+                                    getattr(dest, f) == old_user for f in user_roles_map.keys()
                                 )
                                 if is_completely_unassigned:
                                     old_user.is_active = False
@@ -580,15 +588,20 @@ class DestinationUpdateView(LoginRequiredMixin, AuthorizedRequiredUpdateDestinat
                             group, created = Group.objects.get_or_create(name=group_name)
                             new_user.groups.add(group)
                             
-                            # On n'envoie l'email que s'il n'était pas déjà là dans un autre rôle
-                            # (Optionnel : selon si vous voulez notifier à chaque nouveau rôle)
-                            was_already_in_dest = any(
-                                getattr(old_instance, f) == new_user for f in user_roles_map.keys()
-                            )
-                            if not was_already_in_dest:
-                                envoyer_email_creation_utilisateur(new_user.id, self.request)
+                #5 - Envoi des emails d'activation pour les nouveaux utilisateurs activés
 
-                # 5. IMAGE ET TRADUCTION
+                # On récupère tous les utilisateurs uniques de l'ancienne instance
+                old_users_ids = {getattr(old_instance, f).id for f in user_roles_map.keys() if getattr(old_instance, f)}
+
+                # On récupère tous les utilisateurs de la nouvelle instance
+                new_users_ids = {getattr(dest, f).id for f in user_roles_map.keys() if getattr(dest, f)}
+
+                # Les destinataires sont ceux qui sont dans la nouvelle liste mais PAS dans l'ancienne
+                to_notify = new_users_ids - old_users_ids
+                for user_id in to_notify:
+                    envoyer_email_creation_utilisateur(user_id, self.request)
+
+                # 6. IMAGE ET TRADUCTION
                 if 'logo_dest' in form.changed_data and dest.logo_dest:
                     transaction.on_commit(lambda: 
                         resize_image_task.delay(

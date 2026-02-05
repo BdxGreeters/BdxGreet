@@ -50,6 +50,7 @@ django-extensions = "*"
 django-formtools = "*"
 isort = "*"
 django-environ = "*"
+django-multiselectfield = "*"
 
 [dev-packages]
 
