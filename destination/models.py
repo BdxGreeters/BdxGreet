@@ -31,7 +31,7 @@ class Destination(models.Model):
     desc_dest=models.TextField(max_length=100, default=" ",help_text=_("Décrire la destination"), verbose_name=_("Description"))
     adress_dest=models.CharField(max_length=250, default=" ", verbose_name=_("Adresse"),help_text=_("Saisir l'adresse de la destination"))
     region_dest=models.CharField(max_length=50, default=" ",blank=True,null= True, verbose_name=_("Région"),help_text=_("Saisir la région de la destination"))
-    country_dest=models.ForeignKey(Pays, on_delete=models.PROTECT, verbose_name=_("Pays"),help_text=_("Sélectionner le pays de la destination"))
+    country_dest=models.ForeignKey(Pays, on_delete=models.PROTECT, verbose_name=_("Pays"),related_name='country_dest',help_text=_("Sélectionner le pays de la destination"))
     logo_dest=models.ImageField(upload_to=get_file_path,default='logos/default.jpg',verbose_name=_('Logo'),blank=True, null=True,help_text=_("Taille : 250 px *250 px"))
     libelle_email_dest=models.CharField(max_length=50, default=" ", verbose_name=_("Libellé courriel émetteur "),help_text=_("Saisir le libellé des courriels émetteurs de la destination"))
     statut_dest=models.CharField(max_length=15, choices=choices, default="Drafts",help_text=_("Saisir le statut dela destination"),verbose_name=_("Statut"))
@@ -67,7 +67,7 @@ class Destination(models.Model):
     
     
     def __str__(self):
-        return f"{self.code_dest} - {self.name_dest}"
+        return self.code_dest
     
 ####################################################################################################
 # Modèle Liste des lieux ou thèmes

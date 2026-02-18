@@ -1,44 +1,55 @@
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, UpdateView
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin,UserPassesTestMixin
 from django.db import transaction
-from .forms import GreeterCombinedForm
-from .models import Greeter
+from greeters.forms import GreeterCombinedForm
+from greeters.models import Greeter
+from destination.models import Destination
+from cluster.models import Cluster
 from django.contrib.auth.models import Group
 from django.db import IntegrityError
-from django.contrib import messages
+from django.contrib import messages as django_messages
+from django.shortcuts import redirect
 from django.utils.translation import gettext as _
 from django.contrib.auth import get_user_model
 from core.tasks import envoyer_email_creation_utilisateur, resize_image_task
 
 User = get_user_model()
 
+class AuthorRequiredCreateGreeterMixin(UserPassesTestMixin):
+    
+    def test_func(self):
+        allowed_groups = ['SuperAdmin','Admin','Referent']
+        return self.request.user.is_authenticated and self.request.user.groups.filter(name__in=allowed_groups).exists()
+    
+    def handle_no_permission(self):
+        django_messages.error(self.request, "Vous n'avez pas les droits nécessaires pour créer un Greeter.")
+        return redirect('login')
 
-class GreeterCreateView(LoginRequiredMixin, CreateView):
+class GreeterCreateView(LoginRequiredMixin,AuthorRequiredCreateGreeterMixin,CreateView):
     model = Greeter
     form_class = GreeterCombinedForm
     template_name = 'greeters/greeter_form.html'
-    success_url = reverse_lazy('greeters_list')
-
+    success_url = reverse_lazy('login')
+        
     def get_form_kwargs(self):
-        """Passe l'utilisateur actuel au formulaire"""
-        kwargs = super().get_form_kwargs()
-        kwargs['admin_user'] = self.request.user
+        kwargs = super().get_form_kwargs() 
+        kwargs['admin_greeter'] = self.request.user
         return kwargs
 
     def get_initial(self):
         initial = super().get_initial()
-        # Récupération des infos de l'admin connecté
-        admin = self.request.user
-        
-        # Pré-remplissage automatique si l'admin a ces champs
-        if hasattr(admin, 'cluster') and admin.code_cluster:
-            initial['cluster'] = admin.code_cluster
-        if hasattr(admin, 'destination') and admin.code_dest:
-            initial['destination'] = admin.code_dest
-            
+        admin = self.request.user 
+        code_cluster = getattr(admin, 'code_cluster', None)
+        code_dest = getattr(admin, 'code_dest', None)
+        if code_cluster:
+            initial['cluster'] = code_cluster
+        if code_dest:
+            initial['destination'] = code_dest
+            destination = Destination.objects.select_related('country_dest').get(code_dest=code_dest)
+            initial['country_greeter']   = destination.country_dest
         return initial
-
+    
     def form_valid(self, form):
         try:
             with transaction.atomic():
@@ -75,6 +86,10 @@ class GreeterCreateView(LoginRequiredMixin, CreateView):
                 # 5. Affecter le groupe "Greeter" à l'utilisateur
                 greeter_group, created = Group.objects.get_or_create(name='Greeter')
                 new_user.groups.add(greeter_group)
+
+                # 6. Message de succès et Redirection
+                django_messages.success(self.request, _("Le greeter {} a été créé avec succès.").format(greeter.user.first_name + " " + greeter.user.last_name ))
+              
 
         except IntegrityError:
             form.add_error('email', _("Cette adresse email est déjà utilisée par un autre compte."))
@@ -136,3 +151,45 @@ class GreeterUpdateView(LoginRequiredMixin, UpdateView):
     
 ###################################################################################################
 # Vue Liste des greeters
+
+
+###################################################################################################
+
+#Vue Ajax pour mettre à jour dynamiquement les langues de communication disponibles, les centres d'intérêts, expérioences Greeter et thèmes  en fonction de la destination sélectionnée dans le formulaire de création ou de mise à jour d'un Greeter
+
+from django.http import JsonResponse
+from cluster.models import Cluster
+from destination.models import Destination, Destination_data, Language_communication
+
+def get_cluster_dest_data(request):
+    code_cluster = request.GET.get('code_cluster')
+    code_dest = request.GET.get('code_dest')
+    data = {}
+
+    if code_cluster:
+        try:
+            cluster = Cluster.objects.get(code_cluster=code_cluster)
+            data['interests'] = list(cluster.interest_center.values('id', 'name'))
+            data['experiences'] = list(cluster.experience_greeter.values('id', 'name'))
+        except Cluster.DoesNotExist:
+            pass
+
+    if code_dest:
+        try:
+            dest = Destination.objects.get(code_dest=code_dest)
+            dest_data = Destination_data.objects.get(code_dest_data=code_dest)
+            
+            # Gestion des langues
+            lang_ids = list(dest_data.langs_com_dest.values_list('id', flat=True))
+            if dest_data.lang_default_dest:
+                lang_ids.append(dest_data.lang_default_dest.id)
+            
+            langs = Language_communication.objects.filter(id__in=lang_ids).distinct()
+            
+            data['langs'] = list(langs.values('id', 'name'))
+            data['default_lang'] = dest_data.lang_default_dest.id if dest_data.lang_default_dest else None
+            data['places'] = list(dest.list_places_dest.values('id', 'name'))
+        except (Destination.DoesNotExist, Destination_data.DoesNotExist):
+            pass
+
+    return JsonResponse(data)

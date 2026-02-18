@@ -15,7 +15,8 @@ from django.contrib.auth import get_user_model
 from core.mixins import CommaSeparatedFieldMixin, HelpTextTooltipMixin
 from crispy_forms.bootstrap import TabHolder, Tab
 from cluster.models import Cluster
-from destination.models import Destination
+from destination.models import Destination,Destination_data,List_places
+from core.models import Language_communication
 
 User=get_user_model()
 
@@ -25,10 +26,9 @@ class GreeterCombinedForm(HelpTextTooltipMixin, forms.ModelForm):
     first_name = forms.CharField(label=_("Prénom"), help_text=_("Saisir le prénom du Greeter"))
     last_name = forms.CharField(label=_("Nom"), help_text=_("Saisir le nom du Greeter"))
     cellphone = forms.CharField(label=_("Téléphone Mobile"), help_text=_("Saisir le numéro de téléphone mobile du Greeter"))
-    lang_com = lang_com = forms.ChoiceField(
+    lang_com = lang_com = forms.ModelChoiceField(
         label=_("Langue de communication"),
-        choices=settings.LANGUAGES, 
-        initial=settings.LANGUAGE_CODE,
+        queryset=Language_communication.objects.none(),  # On va définir le queryset dans __init__ pour filtrer selon le groupe de l'admin
         widget=forms.Select(attrs={'class': 'form-control'}),
         help_text=_("Saisir la langue de communication du Greeter")
         )
@@ -116,7 +116,32 @@ class GreeterCombinedForm(HelpTextTooltipMixin, forms.ModelForm):
         return email
 
     def __init__(self, *args, **kwargs):
+        self.admin = kwargs.pop('admin_greeter', None)
         super().__init__(*args, **kwargs)
+        destination_obj= None
+        cluster_obj= None
+
+        #si le code_cluster est connu
+        if self.admin and self.admin.code_cluster:
+            cluster_obj= Cluster.objects.get(code_cluster=self.admin.code_cluster)
+            self.fields['interest_greeter'].queryset = cluster_obj.interest_center.all()
+            self.fields['experiences_greeters'].queryset = cluster_obj.experience_greeter.all()
+            self.fields['cluster'].disabled = True
+        
+        #si le code_dest est connu
+        if self.admin and self.admin.code_dest:
+            self.fields['destination'].disabled = True
+            self.fields['country_greeter'].disabled = True
+            destination_obj= Destination.objects.get(code_dest=self.admin.code_dest)
+            dest_data= Destination_data.objects.get(code_dest_data=self.admin.code_dest)
+            lang_ids = list(dest_data.langs_com_dest.values_list('id', flat=True))
+            if dest_data.lang_default_dest:
+                lang_ids.append(dest_data.lang_default_dest.id)
+            self.fields['lang_com'].queryset = Language_communication.objects.filter(id__in=lang_ids).distinct()
+            self.fields['lang_com'].initial = dest_data.lang_default_dest
+            self.fields['destination'].queryset = Destination.objects.filter(code_cluster=destination_obj.code_cluster)
+            self.fields['list_places_greeter'].queryset = destination_obj.list_places_dest.all()
+
         self.apply_tooltips()
         self.fields['cluster'].label_from_instance = lambda obj: obj.code_cluster
         self.helper = FormHelper()

@@ -499,7 +499,7 @@ class AjaxUserHandlerView(View):
 
             return JsonResponse({
                 "id": user.id,
-                "text": f"{user.first_name} {user.last_name} ({_('En attente')})"
+                "text": f"{user.first_name} {user.last_name}"
             }, status=201)
         except Exception as e:
             return JsonResponse({"erreur": str(e)}, status=400)

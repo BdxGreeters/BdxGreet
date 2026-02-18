@@ -65,7 +65,7 @@ class Greeter(models.Model):
     frequency_greeter=models.IntegerField(default=1, verbose_name=_('Intervalle en jours entre deux balades'),help_text=_("Saisir l'intervalle en jours entre deux balades"))
     comments_greeter=models.TextField(max_length=1500,default="",blank=True,null=True,verbose_name=_('Commentaires'),help_text=_("Saisir les commentaires du Greeter"))
     interest_greeter=models.ManyToManyField(InterestCenter,verbose_name=_('Intérêts'),help_text=_("Cocher les centres d'intérêts du Greeter"))
-    list_places_greeter=models.ManyToManyField(List_places,verbose_name=('Thèmes ou lieux'),help_text=_("Cocher les cethèmes ou lieux du Greeter"))
+    list_places_greeter=models.ManyToManyField(List_places,verbose_name=('Thèmes ou lieux'),help_text=_("Cocher les thèmes ou lieux du Greeter"))
     arrival_greeter=models.DateField(verbose_name=_("Date d'arrivée"),help_text=_("Saisir la date d'arrivée du Greeter"))
     departure_greeter=models.DateField(verbose_name=_('Date de départ'),blank=True,null=True,help_text=_("Saisir la date de départ du Greeter"))
     modif_greeter=models.DateTimeField(auto_now=True,blank=True,null=True,verbose_name=_('Date de dernière modification'),help_text=_("Saisir la date de dernière modification du Greeter"))
