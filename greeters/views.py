@@ -156,40 +156,59 @@ class GreeterUpdateView(LoginRequiredMixin, UpdateView):
 ###################################################################################################
 
 #Vue Ajax pour mettre à jour dynamiquement les langues de communication disponibles, les centres d'intérêts, expérioences Greeter et thèmes  en fonction de la destination sélectionnée dans le formulaire de création ou de mise à jour d'un Greeter
-
+from django.db import models
 from django.http import JsonResponse
 from cluster.models import Cluster
 from destination.models import Destination, Destination_data, Language_communication
 
 def get_cluster_dest_data(request):
-    code_cluster = request.GET.get('code_cluster')
-    code_dest = request.GET.get('code_dest')
-    data = {}
+    # Récupération des IDs depuis la requête AJAX
+    id_cluster = request.GET.get('code_cluster')
+    id_dest = request.GET.get('code_dest')
+    
+    print(f"Requête AJAX reçue avec id_cluster={id_cluster} et id_dest={id_dest}")
+    
+    data = {
+        'interests': [],
+        'experiences': [],
+        'langs': [],
+        'places': [],
+        'default_lang': None
+    }
 
-    if code_cluster:
-        try:
-            cluster = Cluster.objects.get(code_cluster=code_cluster)
-            data['interests'] = list(cluster.interest_center.values('id', 'name'))
-            data['experiences'] = list(cluster.experience_greeter.values('id', 'name'))
-        except Cluster.DoesNotExist:
-            pass
+    try:
+        # 1. Traitement du Cluster (Intérêts et Expériences)
+        if id_cluster and id_cluster.isdigit():
+            cluster = Cluster.objects.filter(id=id_cluster).first()
+            print(f"Cluster trouvé: {cluster}") 
+            if cluster:
+                data['interests'] = list(cluster.interest_center.values('id', name=models.F('interest_center')))
+                data['experiences'] = list(cluster.experience_greeter.values('id', name=models.F('experience_greeter')))
+        # 2. Traitement de la Destination (Lieux et Langues)
+        if id_dest and id_dest.isdigit():
+            dest = Destination.objects.filter(id=id_dest).first()
+            if dest:
+                # Récupération des lieux (votre erreur indiquait le champ 'list_places_dest')
+                data['places'] = list(dest.list_places_dest.values('id', 'list_places_dest'))
+                
+                # Récupération des données liées via le OneToOneField (related_name='destination_data')
+                # On utilise filter().first() pour éviter l'erreur si la relation n'existe pas
+                dest_data = Destination_data.objects.filter(code_dest_data=dest).first()
+                
+                if dest_data:
+                    # Gestion des langues
+                    lang_ids = list(dest_data.langs_com_dest.values_list('id', flat=True))
+                    if dest_data.lang_default_dest:
+                        lang_ids.append(dest_data.lang_default_dest.id)
+                    
+                    langs = Language_communication.objects.filter(id__in=lang_ids).distinct()
+                    data['langs'] = list(langs.values('id', 'name'))
+                    
+                    if dest_data.lang_default_dest:
+                        data['default_lang'] = dest_data.lang_default_dest.id
 
-    if code_dest:
-        try:
-            dest = Destination.objects.get(code_dest=code_dest)
-            dest_data = Destination_data.objects.get(code_dest_data=code_dest)
-            
-            # Gestion des langues
-            lang_ids = list(dest_data.langs_com_dest.values_list('id', flat=True))
-            if dest_data.lang_default_dest:
-                lang_ids.append(dest_data.lang_default_dest.id)
-            
-            langs = Language_communication.objects.filter(id__in=lang_ids).distinct()
-            
-            data['langs'] = list(langs.values('id', 'name'))
-            data['default_lang'] = dest_data.lang_default_dest.id if dest_data.lang_default_dest else None
-            data['places'] = list(dest.list_places_dest.values('id', 'name'))
-        except (Destination.DoesNotExist, Destination_data.DoesNotExist):
-            pass
+        return JsonResponse(data)
 
-    return JsonResponse(data)
+    except Exception as e:
+        print(f"Erreur Python dans la vue : {str(e)}")
+        return JsonResponse({'error': str(e)}, status=500)

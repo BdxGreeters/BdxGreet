@@ -17,6 +17,7 @@ from crispy_forms.bootstrap import TabHolder, Tab
 from cluster.models import Cluster
 from destination.models import Destination,Destination_data,List_places
 from core.models import Language_communication
+from django.utils import timezone
 
 User=get_user_model()
 
@@ -99,6 +100,20 @@ class GreeterCombinedForm(HelpTextTooltipMixin, forms.ModelForm):
         }
     
     
+    def clean_begin_date(self):
+        
+        begin_date = self.cleaned_data.get('begin_indisponibility')
+        today = timezone.now().date()
+    
+        if begin_date and begin_date < today:
+            raise forms.ValidationError(_("La date de début ne peut pas être dans le passé."))
+        
+        arrival_date = self.cleaned_data.get('arrival_greeter')
+        if arrival_date and begin_date and begin_date > arrival_date:
+            raise forms.ValidationError(_("La date de début ne peut pas être après la date d'arrivée."))
+        
+        return begin_date
+
     def clean_email(self):
         email = self.cleaned_data.get('email').lower()
     
@@ -118,6 +133,7 @@ class GreeterCombinedForm(HelpTextTooltipMixin, forms.ModelForm):
     def __init__(self, *args, **kwargs):
         self.admin = kwargs.pop('admin_greeter', None)
         super().__init__(*args, **kwargs)
+        
         destination_obj= None
         cluster_obj= None
 
