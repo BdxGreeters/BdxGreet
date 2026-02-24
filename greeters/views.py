@@ -59,10 +59,11 @@ class GreeterCreateView(LoginRequiredMixin,AuthorRequiredCreateGreeterMixin,Crea
                     'first_name': form.cleaned_data['first_name'],
                     'last_name': form.cleaned_data['last_name'],
                     'cellphone': form.cleaned_data['cellphone'],
-                    'lang_com': form.cleaned_data['lang_com'],
+                    'lang_com': form.cleaned_data['lang_com'].code if form.cleaned_data['lang_com'] else None,
                     'code_cluster': form.cleaned_data['cluster'],
                     'code_dest': form.cleaned_data['destination'],
                 }
+                #print(f"Création de l'utilisateur avec les données: {user_data}")
                 new_user = User.objects.create_user(**user_data)
 
                 # 2. Création du Greeter (lié au nouvel user)
@@ -155,7 +156,7 @@ class GreeterUpdateView(LoginRequiredMixin, UpdateView):
 
 ###################################################################################################
 
-#Vue Ajax pour mettre à jour dynamiquement les langues de communication disponibles, les centres d'intérêts, expérioences Greeter et thèmes  en fonction de la destination sélectionnée dans le formulaire de création ou de mise à jour d'un Greeter
+#Vue Ajax pour mettre à jour dynamiquement les destinations, le pays et les langues de communication disponibles, les centres d'intérêts, expérioences Greeter, thèmes  en fonction de la destination sélectionnée dans le formulaire de création ou de mise à jour d'un Greeter
 from django.db import models
 from django.http import JsonResponse
 from cluster.models import Cluster
@@ -173,24 +174,31 @@ def get_cluster_dest_data(request):
         'experiences': [],
         'langs': [],
         'places': [],
-        'default_lang': None
+        'default_lang': None,
+        'pays_id': None,
+        'pays_name': None
     }
 
     try:
-        # 1. Traitement du Cluster (Intérêts et Expériences)
+        # 1. Traitement du Cluster (Destinations, Intérêts et Expériences)
         if id_cluster and id_cluster.isdigit():
             cluster = Cluster.objects.filter(id=id_cluster).first()
             print(f"Cluster trouvé: {cluster}") 
             if cluster:
+                #Récupération des destinations liées au cluster
+                destinations = Destination.objects.filter(code_cluster=cluster).order_by('name_dest')    
+                data['destinations'] = list(destinations.values('id', name=models.F('code_dest')))
+                # Récupération des centres d'intérêt et des expériences liés au cluster
                 data['interests'] = list(cluster.interest_center.values('id', name=models.F('interest_center')))
                 data['experiences'] = list(cluster.experience_greeter.values('id', name=models.F('experience_greeter')))
-        # 2. Traitement de la Destination (Lieux et Langues)
+        # 2. Traitement de la Destination (Pays, Lieux et Langues)
         if id_dest and id_dest.isdigit():
             dest = Destination.objects.filter(id=id_dest).first()
             if dest:
                 # Récupération des lieux (votre erreur indiquait le champ 'list_places_dest')
                 data['places'] = list(dest.list_places_dest.values('id', 'list_places_dest'))
-                
+                data['pays_id'] = dest.country_dest.id
+                data['pays_name'] = dest.country_dest.nom_pays
                 # Récupération des données liées via le OneToOneField (related_name='destination_data')
                 # On utilise filter().first() pour éviter l'erreur si la relation n'existe pas
                 dest_data = Destination_data.objects.filter(code_dest_data=dest).first()
@@ -202,6 +210,7 @@ def get_cluster_dest_data(request):
                         lang_ids.append(dest_data.lang_default_dest.id)
                     
                     langs = Language_communication.objects.filter(id__in=lang_ids).distinct()
+                    print(f"Langues trouvées pour la destination: {langs}")
                     data['langs'] = list(langs.values('id', 'name'))
                     
                     if dest_data.lang_default_dest:

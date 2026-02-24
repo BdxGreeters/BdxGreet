@@ -27,7 +27,7 @@ class GreeterCombinedForm(HelpTextTooltipMixin, forms.ModelForm):
     first_name = forms.CharField(label=_("Prénom"), help_text=_("Saisir le prénom du Greeter"))
     last_name = forms.CharField(label=_("Nom"), help_text=_("Saisir le nom du Greeter"))
     cellphone = forms.CharField(label=_("Téléphone Mobile"), help_text=_("Saisir le numéro de téléphone mobile du Greeter"))
-    lang_com = lang_com = forms.ModelChoiceField(
+    lang_com = forms.ModelChoiceField(
         label=_("Langue de communication"),
         queryset=Language_communication.objects.none(),  # On va définir le queryset dans __init__ pour filtrer selon le groupe de l'admin
         widget=forms.Select(attrs={'class': 'form-control'}),
@@ -100,19 +100,41 @@ class GreeterCombinedForm(HelpTextTooltipMixin, forms.ModelForm):
         }
     
     
-    def clean_begin_date(self):
-        
+    def clean(self):
+
+        cleaned_data = super().clean()
         begin_date = self.cleaned_data.get('begin_indisponibility')
+        end_date = self.cleaned_data.get('end_indisponibility') 
         today = timezone.now().date()
     
         if begin_date and begin_date < today:
-            raise forms.ValidationError(_("La date de début ne peut pas être dans le passé."))
+            self.add_error('begin_indisponibility', _("La date de début ne peut pas être dans le passé."))
+
+        if end_date and end_date < today:
+            self.add_error('end_indisponibility', _("La date de fin ne peut pas être dans le passé."))
+        
+        if begin_date and end_date and begin_date > end_date:
+            self.add_error('end_indisponibility', _("La date de fin ne peut pas être avant la date de début."))
         
         arrival_date = self.cleaned_data.get('arrival_greeter')
-        if arrival_date and begin_date and begin_date > arrival_date:
-            raise forms.ValidationError(_("La date de début ne peut pas être après la date d'arrivée."))
+        if arrival_date and arrival_date < today:
+            self.add_error('arrival_greeter', _("La date d'arrivée ne peut pas être dans le passé."))       
+        departure_date = self.cleaned_data.get('departure_greeter')
+        if departure_date and departure_date < today:
+            self.add_error('departure_greeter', _("La date de départ ne peut pas être dans le passé."))
+        if arrival_date and departure_date  and arrival_date > departure_date:
+            self.add_error('departure_greeter', ("La date de départ ne peut pas être avantla date d'arrivée."))
         
-        return begin_date
+        max_participants = self.cleaned_data.get('max_participants_greeter')
+        cluster= self.cleaned_data.get('cluster')
+        if max_participants is not None and max_participants < 1:
+            self.add_error('max_participants_greeter', _("Le nombre maximum de participants doit être au moins 1."))
+        if max_participants is not None and cluster is not None and max_participants > cluster.param_nbr_part_cluster:
+            self.add_error('max_participants_greeter', _("Le nombre maximum de participants ne peut pas dépasser la limite du cluster."))
+        
+        
+        return cleaned_data
+
 
     def clean_email(self):
         email = self.cleaned_data.get('email').lower()
@@ -133,7 +155,12 @@ class GreeterCombinedForm(HelpTextTooltipMixin, forms.ModelForm):
     def __init__(self, *args, **kwargs):
         self.admin = kwargs.pop('admin_greeter', None)
         super().__init__(*args, **kwargs)
-        
+
+        # Si le formulaire est soumis (POST), on élargit le queryset pour 
+        # permettre la validation des données envoyées par AJAX
+        if self.is_bound:
+            self.fields['lang_com'].queryset = Language_communication.objects.all()
+            
         destination_obj= None
         cluster_obj= None
 
@@ -158,8 +185,18 @@ class GreeterCombinedForm(HelpTextTooltipMixin, forms.ModelForm):
             self.fields['destination'].queryset = Destination.objects.filter(code_cluster=destination_obj.code_cluster)
             self.fields['list_places_greeter'].queryset = destination_obj.list_places_dest.all()
 
+        today_str = timezone.now().date().isoformat()
+        if not self.instance.pk:  # Si c'est une création (pas d'instance encore)
+            self.fields['begin_indisponibility'].widget.attrs['min'] = today_str
+            self.fields['end_indisponibility'].widget.attrs['min'] = today_str
+            self.fields['arrival_greeter'].widget.attrs['min'] = today_str
+            self.fields['departure_greeter'].widget.attrs['min'] = today_str
+        
+
         self.apply_tooltips()
         self.fields['cluster'].label_from_instance = lambda obj: obj.code_cluster
+        self.fields['destination'].label_from_instance = lambda obj: obj.name_dest
+
         self.helper = FormHelper()
         self.helper.form_tag = True # On l'active ici car c'est le formulaire principal
         self.helper.layout = Layout(
