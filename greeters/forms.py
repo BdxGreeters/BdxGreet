@@ -88,15 +88,15 @@ class GreeterCombinedForm(HelpTextTooltipMixin, forms.ModelForm):
         'disponibility_day_greeter': forms.CheckboxSelectMultiple(),    
         'disponibility_time_greeter': forms.CheckboxSelectMultiple(),
         'indisponibilty': forms.CheckboxInput(),
-        'begin_indisponibility': forms.DateInput(attrs={'type': 'date'}),
-        'end_indisponibility': forms.DateInput(attrs={'type': 'date'}),
+        'begin_indisponibility': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+        'end_indisponibility': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
         'list_places_greeter': forms.CheckboxSelectMultiple(),
         'interest_greeter': forms.CheckboxSelectMultiple(),
         'handicap_greeter': forms.CheckboxInput(),
         'visibily_greeter': forms.CheckboxInput(),
         'langues_parlées_greeter': forms.SelectMultiple(),
-        'arrival_greeter': forms.DateInput(attrs={'type': 'date'}),
-        'departure_greeter': forms.DateInput(attrs={'type': 'date'}),
+        'arrival_greeter': forms.DateInput(attrs={'type': 'date','class': 'form-control'}),
+        'departure_greeter': forms.DateInput(attrs={'type': 'date','class': 'form-control'}),
         }
     
     
@@ -143,7 +143,7 @@ class GreeterCombinedForm(HelpTextTooltipMixin, forms.ModelForm):
         users_with_same_email = User.objects.filter(email=email)
     
     # Si c'est une modification (instance existe déjà)
-        if self.instance and self.instance.pk:
+        if self.instance and self.instance.pk and self.instance.user.pk:
             # On exclut l'utilisateur lié à ce Greeter de la recherche
             users_with_same_email = users_with_same_email.exclude(pk=self.instance.user.pk)
     
@@ -160,31 +160,76 @@ class GreeterCombinedForm(HelpTextTooltipMixin, forms.ModelForm):
         # permettre la validation des données envoyées par AJAX
         if self.is_bound:
             self.fields['lang_com'].queryset = Language_communication.objects.all()
+        # 2. Récupération des objets liés pour filtrer les choix
+        # On vérifie d'abord l'instance (Update), sinon on regarde l'admin (Create)
+        current_cluster_code = None
+        current_dest_code = None
+
+        if self.instance and self.instance.pk:
+            # Mode UPDATE : on prend les codes de l'utilisateur lié au Greeter
+            current_cluster_code = self.instance.user.code_cluster
+            current_dest_code = self.instance.user.code_dest
+        elif self.admin:
+            # Mode CREATE : on prend les codes de l'admin
+            current_cluster_code = getattr(self.admin, 'code_cluster', None)
+            current_dest_code = getattr(self.admin, 'code_dest', None)
+
+        # 3. Application des filtres et désactivation des champs
+        if current_cluster_code:
+            try:
+                cluster_obj = Cluster.objects.get(code_cluster=current_cluster_code)
+                self.fields['interest_greeter'].queryset = cluster_obj.interest_center.all()
+                self.fields['experiences_greeters'].queryset = cluster_obj.experience_greeter.all()
+                # On désactive pour tout le monde si le code est présent
+                self.fields['cluster'].disabled = True
+            except Cluster.DoesNotExist:  
+                pass
+
+        if current_dest_code:
+            try:
+                destination_obj = Destination.objects.get(code_dest=current_dest_code)
+                self.fields['destination'].disabled = True
+                self.fields['country_greeter'].disabled = True
             
-        destination_obj= None
-        cluster_obj= None
+                # Filtrage des lieux selon la destination
+                self.fields['list_places_greeter'].queryset = destination_obj.list_places_dest.all()
+            
+                # Filtrage des langues (Logique Destination_data)
+                dest_data = Destination_data.objects.get(code_dest_data=current_dest_code)
+                lang_ids = list(dest_data.langs_com_dest.values_list('id', flat=True))
+                if dest_data.lang_default_dest:
+                    lang_ids.append(dest_data.lang_default_dest.id)
+                    self.fields['lang_com'].queryset = Language_communication.objects.filter(id__in=lang_ids).distinct()
+            except (Destination.DoesNotExist, Destination_data.DoesNotExist):
+                pass
 
-        #si le code_cluster est connu
-        if self.admin and self.admin.code_cluster:
-            cluster_obj= Cluster.objects.get(code_cluster=self.admin.code_cluster)
-            self.fields['interest_greeter'].queryset = cluster_obj.interest_center.all()
-            self.fields['experiences_greeters'].queryset = cluster_obj.experience_greeter.all()
-            self.fields['cluster'].disabled = True
+    # 4. Correction des dates (Format ISO pour le widget HTML5 date)
+        if self.instance and self.instance.pk:
+            date_fields = ['begin_indisponibility', 'end_indisponibility', 'arrival_greeter', 'departure_greeter']
+            for field in date_fields:
+                value = getattr(self.instance, field, None)
+                print(f"Initial value for {field}: {value}")
+                if value:
+                # Force le format YYYY-MM-DD requis par l'input type="date"
+                    self.fields[field].initial = value.strftime('%Y-%m-%d')
+                    print(f"Formatted initial value for {field}: {self.fields[field].initial}")
+                    self.fields['arrival_greeter'].disabled = True   
+
+            user = self.instance.user
+            if user.lang_com:
+            
+                try:
+                    lang_obj = Language_communication.objects.get(code=user.lang_com)
+                    self.fields['lang_com'].initial = lang_obj
+                    # On s'assure que le queryset contient au moins cette langue pour l'affichage
+                    self.fields['lang_com'].queryset = Language_communication.objects.filter(code=user.lang_com)
+                    # Supprime le choix vide "---------"
+                    self.fields['lang_com'].empty_label = None 
+                except Language_communication.DoesNotExist:
+                    pass
         
-        #si le code_dest est connu
-        if self.admin and self.admin.code_dest:
-            self.fields['destination'].disabled = True
-            self.fields['country_greeter'].disabled = True
-            destination_obj= Destination.objects.get(code_dest=self.admin.code_dest)
-            dest_data= Destination_data.objects.get(code_dest_data=self.admin.code_dest)
-            lang_ids = list(dest_data.langs_com_dest.values_list('id', flat=True))
-            if dest_data.lang_default_dest:
-                lang_ids.append(dest_data.lang_default_dest.id)
-            self.fields['lang_com'].queryset = Language_communication.objects.filter(id__in=lang_ids).distinct()
-            self.fields['lang_com'].initial = dest_data.lang_default_dest
-            self.fields['destination'].queryset = Destination.objects.filter(code_cluster=destination_obj.code_cluster)
-            self.fields['list_places_greeter'].queryset = destination_obj.list_places_dest.all()
-
+            self.fields['lang_com'].disabled = True
+            
         today_str = timezone.now().date().isoformat()
         if not self.instance.pk:  # Si c'est une création (pas d'instance encore)
             self.fields['begin_indisponibility'].widget.attrs['min'] = today_str

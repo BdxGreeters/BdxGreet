@@ -97,62 +97,111 @@ class GreeterCreateView(LoginRequiredMixin,AuthorRequiredCreateGreeterMixin,Crea
             return self.form_invalid(form)
         
         return super().form_valid(form)
+    
 ###################################################################################################
+
 # Mise à jour d'un Greeter existant avec son utilisateur lié
 
-class GreeterUpdateView(LoginRequiredMixin, UpdateView):
+from django.views.generic import UpdateView, ListView
+from django.db import transaction
+from django.urls import reverse_lazy
+from django.contrib import messages as django_messages
 
+class GreeterUpdateView(LoginRequiredMixin, AuthorRequiredCreateGreeterMixin, UpdateView):
     model = Greeter
     form_class = GreeterCombinedForm
-    template_name = 'greeters/greeter_form.html'
-    success_url = reverse_lazy('greeters:list')
+    template_name = 'greeters/greeter_form_update.html' # On réutilise le même template que la création
+    success_url = reverse_lazy('greeter_list') # Ou une autre URL de votre choix
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['admin_greeter'] = self.request.user
+        return kwargs
 
     def get_initial(self):
-        """Pré-remplit les champs de CustomUser dans le formulaire"""
         initial = super().get_initial()
-        user = self.object.user
-        initial.update({
-            'email': user.email,
-            'first_name': user.first_name,
-            'last_name': user.last_name,
-            'cellphone': user.cellphone,
-            'lang_com': user.lang_com,
-            'code_cluster': user.cluster,
-            'code_dest': user.destination,
-        })
+        # On injecte les données de l'utilisateur lié dans le formulaire
+        if self.object and self.object.user:
+            user = self.object.user
+            initial.update({
+                'email': user.email,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'cellphone': user.cellphone,
+                'lang_com': user.lang_com,
+                'cluster': user.code_cluster,
+                'destination': user.code_dest,
+            })
         return initial
 
     def form_valid(self, form):
-        with transaction.atomic():
-            greeter = form.save(commit=False)
-            user = greeter.user
-            
-            # Mise à jour des données utilisateur
-            user.email = form.cleaned_data['email']
-            user.first_name = form.cleaned_data['first_name']
-            user.last_name = form.cleaned_data['last_name']
-            user.cellphone = form.cleaned_data['cellphone']
-            user.lang_com = form.cleaned_data['lang_com']
-            user.code_cluster = form.cleaned_data['cluster']
-            user.code_dest = form.cleaned_data['destination']
-            user.save()
+        try:
+            with transaction.atomic():
+                # 1. Mise à jour de l'utilisateur lié
+                user = self.object.user
+                user.email = form.cleaned_data['email']
+                user.first_name = form.cleaned_data['first_name']
+                user.last_name = form.cleaned_data['last_name']
+                user.cellphone = form.cleaned_data['cellphone']
+                
+                # Mise à jour des codes cluster/dest si nécessaire
+                user.code_cluster = form.cleaned_data['cluster']
+                user.code_dest = form.cleaned_data['destination']
+                
+                if form.cleaned_data['lang_com']:
+                    user.lang_com = form.cleaned_data['lang_com'].code
+                
+                user.save()
 
-            # Mise à jour du Greeter
-            greeter.save()
-            form.save_m2m()
+                # 2. Sauvegarde du Greeter
+                greeter = form.save()
 
-            # Celery si une nouvelle photo est soumise
-            if 'photo' in form.changed_data and greeter.photo:
-                from core.tasks import resize_image_task as resize_greeter_photo
-                transaction.on_commit(lambda: resize_greeter_photo.delay(
-                    app_label='greeters', model_name='Greeter', object_id=greeter.id, image_field_name='photo', size=(200, 200)))
+                # 3. Gestion de la photo (Celery)
+                if 'photo' in form.changed_data and greeter.photo:
+                    transaction.on_commit(lambda: resize_image_task.delay(
+                        app_label='greeters', model_name='Greeter', 
+                        object_id=greeter.id, field_name='photo', 
+                        width=200, height=200))
 
+                django_messages.success(self.request, _("Le greeter {} a été mis à jour.").format(user.get_full_name()))
+                return super().form_valid(form)
 
-        return super().form_valid(form)
+        except IntegrityError:
+            form.add_error('email', _("Cette adresse email est déjà utilisée."))
+            return self.form_invalid(form)
     
 ###################################################################################################
 # Vue Liste des greeters
 
+class GreeterListView(LoginRequiredMixin, ListView):
+    model = Greeter
+    template_name = 'greeters/greeter_list.html'
+    context_object_name = 'greeters'
+    paginate_by = 20
+
+    def get_queryset(self):
+        # Optimisation des requêtes pour éviter le N+1
+        return Greeter.objects.select_related('user', 'country_greeter').all()
+
+###################################################################################################
+
+#Vue Détail d'un Greeter
+
+from django.views.generic import DetailView
+
+class GreeterDetailView(LoginRequiredMixin, DetailView):
+    model = Greeter
+    template_name = 'greeters/greeter_detail.html'
+    context_object_name = 'greeter'
+
+    def get_queryset(self):
+        return Greeter.objects.select_related('user', 'country_greeter').prefetch_related(
+            'langues_parlées_greeter', 
+            'interest_greeter', 
+            'experiences_greeters',
+            'list_places_greeter',
+            'disponibility_time_greeter'
+        )
 
 ###################################################################################################
 

@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>{% trans "Fiche Greeter" %} : {{ greeter.user.get_full_name }}</h2>
+        <div>
+            <a href="{% url 'greeter_update' greeter.pk %}" class="btn btn-warning">
+                <i class="fas fa-edit"></i> {% trans "Modifier" %}
+            </a>
+            <a href="{% url 'greeter_list' %}" class="btn btn-secondary">
+                {% trans "Retour à la liste" %}
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            
+                <div class="card-body text-center">
+                    {% if greeter.photo %}
+                        <img src="{{ greeter.photo.url }}" class="img-fluid rounded-circle mb-3" style="width: 200px; height: 200px; object-fit: cover;" alt="{{ greeter.user.first_name }}">
+                    {% else %}
+                        <div class="bg-light rounded-circle d-inline-block mb-3" style="width: 200px; height: 200px; line-height: 200px;">
+                            <i class="fas fa-user fa-5x text-secondary"></i>
+                        </div>
+                    {% endif %}
+                    <h4>{{ greeter.user.first_name }} {{ greeter.user.last_name }}</h4>
+                    <p class="badge bg-info text-dark">{{ greeter.get_statut_greeter_display }}</p>
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item"><strong>Email:</strong> {{ greeter.user.email }}</li>
+                    <li class="list-group-item"><strong>Mobile:</strong> {{ greeter.user.cellphone }}</li>
+                    <li class="list-group-item"><strong>Ville:</strong> {{ greeter.city_greeter }} ({{ greeter.postalcode_greeter }})</li>
+                </ul>
+                
+                <div  class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-book"></i> {% trans "Biographie" %}</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">{{ greeter.bio_greeter|linebreaks|default:_("Aucune biographie renseignée.") }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+
+            <div class="row">
+                <div class="col-md-6">
+                     <div class="card shadow-sm mb-4">
+                        <div class="card-header"><strong>{% trans "Langue de communication" %}</strong></div>
+                        <div class="card-body">
+                                <span class="badge bg-secondary">{{ greeter.user.get_lang_com_display}}</span>
+                        </div>
+                    </div>
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header"><strong>{% trans "Langues parlées" %}</strong></div>
+                        <div class="card-body">
+                            {% for langue in greeter.langues_parlées_greeter.all %}
+                                <span class="badge bg-secondary">{{ langue.langue_parlee}}</span>
+                            {% empty %}
+                                <small>{% trans "Non renseigné" %}</small>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header"><strong>{% trans "Expériences" %}</strong></div>
+                        <div class="card-body">
+                            {% for experience in greeter.experiences_greeters.all %}
+                                <span class="badge bg-outline-primary border border-primary text-primary">{{experience.experience_greeter }}</span>
+                            {% empty %}
+                                <small>{% trans "Aucune expérience listée" %}</small>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header"><strong>{% trans "Centres d'intérêt" %}</strong></div>
+                        <div class="card-body">
+                            {% for interest in greeter.interest_greeter.all %}
+                                <span class="badge bg-outline-primary border border-primary text-primary">{{ interest.interest_center }}</span>
+                            {% empty %}
+                                <small>{% trans "Aucun intérêt listé" %}</small>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header"><strong>{% trans "Thèmes ou Lieux" %}</strong></div>
+                        <div class="card-body">
+                            {% for list_place in greeter.list_places_greeter.all %}
+                                <span class="badge bg-outline-primary border border-primary text-primary">{{ list_place.list_places_dest }}</span>
+                            {% empty %}
+                                <small>{% trans "Aucun lieu ou thème listé" %}</small>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header"><strong>{% trans "Jours disponibles et disponibilité en journée" %}</strong></div>
+                        <div class="card-body">
+                            {% if greeter.disponibility_day_greeter %}
+                                {% for day in greeter.disponibility_day_greeter %}
+                                    <span class="badge bg-success">{{ day }}</span>
+                                {% endfor %}
+                            {% else %}
+                                <span class="text-muted">{% trans "Aucun jour spécifié" %}</span>
+                            {% endif %}
+                            <div class="row">
+                                {% for periode in greeter.disponibility_time_greeter.all %}
+                                    <span class="badge bg-info text-dark">{{ periode.periode_journee }}</span> 
+                                {% empty %}
+                                    <span class="text-muted">{% trans "Aucune période spécifiée" %}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">{% trans "Disponibilités & Logistique" %}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <p><strong>{% trans "Max participants" %} :</strong> {{ greeter.max_participants_greeter }}</p>
+                            <p><strong>{% trans "Accepte les handicaps" %} :</strong> 
+                                {% if greeter.handicap_greeter %}
+                                    <span class="text-danger">{% trans "Oui" %}</span>
+                                {% else %}
+                                    <span class="text-success">{% trans "Non" %}</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-sm-6">
+                            <p><strong>{% trans "Indisponibilité" %} :</strong> 
+                                {% if greeter.indisponibilty %}
+                                    <span class="text-danger">{% trans "Actuellement indisponible" %}</span>
+                                    <br><small>(Du {{ greeter.begin_indisponibility }} au {{ greeter.end_indisponibility }})</small>
+                                {% else %}
+                                    <span class="text-success">{% trans "Disponible" %}</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
